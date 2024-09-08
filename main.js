@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 async function launchBrowser() {
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
   return { browser, context, page };
@@ -157,6 +157,8 @@ async function main() {
       await fs.mkdir('screenshots', { recursive: true });
       await page.screenshot({ path: errorScreenshotPath });
       console.log(`Error screenshot saved as '${errorScreenshotPath}'`);
+      // reload the page
+      await page.reload();
     }
   } finally {
     if (browser) {
