@@ -1,0 +1,211 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Unity Ads Plugin for Flutter
+
+The `unity_ads_plugin` is a Flutter package that provides a seamless integration of Unity Ads into your Flutter applications. Unity Ads is a comprehensive monetization platform that allows developers to integrate video ads, rewarded video ads, and banner ads into their apps. This package is particularly useful for developers looking to monetize their apps through advertisements while maintaining a smooth user experience.
+
+## When to Use
+
+- **Monetization**: If you are looking to generate revenue from your app through advertisements, Unity Ads offers a robust solution.
+- **Cross-Platform Support**: Ideal for apps targeting both Android and iOS platforms, ensuring consistent ad experiences across devices.
+- **Game Development**: Particularly beneficial for game developers who want to integrate rewarded video ads to enhance user engagement and retention.
+
+## Features
+
+- **Video Ads**: Display engaging video ads to users.
+- **Rewarded Video Ads**: Offer users rewards for watching ads, enhancing user engagement.
+- **Banner Ads**: Display banner ads at various positions within your app.
+- **Easy Integration**: Simple setup and integration process with detailed documentation.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up Unity Ads Plugin in Flutter
+
+In this tutorial, we will walk through the process of setting up the `unity_ads_plugin` in a Flutter project, including platform-specific configurations for both Android and iOS.
+
+## Step 1: Add Dependency
+
+Add the `unity_ads_plugin` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  unity_ads_plugin: ^3.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Android Configuration
+
+1. **Modify `AndroidManifest.xml`**: Add the following permissions and metadata inside the `<application>` tag.
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <application>
+        <!-- Unity Ads Metadata -->
+        <meta-data
+            android:name="unityads_game_id"
+            android:value="YOUR_UNITY_GAME_ID" />
+        <meta-data
+            android:name="unityads_test_mode"
+            android:value="true" /> <!-- Set to false for production -->
+    </application>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+</manifest>
+```
+
+2. **ProGuard Configuration**: If you are using ProGuard, add the following rules to your `proguard-rules.pro` file:
+
+```pro
+-keep class com.unity3d.ads.** { *; }
+-keep class com.unity3d.services.** { *; }
+```
+
+## Step 3: iOS Configuration
+
+1. **Modify `Info.plist`**: Add the following keys to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>UnityAdsGameId</key>
+<string>YOUR_UNITY_GAME_ID</string>
+<key>UnityAdsTestMode</key>
+<true/> <!-- Set to false for production -->
+```
+
+2. **Podfile**: Ensure your `Podfile` has platform set to at least iOS 9.0:
+
+```ruby
+platform :ios, '9.0'
+```
+
+## Step 4: Initialize Unity Ads
+
+Initialize Unity Ads in your Flutter app. This is typically done in the `main.dart` file.
+
+```dart
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
+
+void main() {
+  UnityAds.init(
+    gameId: 'YOUR_UNITY_GAME_ID',
+    testMode: true, // Set to false for production
+  );
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
+
+void main() {
+  // Initialize Unity Ads with your game ID and test mode setting
+  UnityAds.init(
+    gameId: 'YOUR_UNITY_GAME_ID',
+    testMode: true, // Set to false for production
+  );
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Unity Ads Demo',
+      home: AdDemoPage(),
+    );
+  }
+}
+
+class AdDemoPage extends StatefulWidget {
+  @override
+  _AdDemoPageState createState() => _AdDemoPageState();
+}
+
+class _AdDemoPageState extends State<AdDemoPage> {
+  // Track the loading state of the ad
+  bool _isAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load a video ad when the app starts
+    UnityAds.load(
+      placementId: 'video',
+      onComplete: (placementId) {
+        setState(() {
+          _isAdLoaded = true;
+        });
+      },
+      onFailed: (placementId, error, message) {
+        print('Failed to load ad: $message');
+      },
+    );
+  }
+
+  void _showAd() {
+    if (_isAdLoaded) {
+      UnityAds.showVideoAd(
+        placementId: 'video',
+        onComplete: (placementId) {
+          print('Video ad completed');
+        },
+        onFailed: (placementId, error, message) {
+          print('Failed to show ad: $message');
+        },
+        onStart: (placementId) {
+          print('Video ad started');
+        },
+        onClick: (placementId) {
+          print('Video ad clicked');
+        },
+      );
+    } else {
+      print('Ad not loaded yet');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Unity Ads Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _showAd,
+          child: Text('Show Video Ad'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app initializes Unity Ads with the provided game ID in the main function.
+// 2. The `AdDemoPage` widget is the main screen, which loads a video ad on startup.
+// 3. The `_isAdLoaded` state variable tracks whether the ad is ready to be shown.
+// 4. When the "Show Video Ad" button is pressed, `_showAd` is called.
+// 5. `_showAd` checks if the ad is loaded and then displays it using `UnityAds.showVideoAd`.
+// 6. Callback functions handle ad events like completion, failure, start, and click, providing feedback in the console.
+```
+
+<-- END_MAIN -->
+```

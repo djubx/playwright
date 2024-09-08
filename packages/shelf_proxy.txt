@@ -1,0 +1,160 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `shelf_proxy` Flutter Package
+
+The `shelf_proxy` package is a powerful tool for Flutter developers who need to implement proxy server functionality within their applications. This package is particularly useful when you need to forward HTTP requests to another server, which can be essential for tasks like API request routing, load balancing, or simply testing and development purposes.
+
+## When to Use `shelf_proxy`
+
+- **API Gateway**: When you need to route requests to different backend services based on the request path or headers.
+- **Development and Testing**: Forward requests to a mock server or a different environment without changing the client-side code.
+- **Load Balancing**: Distribute incoming requests across multiple servers to balance the load.
+
+## Features
+
+- **Request Forwarding**: Easily forward HTTP requests to another server.
+- **Customizable**: Modify requests and responses as they pass through the proxy.
+- **Integration with Shelf**: Leverages the `shelf` package, making it easy to integrate with existing Shelf-based applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `shelf_proxy` in Flutter
+
+In this section, we will walk through the setup process for the `shelf_proxy` package and demonstrate how to use it in a Flutter application. We will cover platform-specific details for both Android and iOS.
+
+## Setup Process
+
+### Step 1: Add Dependencies
+
+Add the `shelf_proxy` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  shelf_proxy: ^0.1.0
+  shelf: ^1.2.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+For Android, ensure that your `AndroidManifest.xml` allows internet access:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+        android:label="yourapp"
+        android:icon="@mipmap/ic_launcher">
+        <!-- Other configurations -->
+    </application>
+</manifest>
+```
+
+#### iOS
+
+For iOS, make sure your `Info.plist` includes the necessary permissions for network access:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+### Step 3: Implementing the Proxy
+
+Create a Dart file to set up the proxy server using `shelf_proxy`. Here, we will create a simple proxy that forwards requests to a target server.
+
+```dart
+import 'package:shelf/shelf_io.dart' as io;
+import 'package:shelf_proxy/shelf_proxy.dart';
+
+void main() async {
+  var server = await io.serve(
+    proxyHandler('https://target-server.com'),
+    'localhost',
+    8080,
+  );
+
+  print('Proxying at http://${server.address.host}:${server.port}');
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:shelf/shelf_io.dart' as io;
+import 'package:shelf_proxy/shelf_proxy.dart';
+
+void main() {
+  runApp(MyApp());
+  startProxyServer();
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Shelf Proxy Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ProxyHomePage(),
+    );
+  }
+}
+
+class ProxyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Shelf Proxy Example'),
+      ),
+      body: Center(
+        child: Text('Proxy server is running...'),
+      ),
+    );
+  }
+}
+
+void startProxyServer() async {
+  // Start the proxy server on localhost at port 8080
+  var server = await io.serve(
+    proxyHandler('https://target-server.com'), // Forward requests to this target server
+    'localhost',
+    8080,
+  );
+
+  // Print the address and port of the proxy server
+  print('Proxying at http://${server.address.host}:${server.port}');
+}
+
+// The application starts by running the MyApp widget, which sets up a basic Flutter app.
+// The startProxyServer function is called to initialize the proxy server.
+// The proxy server listens on localhost at port 8080 and forwards requests to the specified target server.
+// The ProxyHomePage widget displays a simple UI indicating that the proxy server is running.
+```
+
+// The application flow is straightforward:
+// 1. The `main` function initializes the Flutter app and starts the proxy server.
+// 2. `MyApp` is the root widget, setting up the MaterialApp with a home page.
+// 3. `ProxyHomePage` is a simple UI component that shows a message indicating the proxy server's status.
+// 4. `startProxyServer` sets up the proxy server using `shelf_proxy`, forwarding requests to a specified target server.
+// 5. The server listens on localhost:8080, and any incoming requests are proxied to the target server.
+
+<-- END_MAIN -->
+```

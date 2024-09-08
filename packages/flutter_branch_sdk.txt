@@ -1,0 +1,209 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Branch SDK: A Comprehensive Overview
+
+The `flutter_branch_sdk` is a powerful Flutter package that provides seamless integration with Branch.io, a popular deep linking and attribution platform. This package is essential for developers looking to implement deep linking, referral systems, and track user engagement across different platforms.
+
+## When to Use `flutter_branch_sdk`
+
+- **Deep Linking**: If your application requires deep linking to specific content or features, `flutter_branch_sdk` offers a robust solution.
+- **Referral Programs**: Implement referral systems to track and reward user referrals.
+- **Attribution**: Gain insights into user acquisition channels and measure the effectiveness of marketing campaigns.
+- **Cross-Platform Consistency**: Ensure consistent user experiences across Android and iOS with unified deep linking solutions.
+
+## Key Features
+
+- **Deep Link Routing**: Easily route users to specific content within your app.
+- **Event Tracking**: Track user events and conversions for better analytics.
+- **Referral Rewards**: Implement and manage referral reward systems.
+- **Cross-Platform Support**: Unified API for both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `flutter_branch_sdk` in Your Flutter Project
+
+In this tutorial, we'll walk through the setup and configuration of the `flutter_branch_sdk` package for both Android and iOS platforms.
+
+## Step 1: Add Dependency
+
+Add `flutter_branch_sdk` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_branch_sdk: ^3.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Configure Android
+
+1. **Add Branch Key**: In your `android/app/src/main/AndroidManifest.xml`, add your Branch key:
+
+   ```xml
+   <meta-data
+       android:name="io.branch.sdk.BranchKey"
+       android:value="your_branch_key" />
+   ```
+
+2. **Deep Link Configuration**: Ensure your `AndroidManifest.xml` includes the following intent filter:
+
+   ```xml
+   <intent-filter>
+       <action android:name="android.intent.action.VIEW" />
+       <category android:name="android.intent.category.DEFAULT" />
+       <category android:name="android.intent.category.BROWSABLE" />
+       <data android:scheme="your_scheme" android:host="your_host" />
+   </intent-filter>
+   ```
+
+3. **ProGuard Rules**: If using ProGuard, add the following rules to `proguard-rules.pro`:
+
+   ```
+   -keep class io.branch.** { *; }
+   -keep class com.yourpackage.** { *; }
+   ```
+
+## Step 3: Configure iOS
+
+1. **Add Branch Key**: In your `ios/Runner/Info.plist`, add your Branch key:
+
+   ```xml
+   <key>branch_key</key>
+   <dict>
+       <key>live</key>
+       <string>your_branch_key</string>
+   </dict>
+   ```
+
+2. **URL Schemes**: Add your URL scheme to `Info.plist`:
+
+   ```xml
+   <key>CFBundleURLTypes</key>
+   <array>
+       <dict>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>your_scheme</string>
+           </array>
+       </dict>
+   </array>
+   ```
+
+3. **Associated Domains**: Add associated domains to `Info.plist`:
+
+   ```xml
+   <key>com.apple.developer.associated-domains</key>
+   <array>
+       <string>applinks:your_host</string>
+   </array>
+   ```
+
+## Step 4: Initialize the SDK
+
+Initialize the Branch SDK in your `main.dart` file:
+
+```dart
+import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterBranchSdk.initSession();
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterBranchSdk.initSession(); // Initialize Branch SDK session
+  runApp(MyApp()); // Run the main application
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Branch SDK Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(), // Set HomePage as the initial screen
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String deepLinkData = 'No deep link data';
+
+  @override
+  void initState() {
+    super.initState();
+    _listenDeepLinkData(); // Start listening for deep link data
+  }
+
+  void _listenDeepLinkData() {
+    FlutterBranchSdk.initSession().listen((data) {
+      if (data.containsKey('+clicked_branch_link') &&
+          data['+clicked_branch_link'] == true) {
+        setState(() {
+          deepLinkData = data.toString(); // Update UI with deep link data
+        });
+      }
+    }, onError: (error) {
+      print('Error: $error'); // Handle errors
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Branch SDK Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Deep Link Data:',
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 10),
+            Text(
+              deepLinkData, // Display the deep link data
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by initializing the Branch SDK session in the `main` function.
+// The `MyApp` widget is the root of the application, setting up a basic MaterialApp with a home page.
+// The `HomePage` widget is a stateful widget that listens for deep link data using the Branch SDK.
+// In the `initState` method, `_listenDeepLinkData` is called to start listening for deep link events.
+// When a deep link is clicked, the data is captured and displayed on the screen.
+// The UI consists of a simple column layout displaying the deep link data received.
+
+<-- END_MAIN -->
+```

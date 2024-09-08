@@ -1,0 +1,184 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter DisplayMode Package: An Overview
+
+The `flutter_displaymode` package is a powerful tool for Flutter developers who want to optimize their applications for different display modes on Android devices. This package allows you to query and set the display mode of the device, which can be particularly useful for applications that require specific refresh rates or resolutions to function optimally.
+
+## When to Use `flutter_displaymode`
+
+- **High-Performance Applications**: For apps like games or video players where a higher refresh rate can enhance the user experience.
+- **Battery Optimization**: Lowering the refresh rate can help save battery life in less demanding applications.
+- **Resolution Management**: Adjusting the resolution for better performance on devices with varying screen sizes and capabilities.
+
+## Features
+
+- **Query Available Display Modes**: Retrieve a list of all display modes supported by the device.
+- **Set Preferred Display Mode**: Choose a display mode that best suits your application's needs.
+- **Automatic Mode Selection**: Optionally, let the package select the best mode based on predefined criteria.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `flutter_displaymode`
+
+In this section, we'll walk through the setup process for the `flutter_displaymode` package and demonstrate how to integrate it into your Flutter project.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add `flutter_displaymode` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_displaymode: ^0.2.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: No special permissions are required for using `flutter_displaymode`.
+2. **Gradle Configuration**: Ensure your `minSdkVersion` is set to at least 21 in `android/app/build.gradle`.
+
+#### iOS
+
+The `flutter_displaymode` package is primarily designed for Android. iOS does not support changing display modes through this package.
+
+### Step 3: Import the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:flutter_displaymode/flutter_displaymode.dart';
+```
+
+## Using the Package
+
+### Querying Display Modes
+
+To get a list of available display modes:
+
+```dart
+List<DisplayMode> modes = await FlutterDisplayMode.supported;
+```
+
+### Setting a Display Mode
+
+To set a preferred display mode:
+
+```dart
+await FlutterDisplayMode.setPreferredMode(modes.first);
+```
+
+### Automatic Mode Selection
+
+To let the package automatically select the best mode:
+
+```dart
+await FlutterDisplayMode.auto;
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter DisplayMode Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: DisplayModeScreen(),
+    );
+  }
+}
+
+class DisplayModeScreen extends StatefulWidget {
+  @override
+  _DisplayModeScreenState createState() => _DisplayModeScreenState();
+}
+
+class _DisplayModeScreenState extends State<DisplayModeScreen> {
+  List<DisplayMode> _modes = [];
+  DisplayMode? _currentMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDisplayModes();
+  }
+
+  Future<void> _initDisplayModes() async {
+    // Fetch the list of supported display modes
+    _modes = await FlutterDisplayMode.supported;
+    // Set the preferred display mode to the first available mode
+    await FlutterDisplayMode.setPreferredMode(_modes.first);
+    // Get the current display mode
+    _currentMode = await FlutterDisplayMode.current;
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Display Mode Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Current Display Mode:',
+              style: TextStyle(fontSize: 20),
+            ),
+            if (_currentMode != null)
+              Text(
+                'Resolution: ${_currentMode!.width}x${_currentMode!.height}, Refresh Rate: ${_currentMode!.refreshRate}Hz',
+                style: TextStyle(fontSize: 16),
+              ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _changeDisplayMode,
+              child: Text('Change Display Mode'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _changeDisplayMode() async {
+    // Change to the next display mode in the list
+    int currentIndex = _modes.indexOf(_currentMode!);
+    int nextIndex = (currentIndex + 1) % _modes.length;
+    await FlutterDisplayMode.setPreferredMode(_modes[nextIndex]);
+    _currentMode = await FlutterDisplayMode.current;
+    setState(() {});
+  }
+}
+
+// The application initializes by fetching the supported display modes.
+// It sets the preferred display mode to the first available mode and displays the current mode.
+// The user can change the display mode by pressing a button, cycling through the available modes.
+// The app updates the display mode and refreshes the UI to reflect the current mode.
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,187 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `android_alarm_manager_plus` Flutter Package
+
+The `android_alarm_manager_plus` package is a powerful tool for Flutter developers who need to schedule and manage background tasks on Android devices. This package allows you to set alarms that trigger Dart code execution even when your app is not running. It is particularly useful for tasks that need to be executed at specific times or intervals, such as sending notifications, updating data, or performing maintenance tasks.
+
+## When to Use
+
+- **Scheduled Notifications**: Send reminders or alerts at specific times.
+- **Background Data Sync**: Update your app's data periodically without user intervention.
+- **Maintenance Tasks**: Perform regular clean-up or optimization tasks in the background.
+
+## Features
+
+- **Periodic and One-time Alarms**: Schedule tasks to run once or at regular intervals.
+- **Background Execution**: Run Dart code even when the app is not active.
+- **Flexible Scheduling**: Set alarms with precise timing requirements.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `android_alarm_manager_plus`
+
+In this tutorial, we'll walk through the setup and usage of the `android_alarm_manager_plus` package in a Flutter project. We'll cover platform-specific configurations for both Android and iOS, although the package primarily targets Android.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  android_alarm_manager_plus: ^2.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Android Configuration
+
+1. **Modify `AndroidManifest.xml`**: Add the following permissions and service declaration inside the `<manifest>` tag:
+
+   ```xml
+   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+   <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+   <application>
+       <service
+           android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
+           android:permission="android.permission.BIND_JOB_SERVICE"
+           android:exported="true"/>
+   </application>
+   ```
+
+2. **Update `MainActivity.java` or `MainActivity.kt`**: Ensure your main activity extends `FlutterActivity`.
+
+3. **Initialize the Alarm Manager**: In your `main.dart`, initialize the alarm manager before running the app:
+
+   ```dart
+   import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+
+   void main() async {
+     WidgetsFlutterBinding.ensureInitialized();
+     await AndroidAlarmManager.initialize();
+     runApp(MyApp());
+   }
+   ```
+
+### Step 3: iOS Configuration
+
+While the package is primarily for Android, ensure your iOS app is set up correctly to avoid any build issues:
+
+- Ensure your `Info.plist` is correctly configured for any background modes you might use, although `android_alarm_manager_plus` does not directly support iOS.
+
+## Using the Package
+
+To schedule an alarm, use the `AndroidAlarmManager.oneShot` or `AndroidAlarmManager.periodic` methods. Here's a simple example:
+
+```dart
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+
+void printHello() {
+  final DateTime now = DateTime.now();
+  print("[$now] Hello, world!");
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AndroidAlarmManager.initialize();
+  runApp(MyApp());
+
+  // Schedule a one-time alarm
+  await AndroidAlarmManager.oneShot(
+    const Duration(seconds: 5),
+    0, // Unique alarm ID
+    printHello,
+  );
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+
+// The main class of the application
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Alarm Manager Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+// Home page of the application
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Schedule a periodic alarm
+    AndroidAlarmManager.periodic(
+      const Duration(minutes: 1), // Interval for the alarm
+      1, // Unique alarm ID
+      callbackFunction, // Function to execute
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Alarm Manager Demo'),
+      ),
+      body: Center(
+        child: Text(
+          'Check your console for alarm messages!',
+        ),
+      ),
+    );
+  }
+}
+
+// Callback function to be executed by the alarm
+void callbackFunction() {
+  final DateTime now = DateTime.now();
+  print("[$now] Alarm triggered!");
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AndroidAlarmManager.initialize();
+  runApp(RealFlutter());
+}
+
+// Application Flow:
+// 1. The application starts by initializing the Android Alarm Manager.
+// 2. The `RealFlutter` class sets up the MaterialApp with a home page.
+// 3. The `MyHomePage` widget schedules a periodic alarm in its `initState` method.
+// 4. The `callbackFunction` is executed every minute, printing a message to the console.
+// 5. The app's UI displays a simple message, while the alarm runs in the background.
+```
+
+<-- END_MAIN -->
+```markdown
+In this example, we demonstrate how to use the `android_alarm_manager_plus` package to schedule a periodic task. The app initializes the alarm manager and sets up a periodic alarm that triggers every minute. The `callbackFunction` is executed each time the alarm triggers, printing a message to the console. This setup is useful for tasks that need to run regularly without user interaction.
+
+The application flow is straightforward: the app initializes, sets up the UI, and schedules the alarm. The alarm manager handles the execution of the callback function in the background, allowing the app to perform tasks even when not actively running.
+
+This example provides a foundation for integrating background task scheduling into your Flutter applications using the `android_alarm_manager_plus` package.
+```

@@ -1,0 +1,173 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `multicast_dns` Flutter Package
+
+The `multicast_dns` package is a Dart library that provides a way to perform DNS queries over multicast. This is particularly useful for discovering services on a local network without needing a central server. The package is based on the Multicast DNS (mDNS) protocol, which is widely used for service discovery in local networks.
+
+## When to Use `multicast_dns`
+
+- **Local Network Service Discovery**: If you are developing an application that needs to discover services like printers, media servers, or IoT devices on a local network, `multicast_dns` is an ideal choice.
+- **Zero Configuration Networking**: It allows devices to automatically discover each other without manual configuration, making it perfect for smart home applications.
+- **Cross-Platform Compatibility**: The package supports both Android and iOS, making it suitable for Flutter applications targeting multiple platforms.
+
+## Features
+
+- **Service Discovery**: Discover services on the local network using mDNS.
+- **Cross-Platform**: Works seamlessly on both Android and iOS.
+- **Custom Queries**: Perform custom DNS queries over multicast.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `multicast_dns` Package
+
+In this section, we'll walk through the setup process for the `multicast_dns` package and demonstrate how to use it in a Flutter application.
+
+## Setup
+
+### Adding the Dependency
+
+Add the `multicast_dns` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  multicast_dns: ^0.3.0
+```
+
+### Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Ensure that your `AndroidManifest.xml` includes the necessary permissions for network access:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+   <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+   ```
+
+2. **Multicast Lock**: Acquire a multicast lock in your Android code to allow multicast DNS queries:
+
+   ```java
+   WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+   WifiManager.MulticastLock lock = wifi.createMulticastLock("mylock");
+   lock.setReferenceCounted(true);
+   lock.acquire();
+   ```
+
+#### iOS
+
+1. **Permissions**: Update your `Info.plist` to include the necessary network permissions:
+
+   ```xml
+   <key>NSBonjourServices</key>
+   <array>
+     <string>_http._tcp</string>
+   </array>
+   <key>NSLocalNetworkUsageDescription</key>
+   <string>Requires access to the local network to discover services.</string>
+   ```
+
+## Using the Package
+
+To use the `multicast_dns` package, you need to create an instance of the `MDnsClient` and start the discovery process. Below is a basic example of how to set up and use the package in a Flutter application.
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:multicast_dns/multicast_dns.dart';
+
+void main() {
+  runApp(RealFlutterApp());
+}
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'mDNS Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ServiceDiscoveryPage(),
+    );
+  }
+}
+
+class ServiceDiscoveryPage extends StatefulWidget {
+  @override
+  _ServiceDiscoveryPageState createState() => _ServiceDiscoveryPageState();
+}
+
+class _ServiceDiscoveryPageState extends State<ServiceDiscoveryPage> {
+  final MDnsClient _mdnsClient = MDnsClient();
+  List<String> _services = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _startDiscovery();
+  }
+
+  @override
+  void dispose() {
+    _mdnsClient.stop();
+    super.dispose();
+  }
+
+  Future<void> _startDiscovery() async {
+    // Initialize the mDNS client
+    await _mdnsClient.start();
+
+    // Start the discovery of services
+    _mdnsClient.lookup<PtrResourceRecord>(
+      ResourceRecordQuery.serverPointer('_http._tcp.local'),
+    ).listen((PtrResourceRecord record) {
+      // When a service is found, resolve it to get more details
+      _mdnsClient.lookup<SrvResourceRecord>(
+        ResourceRecordQuery.service(record.domainName),
+      ).listen((SrvResourceRecord srv) {
+        setState(() {
+          // Add the service to the list
+          _services.add(srv.target);
+        });
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Service Discovery'),
+      ),
+      body: ListView.builder(
+        itemCount: _services.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_services[index]),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application that uses the `multicast_dns` package to discover services on a local network.
+// The `RealFlutterApp` class sets up the main application with a `MaterialApp`.
+// The `ServiceDiscoveryPage` is a stateful widget that manages the discovery process.
+// In `initState`, the `_startDiscovery` method is called to begin service discovery.
+// The `_startDiscovery` method initializes the `MDnsClient` and starts listening for services of type `_http._tcp.local`.
+// When a service is found, it is resolved to get more details, and the service name is added to the `_services` list.
+// The `ListView.builder` in the `build` method displays the discovered services in a list format.
+
+<-- END_MAIN -->
+```

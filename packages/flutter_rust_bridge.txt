@@ -1,0 +1,217 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Rust Bridge: Bridging Flutter and Rust
+
+The `flutter_rust_bridge` package is a powerful tool that allows developers to integrate Rust code into their Flutter applications seamlessly. This package is particularly useful when you need to leverage Rust's performance and safety features in a mobile application. By using `flutter_rust_bridge`, you can write performance-critical code in Rust and call it from your Flutter app, which is written in Dart.
+
+## When to Use Flutter Rust Bridge
+
+- **Performance-Critical Applications**: If your application requires high-performance computations, such as image processing or data analysis, Rust can provide the necessary speed and efficiency.
+- **Cross-Platform Logic**: When you want to share business logic across different platforms (iOS, Android, Web), Rust can serve as a common language.
+- **Security and Safety**: Rust's memory safety features can help prevent common bugs and vulnerabilities, making it a good choice for security-sensitive applications.
+
+## Features
+
+- **Seamless Integration**: Easily call Rust functions from Dart and vice versa.
+- **Cross-Platform Support**: Works on Android, iOS, and other platforms supported by Flutter.
+- **Automatic Code Generation**: Generates the necessary bindings to call Rust code from Dart.
+- **Type Safety**: Ensures type safety between Dart and Rust, reducing runtime errors.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Flutter Rust Bridge
+
+In this tutorial, we will walk through the process of setting up the `flutter_rust_bridge` package in a Flutter project. We will cover the necessary configurations for both Android and iOS platforms.
+
+## Prerequisites
+
+- Flutter SDK installed
+- Rust installed on your system
+- Basic knowledge of Flutter and Rust
+
+## Step 1: Create a New Flutter Project
+
+First, create a new Flutter project:
+
+```bash
+flutter create flutter_rust_bridge_example
+cd flutter_rust_bridge_example
+```
+
+## Step 2: Add Dependencies
+
+Add the `flutter_rust_bridge` package to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_rust_bridge: ^1.0.0
+```
+
+## Step 3: Set Up Rust
+
+Create a new Rust library inside your Flutter project:
+
+```bash
+cargo new --lib rust_bridge
+```
+
+Add the `flutter_rust_bridge` dependency to your Rust library's `Cargo.toml`:
+
+```toml
+[dependencies]
+flutter_rust_bridge = "1.0"
+```
+
+## Step 4: Configure Android
+
+In your `android/app/build.gradle`, add the following configuration to include the Rust library:
+
+```gradle
+android {
+    // Other configurations...
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['../rust_bridge/target/debug']
+        }
+    }
+}
+```
+
+## Step 5: Configure iOS
+
+For iOS, modify your `ios/Podfile` to include the Rust library:
+
+```ruby
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SRCROOT)/../rust_bridge/target/debug']
+    end
+  end
+end
+```
+
+## Step 6: Generate Bindings
+
+Use the `flutter_rust_bridge_codegen` tool to generate the necessary bindings:
+
+```bash
+flutter_rust_bridge_codegen --rust-input rust_bridge/src/lib.rs --dart-output lib/bridge_generated.dart
+```
+
+## Step 7: Write Rust Code
+
+In your Rust library, write a simple function:
+
+```rust
+// rust_bridge/src/lib.rs
+#[no_mangle]
+pub extern "C" fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+```
+
+## Step 8: Use in Flutter
+
+In your Flutter app, call the Rust function:
+
+```dart
+import 'bridge_generated.dart';
+
+void main() {
+  final result = add(2, 3);
+  print('Result from Rust: $result');
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+// main.dart
+
+import 'package:flutter/material.dart';
+import 'bridge_generated.dart'; // Import the generated Dart bindings
+
+void main() {
+  runApp(MyApp());
+}
+
+// Define the main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Rust Bridge Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+// Define the home page widget
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+// Define the state for the home page
+class _MyHomePageState extends State<MyHomePage> {
+  int _result = 0;
+
+  // Function to call the Rust function and update the state
+  void _calculateSum() {
+    setState(() {
+      _result = add(5, 7); // Call the Rust function
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Rust Bridge Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Result from Rust:',
+            ),
+            Text(
+              '$_result', // Display the result from Rust
+              style: Theme.of(context).textTheme.headline4,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _calculateSum, // Call the function when pressed
+        tooltip: 'Calculate',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by running the `MyApp` widget.
+// `MyApp` is a stateless widget that sets up the MaterialApp with a home page.
+// The home page is a stateful widget, `MyHomePage`, which maintains the result of the Rust function call.
+// The `_calculateSum` function calls the Rust function `add` with two integers and updates the state with the result.
+// The UI consists of a text displaying the result and a floating action button to trigger the calculation.
+// When the button is pressed, `_calculateSum` is called, updating the displayed result.
+
+<-- END_MAIN -->
+```

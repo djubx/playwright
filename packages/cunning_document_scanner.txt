@@ -1,0 +1,182 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Cunning Document Scanner: A Flutter Package Overview
+
+The `cunning_document_scanner` Flutter package is a powerful tool designed to facilitate document scanning within mobile applications. This package leverages the device's camera to capture images of documents, automatically detecting edges and enhancing the scanned image for clarity and readability. It is particularly useful in applications where document digitization is required, such as in banking apps, educational platforms, or any service that requires document uploads.
+
+## Key Features
+
+- **Automatic Edge Detection**: The package can automatically detect the edges of a document, making it easy to capture only the necessary parts.
+- **Image Enhancement**: It enhances the scanned image to improve readability and clarity.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Customizable UI**: Offers flexibility to customize the scanning interface to match the app's design.
+
+## When to Use
+
+- **Banking Applications**: For scanning checks or identity documents.
+- **Educational Apps**: To digitize handwritten notes or assignments.
+- **Business Applications**: For scanning receipts or contracts.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Cunning Document Scanner
+
+In this tutorial, we will walk through the setup process for the `cunning_document_scanner` package and demonstrate how to integrate it into a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Installation
+
+Add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cunning_document_scanner: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Android Configuration
+
+1. **Permissions**: Add the following permissions to your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
+
+2. **File Provider**: Configure a file provider in `AndroidManifest.xml`:
+
+```xml
+<provider
+    android:name="androidx.core.content.FileProvider"
+    android:authorities="${applicationId}.fileprovider"
+    android:exported="false"
+    android:grantUriPermissions="true">
+    <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths" />
+</provider>
+```
+
+Create a `file_paths.xml` in `res/xml`:
+
+```xml
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="external_files" path="."/>
+</paths>
+```
+
+## iOS Configuration
+
+1. **Permissions**: Add the following keys to your `Info.plist`:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to scan documents.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>We need access to save scanned documents.</string>
+```
+
+2. **Podfile**: Ensure your `Podfile` has platform set to at least iOS 11:
+
+```ruby
+platform :ios, '11.0'
+```
+
+## Using the Package
+
+To use the `cunning_document_scanner`, import it in your Dart file:
+
+```dart
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+
+void main() => runApp(RealFlutterApp());
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Document Scanner',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: DocumentScannerScreen(),
+    );
+  }
+}
+
+class DocumentScannerScreen extends StatefulWidget {
+  @override
+  _DocumentScannerScreenState createState() => _DocumentScannerScreenState();
+}
+
+class _DocumentScannerScreenState extends State<DocumentScannerScreen> {
+  String _scannedImagePath;
+
+  // Function to initiate the document scanning process
+  Future<void> _scanDocument() async {
+    try {
+      // Start the document scanner and await the result
+      final scannedImage = await CunningDocumentScanner.scanDocument;
+      if (scannedImage != null) {
+        setState(() {
+          _scannedImagePath = scannedImage;
+        });
+      }
+    } catch (e) {
+      // Handle any errors that occur during scanning
+      print('Error scanning document: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Document Scanner'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Display the scanned image if available
+            _scannedImagePath != null
+                ? Image.file(File(_scannedImagePath))
+                : Text('No document scanned yet.'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _scanDocument,
+              child: Text('Scan Document'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the main function, launching the RealFlutterApp.
+// 2. RealFlutterApp sets up the MaterialApp with a home screen of DocumentScannerScreen.
+// 3. DocumentScannerScreen is a stateful widget that manages the scanning process.
+// 4. The _scanDocument function uses the CunningDocumentScanner to scan a document.
+// 5. If a document is successfully scanned, its path is stored in _scannedImagePath.
+// 6. The UI displays the scanned image or a message if no image is scanned.
+// 7. An ElevatedButton triggers the _scanDocument function to start scanning.
+
+```
+
+<-- END_MAIN -->

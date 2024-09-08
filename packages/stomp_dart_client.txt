@@ -1,0 +1,204 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `stomp_dart_client` Flutter Package
+
+The `stomp_dart_client` package is a robust and efficient library for integrating the STOMP (Simple Text Oriented Messaging Protocol) protocol into Flutter applications. This package is particularly useful for applications that require real-time communication, such as chat applications, live notifications, or any system that benefits from a publish-subscribe model.
+
+## When to Use `stomp_dart_client`
+
+- **Real-time Chat Applications**: Implementing chat features where messages need to be sent and received instantly.
+- **Live Notifications**: For applications that need to push updates to users in real-time, such as news apps or stock market trackers.
+- **Collaborative Tools**: Applications that require multiple users to interact with shared data in real-time, like collaborative document editing.
+
+## Features
+
+- **WebSocket Support**: Utilizes WebSockets for efficient, low-latency communication.
+- **Automatic Reconnection**: Handles reconnection logic automatically, ensuring a stable connection.
+- **Subscription Management**: Easily manage multiple subscriptions to different topics.
+- **Customizable Headers**: Allows setting custom headers for STOMP frames, providing flexibility for authentication and other use cases.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `stomp_dart_client` in Flutter
+
+In this tutorial, we will walk through the setup process for the `stomp_dart_client` package and demonstrate how to use it in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup
+
+### Step 1: Add Dependency
+
+Add the `stomp_dart_client` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  stomp_dart_client: ^0.4.4
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+Ensure that your `AndroidManifest.xml` file includes the necessary permissions for internet access:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+#### iOS
+
+For iOS, make sure your `Info.plist` file allows arbitrary loads if you are connecting to a non-secure WebSocket (ws://):
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+### Step 3: Initialize and Use the Client
+
+Create a new instance of the `RealFlutter` class (our main class for this example) and set up the STOMP client.
+
+```dart
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+
+class RealFlutter {
+  StompClient? stompClient;
+
+  void connect() {
+    stompClient = StompClient(
+      config: StompConfig(
+        url: 'ws://yourserver.com/websocket',
+        onConnect: onConnectCallback,
+        onWebSocketError: (dynamic error) => print('WebSocket error: $error'),
+      ),
+    );
+
+    stompClient?.activate();
+  }
+
+  void onConnectCallback(StompFrame frame) {
+    print('Connected to STOMP server');
+    // Subscribe to a topic
+    stompClient?.subscribe(
+      destination: '/topic/messages',
+      callback: (frame) {
+        print('Received: ${frame.body}');
+      },
+    );
+  }
+
+  void sendMessage(String message) {
+    stompClient?.send(
+      destination: '/app/send',
+      body: message,
+    );
+  }
+
+  void disconnect() {
+    stompClient?.deactivate();
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'STOMP Client Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final RealFlutter realFlutter = RealFlutter();
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    realFlutter.connect(); // Connect to the STOMP server when the app starts
+  }
+
+  @override
+  void dispose() {
+    realFlutter.disconnect(); // Disconnect from the server when the app is closed
+    super.dispose();
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      realFlutter.sendMessage(_controller.text); // Send message to the server
+      _controller.clear(); // Clear the input field
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('STOMP Client Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(labelText: 'Enter message'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _sendMessage,
+              child: Text('Send Message'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts and initializes the Flutter app with a MaterialApp.
+// 2. The MyHomePage widget is the main screen, which sets up a connection to the STOMP server in its initState method.
+// 3. The RealFlutter class manages the STOMP client, handling connection, subscription, and message sending.
+// 4. The user can enter a message in the TextField and press the "Send Message" button to send it to the server.
+// 5. The message is sent to the specified destination on the STOMP server.
+// 6. The app listens for incoming messages on a subscribed topic and prints them to the console.
+// 7. When the app is closed, the connection to the STOMP server is gracefully terminated in the dispose method.
+```
+
+<-- END_MAIN -->
+```

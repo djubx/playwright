@@ -1,0 +1,192 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Background Downloader Flutter Package: An Overview
+
+The `background_downloader` Flutter package is a powerful tool designed to handle file downloads in the background, even when the app is not running. This package is particularly useful for applications that require downloading large files or multiple files simultaneously without interrupting the user experience.
+
+## When to Use
+
+- **Large File Downloads**: Ideal for apps that need to download large files such as videos, high-resolution images, or software updates.
+- **Multiple File Downloads**: Useful for applications that need to download multiple files at once, ensuring efficient use of network resources.
+- **Offline Access**: Perfect for apps that need to download content for offline access, such as e-books or offline maps.
+- **Uninterrupted Downloads**: Ensures downloads continue even if the app is closed or the device is restarted.
+
+## Features
+
+- **Background Execution**: Downloads continue in the background, allowing users to perform other tasks.
+- **Cross-Platform Support**: Compatible with both Android and iOS platforms.
+- **Retry Mechanism**: Automatically retries failed downloads.
+- **Progress Tracking**: Provides real-time updates on download progress.
+- **File Management**: Handles file storage and management efficiently.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Background Downloader Package
+
+In this tutorial, we will walk through the setup process for the `background_downloader` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `background_downloader` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  background_downloader: ^1.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+   ```
+
+2. **Service Declaration**: Add the service declaration inside the `<application>` tag:
+
+   ```xml
+   <service android:name="com.example.background_downloader.DownloadService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+   ```
+
+#### iOS
+
+1. **Permissions**: Update your `Info.plist` with the following keys:
+
+   ```xml
+   <key>UIBackgroundModes</key>
+   <array>
+     <string>fetch</string>
+     <string>processing</string>
+   </array>
+   ```
+
+2. **Capabilities**: Enable background fetch and background processing in Xcode under the "Signing & Capabilities" tab.
+
+### Step 3: Initialize the Package
+
+Initialize the `background_downloader` in your main application file:
+
+```dart
+import 'package:background_downloader/background_downloader.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  RealFlutter.initialize();
+  runApp(MyApp());
+}
+```
+
+## Using the Package
+
+To start a download, create a `DownloadTask` and add it to the `RealFlutter` queue:
+
+```dart
+DownloadTask task = DownloadTask(
+  url: 'https://example.com/largefile.zip',
+  filename: 'largefile.zip',
+  directory: DownloadDirectory.documents,
+);
+
+RealFlutter.enqueue(task);
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:background_downloader/background_downloader.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  RealFlutter.initialize(); // Initialize the background downloader
+  runApp(MyApp()); // Run the main application
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Background Downloader Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: DownloadPage(), // Set the home page to DownloadPage
+    );
+  }
+}
+
+class DownloadPage extends StatefulWidget {
+  @override
+  _DownloadPageState createState() => _DownloadPageState();
+}
+
+class _DownloadPageState extends State<DownloadPage> {
+  double _progress = 0.0; // Variable to track download progress
+
+  @override
+  void initState() {
+    super.initState();
+    RealFlutter.setDownloadProgressCallback((task, progress) {
+      setState(() {
+        _progress = progress; // Update progress state
+      });
+    });
+  }
+
+  void _startDownload() {
+    DownloadTask task = DownloadTask(
+      url: 'https://example.com/largefile.zip', // URL of the file to download
+      filename: 'largefile.zip', // Name of the file to save
+      directory: DownloadDirectory.documents, // Directory to save the file
+    );
+
+    RealFlutter.enqueue(task); // Enqueue the download task
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Download File'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Download Progress: ${(_progress * 100).toStringAsFixed(0)}%'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startDownload, // Start download on button press
+              child: Text('Start Download'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application initializes the RealFlutter background downloader in the main function.
+// 2. The MyApp widget sets up the MaterialApp with a home page of DownloadPage.
+// 3. DownloadPage is a stateful widget that tracks download progress.
+// 4. In initState, a callback is set to update the progress state whenever the download progresses.
+// 5. The _startDownload method creates a DownloadTask and enqueues it using RealFlutter.
+// 6. The UI consists of a progress text and a button to start the download.
+// 7. When the button is pressed, the download starts, and progress is displayed in real-time.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,163 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Reflectable Flutter Package: An Overview
+
+The `reflectable` package in Flutter is a powerful tool that provides reflection capabilities in Dart, which are not natively supported due to Dart's tree-shaking compiler. Reflection is the ability of a program to inspect and modify its structure and behavior at runtime. This package is particularly useful when you need to dynamically access class members, invoke methods, or create instances of classes without knowing their types at compile time.
+
+## When to Use Reflectable
+
+- **Dynamic UI Generation**: When building dynamic user interfaces where widget types and properties are determined at runtime.
+- **Serialization/Deserialization**: Automatically converting objects to and from JSON without manually writing boilerplate code.
+- **Dependency Injection**: Creating instances of classes dynamically, which is useful in implementing service locators or dependency injection frameworks.
+- **Testing and Mocking**: Accessing private members or methods for testing purposes.
+
+## Key Features
+
+- **Class and Instance Mirrors**: Access class metadata and instance properties/methods.
+- **Method Invocation**: Dynamically invoke methods on objects.
+- **Instance Creation**: Create instances of classes at runtime.
+- **Field Access**: Read and write fields dynamically.
+
+The `reflectable` package is a versatile tool that can significantly reduce boilerplate code and increase the flexibility of your Flutter applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Reflectable Package
+
+In this section, we'll walk through the setup process for the `reflectable` package and demonstrate how to use it in a Flutter project. We'll cover platform-specific details for both Android and iOS.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the `reflectable` package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     reflectable: ^3.0.0
+   ```
+
+2. **Install the Package**: Run `flutter pub get` to install the package.
+
+3. **Create a Reflectable Class**: Define a class that extends `Reflectable` to specify what kinds of reflection you need.
+
+   ```dart
+   import 'package:reflectable/reflectable.dart';
+
+   class RealFlutter extends Reflectable {
+     const RealFlutter() : super(invokingCapability, declarationsCapability);
+   }
+
+   const realFlutter = RealFlutter();
+   ```
+
+4. **Annotate Classes**: Use the `@realFlutter` annotation on classes you want to reflect upon.
+
+   ```dart
+   @realFlutter
+   class MyClass {
+     final String name;
+     MyClass(this.name);
+
+     void sayHello() {
+       print('Hello, $name!');
+     }
+   }
+   ```
+
+5. **Generate Code**: Run the build runner to generate the necessary code for reflection.
+
+   ```bash
+   flutter pub run build_runner build
+   ```
+
+## Platform-Specific Details
+
+- **Android**: Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21 to support reflection capabilities.
+- **iOS**: No specific configurations are required for iOS, but ensure your deployment target is set to a version that supports Dart's reflection capabilities.
+
+## Optimizations
+
+- **Tree Shaking**: The `reflectable` package is designed to work with Dart's tree shaking, but be mindful of the additional code size due to reflection metadata.
+- **Performance**: Reflection can introduce performance overhead. Use it judiciously and profile your app to ensure it meets performance requirements.
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+# Complete Example: Using Reflectable in Flutter
+
+Below is a complete Flutter application demonstrating the use of the `reflectable` package. This example showcases dynamic method invocation and instance creation.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:reflectable/reflectable.dart';
+
+// Define a Reflectable class with the desired capabilities
+class RealFlutter extends Reflectable {
+  const RealFlutter() : super(invokingCapability, declarationsCapability);
+}
+
+// Create an instance of the Reflectable class
+const realFlutter = RealFlutter();
+
+// Annotate the class you want to reflect upon
+@realFlutter
+class MyClass {
+  final String name;
+  MyClass(this.name);
+
+  void sayHello() {
+    print('Hello, $name!');
+  }
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Reflectable Example'),
+        ),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Use reflection to create an instance of MyClass
+              var classMirror = realFlutter.reflectType(MyClass) as ClassMirror;
+              var instance = classMirror.newInstance('MyClass', ['Flutter']);
+
+              // Use reflection to invoke the sayHello method
+              instance.invoke('sayHello', []);
+            },
+            child: Text('Say Hello'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The RealFlutter class is defined to enable reflection capabilities.
+// 2. MyClass is annotated with @realFlutter to allow reflection.
+// 3. In the MyApp widget, a button is created that, when pressed, uses reflection to:
+//    a. Obtain a ClassMirror for MyClass.
+//    b. Create a new instance of MyClass with the name 'Flutter'.
+//    c. Invoke the sayHello method on the instance, which prints a greeting to the console.
+```
+
+// The application starts with the `main` function, which runs `MyApp`.
+// `MyApp` is a stateless widget that builds a simple UI with a button.
+// When the button is pressed, reflection is used to dynamically create an instance of `MyClass` and invoke its `sayHello` method.
+// This demonstrates the core capabilities of the `reflectable` package: dynamic instance creation and method invocation.
+
+<-- END_MAIN -->
+```

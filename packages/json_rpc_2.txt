@@ -1,0 +1,203 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `json_rpc_2` Flutter Package
+
+The `json_rpc_2` package is a Dart library that provides a robust implementation of the JSON-RPC 2.0 protocol. JSON-RPC is a remote procedure call (RPC) protocol encoded in JSON. It is a simple protocol that allows for communication between a client and a server, where the client can call methods on the server and receive results or errors.
+
+## When to Use `json_rpc_2`
+
+This package is particularly useful in scenarios where you need to:
+- Implement a client-server architecture where the client needs to invoke methods on the server.
+- Develop applications that require asynchronous communication between different components.
+- Build systems that need to handle multiple requests and responses efficiently.
+
+## Features
+
+- **Asynchronous Communication**: Supports asynchronous method calls, allowing for non-blocking operations.
+- **Error Handling**: Provides a structured way to handle errors, ensuring that both client and server can communicate issues effectively.
+- **Batch Requests**: Allows sending multiple requests in a single batch, optimizing network usage.
+- **Customizable**: Offers flexibility to extend and customize the protocol to fit specific needs.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `json_rpc_2` in Flutter
+
+In this section, we will walk through the setup process for integrating the `json_rpc_2` package into a Flutter application. We will cover platform-specific details for both Android and iOS, and provide necessary configurations.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `json_rpc_2` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  json_rpc_2: ^2.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+Ensure that your `AndroidManifest.xml` has the necessary internet permissions:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+        android:label="yourapp"
+        android:icon="@mipmap/ic_launcher">
+        <!-- Other configurations -->
+    </application>
+</manifest>
+```
+
+#### iOS
+
+For iOS, ensure that your app has the necessary permissions by checking the `Info.plist` file. Typically, no additional configuration is needed for basic internet access.
+
+### Step 3: Basic Usage
+
+To use the `json_rpc_2` package, you need to create a client that connects to a server. Here is a basic example:
+
+```dart
+import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:web_socket_channel/io.dart';
+
+void main() {
+  final channel = IOWebSocketChannel.connect('ws://example.com/rpc');
+  final client = Client(channel.cast<String>());
+
+  client.listen();
+
+  client.sendRequest('methodName', {'param1': 'value1'}).then((result) {
+    print('Result: $result');
+  }).catchError((error) {
+    print('Error: $error');
+  });
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:web_socket_channel/io.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'JSON-RPC 2 Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late Client _client;
+  String _response = 'No response yet';
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeClient();
+  }
+
+  void _initializeClient() {
+    // Connect to the WebSocket server
+    final channel = IOWebSocketChannel.connect('ws://example.com/rpc');
+    _client = Client(channel.cast<String>());
+
+    // Start listening for responses
+    _client.listen();
+  }
+
+  Future<void> _sendRequest() async {
+    try {
+      // Send a request to the server with a method name and parameters
+      final result = await _client.sendRequest('getData', {'id': 123});
+      setState(() {
+        _response = 'Result: $result';
+      });
+    } catch (error) {
+      setState(() {
+        _response = 'Error: $error';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Close the client connection when the widget is disposed
+    _client.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('JSON-RPC 2 Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _response,
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _sendRequest,
+              child: Text('Send Request'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes and connects to a WebSocket server using the json_rpc_2 package.
+// 2. A Client object is created to manage the connection and communication.
+// 3. The app listens for responses from the server.
+// 4. When the user presses the "Send Request" button, a JSON-RPC request is sent to the server.
+// 5. The server processes the request and sends back a response.
+// 6. The app updates the UI with the result or error received from the server.
+// 7. The client connection is closed when the widget is disposed to clean up resources.
+```
+
+<-- END_MAIN -->
+```markdown
+This example demonstrates how to set up a simple Flutter application using the `json_rpc_2` package to communicate with a server via JSON-RPC. The app connects to a WebSocket server, sends a request, and displays the response. The code includes error handling and ensures the client connection is properly closed when the app is disposed.
+
+By following this guide, you can integrate JSON-RPC communication into your Flutter applications, enabling efficient client-server interactions.
+```

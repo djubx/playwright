@@ -1,0 +1,182 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Understanding the `http_interceptor` Flutter Package
+
+The `http_interceptor` package is a powerful tool for Flutter developers who need to manage HTTP requests and responses in a more controlled and customizable manner. This package allows you to intercept HTTP requests and responses, enabling you to modify them, log them, or handle errors globally. 
+
+## When to Use `http_interceptor`
+
+- **Logging**: Capture and log HTTP requests and responses for debugging purposes.
+- **Error Handling**: Implement global error handling for network requests.
+- **Request Modification**: Add headers, modify request bodies, or change URLs dynamically.
+- **Response Processing**: Transform or process responses before they reach the application logic.
+
+## Key Features
+
+- **Request Interception**: Modify or log requests before they are sent.
+- **Response Interception**: Access and modify responses before they are processed by the application.
+- **Error Handling**: Centralize error handling for all HTTP requests.
+- **Customizable**: Easily extendable to fit specific needs.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `http_interceptor` in Flutter
+
+In this tutorial, we will walk through the setup and usage of the `http_interceptor` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Step 1: Add Dependency
+
+Add the `http_interceptor` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  http_interceptor: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Create an Interceptor
+
+Create a new Dart file, `real_flutter_interceptor.dart`, and define your interceptor:
+
+```dart
+import 'package:http_interceptor/http_interceptor.dart';
+
+class RealFlutterInterceptor implements InterceptorContract {
+  @override
+  Future<RequestData> interceptRequest({required RequestData data}) async {
+    // Add headers or modify the request here
+    data.headers['Authorization'] = 'Bearer YOUR_TOKEN';
+    print('Request: ${data.toString()}');
+    return data;
+  }
+
+  @override
+  Future<ResponseData> interceptResponse({required ResponseData data}) async {
+    // Log or modify the response here
+    print('Response: ${data.toString()}');
+    return data;
+  }
+}
+```
+
+## Step 3: Configure HTTP Client
+
+In your main application file, configure the HTTP client to use the interceptor:
+
+```dart
+import 'package:http_interceptor/http_interceptor.dart';
+import 'real_flutter_interceptor.dart';
+
+final client = InterceptedClient.build(
+  interceptors: [RealFlutterInterceptor()],
+  requestTimeout: Duration(seconds: 5),
+);
+```
+
+## Platform-Specific Details
+
+### Android
+
+Ensure that your `AndroidManifest.xml` includes the necessary permissions for internet access:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+
+For iOS, ensure that your `Info.plist` allows HTTP requests if you are not using HTTPS:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+# Complete Example: Flutter Application with `http_interceptor`
+
+Below is a complete example of a Flutter application using the `http_interceptor` package. This example demonstrates how to intercept requests and responses, log them, and handle errors.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:http_interceptor/http_interceptor.dart';
+import 'real_flutter_interceptor.dart';
+
+// Main function to run the app
+void main() {
+  runApp(MyApp());
+}
+
+// Main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'HTTP Interceptor Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(),
+    );
+  }
+}
+
+// Home page of the app
+class HomePage extends StatelessWidget {
+  final client = InterceptedClient.build(
+    interceptors: [RealFlutterInterceptor()],
+    requestTimeout: Duration(seconds: 5),
+  );
+
+  // Function to make a sample HTTP request
+  Future<void> _makeRequest() async {
+    try {
+      final response = await client.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1'));
+      print('Response Body: ${response.body}');
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('HTTP Interceptor Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _makeRequest,
+          child: Text('Make HTTP Request'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// Application Flow Explanation
+// 1. The `main` function initializes the app by running `MyApp`.
+// 2. `MyApp` is a stateless widget that sets up the MaterialApp with a home page.
+// 3. `HomePage` is a stateless widget that contains a button to trigger an HTTP request.
+// 4. The `InterceptedClient` is configured with `RealFlutterInterceptor` to intercept requests and responses.
+// 5. When the button is pressed, `_makeRequest` is called, making a GET request to a sample API.
+// 6. The interceptor logs the request and response details to the console.
+// 7. Any errors during the request are caught and printed to the console.
+
+<-- END_MAIN -->
+```
+
+This blog post provides a comprehensive guide to using the `http_interceptor` package in Flutter, from setup to a complete example. By following these steps, you can effectively manage and customize HTTP requests and responses in your Flutter applications.

@@ -1,0 +1,229 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Login Facebook Package: An Overview
+
+The `flutter_login_facebook` package is a powerful tool for integrating Facebook login functionality into your Flutter applications. This package simplifies the process of authenticating users via Facebook, providing a seamless and secure way to access Facebook's authentication services.
+
+## When to Use
+
+This package is ideal for applications that require social login capabilities, particularly when you want to leverage Facebook's vast user base. It is especially useful in scenarios where:
+- You want to provide users with a quick and easy login option.
+- You need to access user data from Facebook, such as profile information or friends list.
+- You aim to increase user engagement by integrating social features.
+
+## Features
+
+- **Easy Integration**: Quickly add Facebook login to your Flutter app with minimal setup.
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Access to Facebook Data**: Retrieve user information such as name, email, and profile picture.
+- **Secure Authentication**: Utilizes OAuth 2.0 for secure user authentication.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up flutter_login_facebook
+
+In this tutorial, we will walk through the process of setting up and using the `flutter_login_facebook` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Step 1: Add Dependency
+
+First, add the `flutter_login_facebook` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_login_facebook: ^0.4.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Configure Android
+
+1. **Update Android Manifest**: Add the following permissions and metadata to your `AndroidManifest.xml`:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
+    <application
+        android:label="app_name"
+        android:icon="@mipmap/ic_launcher">
+        
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"/>
+        
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|smallestScreenSize|orientation"
+            android:label="@string/app_name" />
+        
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+```
+
+2. **Strings Resource**: Add your Facebook App ID to `res/values/strings.xml`:
+
+```xml
+<resources>
+    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
+    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
+</resources>
+```
+
+## Step 3: Configure iOS
+
+1. **Update Info.plist**: Add the following entries to your `Info.plist`:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>fbYOUR_FACEBOOK_APP_ID</string>
+        </array>
+    </dict>
+</array>
+<key>FacebookAppID</key>
+<string>YOUR_FACEBOOK_APP_ID</string>
+<key>FacebookDisplayName</key>
+<string>YOUR_APP_NAME</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>fbapi</string>
+    <string>fb-messenger-share-api</string>
+    <string>fbauth2</string>
+    <string>fbshareextension</string>
+</array>
+```
+
+2. **Podfile**: Ensure your `Podfile` has platform set to at least iOS 9.0:
+
+```ruby
+platform :ios, '9.0'
+```
+
+## Step 4: Initialize Facebook Login
+
+In your Dart code, initialize the Facebook login:
+
+```dart
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+
+final fb = FacebookLogin();
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_login_facebook/flutter_login_facebook.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Facebook Login Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: LoginScreen(),
+    );
+  }
+}
+
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final fb = FacebookLogin();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Facebook Login'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _loginWithFacebook,
+          child: Text('Login with Facebook'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loginWithFacebook() async {
+    // Trigger the Facebook login process
+    final result = await fb.logIn(permissions: [
+      FacebookPermission.publicProfile,
+      FacebookPermission.email,
+    ]);
+
+    // Check the result status
+    switch (result.status) {
+      case FacebookLoginStatus.success:
+        // Login was successful
+        final accessToken = result.accessToken;
+        print('Access token: ${accessToken.token}');
+
+        // Fetch user profile
+        final profile = await fb.getUserProfile();
+        print('Hello, ${profile.name}! Your ID is ${profile.userId}.');
+
+        // Fetch user email
+        final email = await fb.getUserEmail();
+        if (email != null) print('Your email is $email.');
+
+        // Fetch user profile picture
+        final imageUrl = await fb.getProfileImageUrl(width: 100);
+        print('Your profile image: $imageUrl');
+        break;
+
+      case FacebookLoginStatus.cancel:
+        // Login was cancelled
+        print('Login cancelled');
+        break;
+
+      case FacebookLoginStatus.error:
+        // Login failed
+        print('Error: ${result.error}');
+        break;
+    }
+  }
+}
+```
+
+// The application starts with the `main` function, which runs the `RealFlutter` app.
+// `RealFlutter` is a stateless widget that sets up the MaterialApp with a `LoginScreen` as the home.
+// `LoginScreen` is a stateful widget that manages the Facebook login process.
+// The `_loginWithFacebook` method is triggered when the user presses the login button.
+// It initiates the Facebook login process and handles the result based on the login status.
+// If successful, it retrieves and prints the user's access token, profile, email, and profile picture.
+// If the login is cancelled or fails, it prints the appropriate message.
+
+<-- END_MAIN -->

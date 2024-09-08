@@ -1,0 +1,200 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Google ML Kit Face Detection in Flutter
+
+The `google_mlkit_face_detection` Flutter package is a powerful tool for integrating face detection capabilities into your Flutter applications. This package leverages Google's ML Kit, a mobile SDK that brings Google's machine learning expertise to Android and iOS apps in a powerful yet easy-to-use package.
+
+## Overview
+
+The `google_mlkit_face_detection` package allows developers to detect faces in images and video streams. It can identify key facial features, such as eyes, nose, and mouth, and can also determine the contours of a face. This package is particularly useful in applications that require facial recognition, augmented reality, or any feature that involves face tracking.
+
+### Features
+
+- **Real-time Face Detection**: Detect faces in real-time from a camera feed.
+- **Facial Landmark Detection**: Identify key facial features like eyes, ears, and mouth.
+- **Contour Detection**: Get detailed contours of facial features.
+- **Classification**: Determine if a face is smiling or if the eyes are open.
+
+### Use Cases
+
+- **Security Applications**: Implement face recognition for authentication.
+- **Augmented Reality**: Overlay digital content on detected faces.
+- **Photo Editing Apps**: Automatically enhance or modify facial features.
+- **Social Media Filters**: Create engaging filters that respond to facial expressions.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Google ML Kit Face Detection in Flutter
+
+In this tutorial, we will walk through the process of setting up the `google_mlkit_face_detection` package in a Flutter project. We will cover the necessary configurations for both Android and iOS platforms.
+
+## Prerequisites
+
+- Flutter SDK installed on your machine.
+- A Flutter project set up.
+
+## Step 1: Add Dependency
+
+Add the `google_mlkit_face_detection` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mlkit_face_detection: ^0.1.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Android Configuration
+
+1. **Update `android/app/build.gradle`:**
+
+   Ensure that your `minSdkVersion` is at least 21:
+
+   ```gradle
+   android {
+       defaultConfig {
+           minSdkVersion 21
+       }
+   }
+   ```
+
+2. **Add ML Kit dependencies:**
+
+   No additional dependencies are required as the package handles this.
+
+## Step 3: iOS Configuration
+
+1. **Update `ios/Podfile`:**
+
+   Ensure the platform is set to at least iOS 11:
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+2. **Add Permissions:**
+
+   Add the following to your `Info.plist` to request camera access:
+
+   ```xml
+   <key>NSCameraUsageDescription</key>
+   <string>We need access to the camera for face detection.</string>
+   ```
+
+## Step 4: Implement Face Detection
+
+Now that the package is set up, you can start implementing face detection in your Flutter app.
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:camera/camera.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late CameraController _cameraController;
+  late Future<void> _initializeControllerFuture;
+  final FaceDetector _faceDetector = FaceDetector(
+    options: FaceDetectorOptions(
+      enableContours: true,
+      enableClassification: true,
+    ),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
+
+    _cameraController = CameraController(
+      firstCamera,
+      ResolutionPreset.high,
+    );
+
+    _initializeControllerFuture = _cameraController.initialize();
+  }
+
+  @override
+  void dispose() {
+    _cameraController.dispose();
+    _faceDetector.close();
+    super.dispose();
+  }
+
+  Future<void> _detectFaces() async {
+    await _initializeControllerFuture;
+    final image = await _cameraController.takePicture();
+    final inputImage = InputImage.fromFilePath(image.path);
+
+    final faces = await _faceDetector.processImage(inputImage);
+
+    for (Face face in faces) {
+      final Rect boundingBox = face.boundingBox;
+      final double? smileProb = face.smilingProbability;
+      final double? leftEyeOpenProb = face.leftEyeOpenProbability;
+
+      print('Face detected with bounding box: $boundingBox');
+      if (smileProb != null) {
+        print('Smile probability: $smileProb');
+      }
+      if (leftEyeOpenProb != null) {
+        print('Left eye open probability: $leftEyeOpenProb');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Face Detection')),
+        body: FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return CameraPreview(_cameraController);
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _detectFaces,
+          child: Icon(Icons.camera),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes the camera using the `CameraController`.
+// 2. The `FaceDetector` is set up with options to enable contours and classification.
+// 3. When the app starts, it displays a camera preview.
+// 4. On pressing the floating action button, the app captures an image from the camera.
+// 5. The captured image is processed by the `FaceDetector` to detect faces.
+// 6. For each detected face, the app prints the bounding box and probabilities of smiling and left eye being open.
+// 7. The app cleans up resources by disposing of the camera controller and face detector when no longer needed.
+```
+
+<-- END_MAIN -->

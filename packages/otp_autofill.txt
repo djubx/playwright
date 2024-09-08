@@ -1,0 +1,170 @@
+```markdown
+<-- START_DESCRIPTION -->
+# Overview of the `otp_autofill` Flutter Package
+
+The `otp_autofill` package is a powerful tool for Flutter developers looking to implement OTP (One-Time Password) input fields with automatic code retrieval. This package simplifies the process of handling OTPs by providing widgets and utilities that automatically fill in the OTP fields when a message containing the OTP is received. This is particularly useful in applications where user authentication is required, such as banking apps, e-commerce platforms, and any service that requires secure user verification.
+
+## Features
+- **Automatic OTP Detection**: Automatically detects and fills OTP from SMS.
+- **Customizable OTP Fields**: Provides customizable widgets for OTP input.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Easy Integration**: Simple API for quick setup and integration.
+
+### When to Use
+- **User Authentication**: When you need to verify a user's phone number or identity.
+- **Secure Transactions**: For applications that require an additional layer of security.
+- **User Experience Enhancement**: To improve user experience by reducing manual input.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up and Using the `otp_autofill` Package
+
+In this tutorial, we will walk through the setup and usage of the `otp_autofill` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS to ensure smooth operation.
+
+## Setup Process
+
+### Step 1: Add Dependency
+Add the `otp_autofill` package to your `pubspec.yaml` file:
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  otp_autofill: ^1.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+1. **Permissions**: Ensure that your `AndroidManifest.xml` includes the necessary permissions to read SMS:
+   ```xml
+   <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+   <uses-permission android:name="android.permission.READ_SMS"/>
+   ```
+
+2. **SMS Retriever API**: Implement the SMS Retriever API to automatically detect OTPs. This requires no additional permissions but ensures that your app can read the OTP without user intervention.
+
+#### iOS
+1. **Capabilities**: Enable the "Push Notifications" capability in your Xcode project.
+2. **Entitlements**: Ensure your `Info.plist` includes the necessary configurations for receiving SMS.
+
+### Step 3: Implementing the Package
+
+1. **Import the Package**:
+   ```dart
+   import 'package:otp_autofill/otp_autofill.dart';
+   ```
+
+2. **Initialize the OTP Autofill**:
+   Create an instance of `OtpFieldController` and set up the listener for OTP autofill.
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:otp_autofill/otp_autofill.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'OTP Autofill Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: OtpScreen(),
+    );
+  }
+}
+
+class OtpScreen extends StatefulWidget {
+  @override
+  _OtpScreenState createState() => _OtpScreenState();
+}
+
+class _OtpScreenState extends State<OtpScreen> {
+  late OTPTextEditController _otpController;
+  late OTPInteractor _otpInteractor;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpInteractor = OTPInteractor();
+    _otpController = OTPTextEditController(
+      codeLength: 6,
+      onCodeReceive: (code) {
+        // Automatically fills the OTP when received
+        print('Received OTP: $code');
+      },
+    )..startListenUserConsent(
+        (code) {
+          // This callback is triggered when the OTP is detected
+          print('OTP Detected: $code');
+          return code;
+        },
+        strategies: [
+          // Define strategies for OTP detection
+          OTPStrategy.smsRetrieverApi,
+        ],
+      );
+  }
+
+  @override
+  void dispose() {
+    _otpController.stopListen();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('OTP Autofill Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Enter the OTP sent to your phone:'),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: OTPTextField(
+                length: 6,
+                controller: _otpController,
+                width: MediaQuery.of(context).size.width,
+                textFieldAlignment: MainAxisAlignment.spaceAround,
+                fieldWidth: 40,
+                style: TextStyle(fontSize: 17),
+                onChanged: (pin) {
+                  // Handle changes in the OTP field
+                  print("Changed: $pin");
+                },
+                onCompleted: (pin) {
+                  // Handle OTP completion
+                  print("Completed: $pin");
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application initializes a Flutter app with a main widget `RealFlutter`.
+// It sets up a home screen `OtpScreen` where the OTP input is handled.
+// The `_OtpScreenState` manages the OTP input field using `OTPTextEditController`.
+// The controller listens for OTP messages and automatically fills the input field when an OTP is detected.
+// The app uses the SMS Retriever API on Android to detect OTPs without requiring SMS read permissions.
+// The OTP input field is displayed in the center of the screen, and it updates as the user types or when an OTP is detected.
+// The app prints the OTP to the console when it is received or completed.
+
+<-- END_MAIN -->
+```

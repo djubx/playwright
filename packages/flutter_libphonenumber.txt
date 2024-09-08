@@ -1,0 +1,216 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `flutter_libphonenumber` Package
+
+The `flutter_libphonenumber` package is a powerful tool for Flutter developers who need to handle phone number formatting and validation in their applications. This package leverages the capabilities of Google's libphonenumber library, providing a seamless way to parse, format, and validate international phone numbers.
+
+## When to Use
+
+- **Phone Number Validation**: Ensure that user-entered phone numbers are valid and correctly formatted.
+- **Internationalization**: Support phone number formats from various countries, making your app globally accessible.
+- **User Experience**: Automatically format phone numbers as users type, improving the input experience.
+
+## Features
+
+- **Parsing**: Convert a phone number string into a structured format.
+- **Formatting**: Format phone numbers according to national or international standards.
+- **Validation**: Check if a phone number is valid for a given region.
+- **As-You-Type Formatting**: Automatically format phone numbers as they are being entered.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `flutter_libphonenumber`
+
+In this tutorial, we'll walk through the setup and usage of the `flutter_libphonenumber` package in a Flutter project. We'll cover platform-specific configurations for both Android and iOS.
+
+## Setup
+
+### Step 1: Add Dependency
+
+Add the `flutter_libphonenumber` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_libphonenumber: ^0.2.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+2. No additional configuration is required for Android.
+
+#### iOS
+
+1. Open your `ios/Podfile` and ensure the platform is set to at least iOS 10:
+
+```ruby
+platform :ios, '10.0'
+```
+
+2. Run `pod install` in the `ios` directory to update the CocoaPods dependencies.
+
+### Step 3: Initialize the Package
+
+Before using the package, initialize it in your `main.dart` file:
+
+```dart
+import 'package:flutter_libphonenumber/flutter_libphonenumber.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterLibphonenumber().init();
+  runApp(MyApp());
+}
+```
+
+## Using the Package
+
+### Parsing and Formatting
+
+To parse and format a phone number, use the `parse` and `format` methods:
+
+```dart
+final parsed = FlutterLibphonenumber().parse('+14155552671');
+final formatted = FlutterLibphonenumber().format(parsed, format: PhoneNumberFormat.international);
+```
+
+### Validation
+
+To validate a phone number:
+
+```dart
+final isValid = FlutterLibphonenumber().isValidNumber('+14155552671', region: 'US');
+```
+
+### As-You-Type Formatting
+
+To format a phone number as the user types:
+
+```dart
+final controller = TextEditingController();
+controller.addListener(() {
+  final formatted = FlutterLibphonenumber().formatAsYouType(controller.text, region: 'US');
+  controller.value = controller.value.copyWith(
+    text: formatted,
+    selection: TextSelection.collapsed(offset: formatted.length),
+  );
+});
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_libphonenumber/flutter_libphonenumber.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterLibphonenumber().init();
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Phone Number Demo',
+      home: PhoneNumberScreen(),
+    );
+  }
+}
+
+class PhoneNumberScreen extends StatefulWidget {
+  @override
+  _PhoneNumberScreenState createState() => _PhoneNumberScreenState();
+}
+
+class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
+  final TextEditingController _controller = TextEditingController();
+  String _formattedNumber = '';
+  String _validationMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_formatPhoneNumber);
+  }
+
+  void _formatPhoneNumber() {
+    // Format the phone number as the user types
+    final formatted = FlutterLibphonenumber().formatAsYouType(_controller.text, region: 'US');
+    setState(() {
+      _formattedNumber = formatted;
+    });
+  }
+
+  void _validatePhoneNumber() {
+    // Validate the phone number when the user presses the validate button
+    final isValid = FlutterLibphonenumber().isValidNumber(_controller.text, region: 'US');
+    setState(() {
+      _validationMessage = isValid ? 'Valid phone number' : 'Invalid phone number';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Phone Number Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter phone number',
+                hintText: 'e.g. +14155552671',
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(height: 20),
+            Text('Formatted: $_formattedNumber'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _validatePhoneNumber,
+              child: Text('Validate'),
+            ),
+            SizedBox(height: 20),
+            Text(_validationMessage),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application initializes the flutter_libphonenumber package in the main function.
+// The RealFlutter class sets up a MaterialApp with a PhoneNumberScreen as the home screen.
+// PhoneNumberScreen is a stateful widget that manages a TextEditingController for phone number input.
+// As the user types, the phone number is formatted in real-time using the formatAsYouType method.
+// When the user presses the validate button, the phone number is validated, and a message is displayed.
+```
+
+<-- END_MAIN -->
+```

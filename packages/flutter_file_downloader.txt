@@ -1,0 +1,190 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter File Downloader: A Comprehensive Guide
+
+The `flutter_file_downloader` package is a powerful tool for Flutter developers who need to implement file downloading capabilities in their applications. This package simplifies the process of downloading files from the internet and provides a seamless experience across both Android and iOS platforms.
+
+## When to Use `flutter_file_downloader`
+
+This package is ideal for applications that require:
+- Downloading media files such as images, videos, or audio.
+- Fetching documents like PDFs or Word files for offline access.
+- Implementing features that require background downloading.
+
+## Key Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Background Downloading**: Supports downloading files in the background.
+- **Progress Tracking**: Provides real-time updates on download progress.
+- **Error Handling**: Robust error handling to manage download failures.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `flutter_file_downloader`
+
+In this section, we'll walk through the setup process and demonstrate how to use the `flutter_file_downloader` package in your Flutter project.
+
+## Installation
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_file_downloader: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Setup
+
+### Android
+
+1. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+   ```
+
+2. **File Provider**: Add a file provider to handle file URIs:
+
+   ```xml
+   <application>
+       <provider
+           android:name="androidx.core.content.FileProvider"
+           android:authorities="${applicationId}.fileprovider"
+           android:exported="false"
+           android:grantUriPermissions="true">
+           <meta-data
+               android:name="android.support.FILE_PROVIDER_PATHS"
+               android:resource="@xml/file_paths"/>
+       </provider>
+   </application>
+   ```
+
+3. **Create `res/xml/file_paths.xml`**:
+
+   ```xml
+   <paths xmlns:android="http://schemas.android.com/apk/res/android">
+       <external-path name="external_files" path="."/>
+   </paths>
+   ```
+
+### iOS
+
+1. **Permissions**: Update your `Info.plist` with the following keys:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   <key>UIBackgroundModes</key>
+   <array>
+       <string>fetch</string>
+       <string>processing</string>
+   </array>
+   ```
+
+2. **Background Capabilities**: Enable background fetch and processing in your Xcode project settings.
+
+## Using the Package
+
+To use the `flutter_file_downloader`, import it in your Dart file:
+
+```dart
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: DownloadPage(),
+    );
+  }
+}
+
+class DownloadPage extends StatefulWidget {
+  @override
+  _DownloadPageState createState() => _DownloadPageState();
+}
+
+class _DownloadPageState extends State<DownloadPage> {
+  double _progress = 0.0;
+
+  // Function to start downloading a file
+  void _startDownload() {
+    FileDownloader.downloadFile(
+      url: 'https://example.com/sample.pdf', // URL of the file to download
+      onProgress: (fileName, progress) {
+        // Update the progress state
+        setState(() {
+          _progress = progress;
+        });
+      },
+      onDownloadCompleted: (path) {
+        // Handle the completion of the download
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Download completed: $path')),
+        );
+      },
+      onDownloadError: (error) {
+        // Handle any errors during download
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Download error: $error')),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('File Downloader'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Download Progress: ${(_progress * 100).toStringAsFixed(0)}%'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startDownload,
+              child: Text('Start Download'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutter` widget, which sets up the main application.
+// 2. The `DownloadPage` widget is the main screen, displaying the download progress and a button to start downloading.
+// 3. When the "Start Download" button is pressed, `_startDownload` is called.
+// 4. `_startDownload` uses `FileDownloader.downloadFile` to begin downloading the file from the specified URL.
+// 5. The download progress is tracked and updated in the UI using the `onProgress` callback.
+// 6. Upon completion, a snackbar is shown with the file path using `onDownloadCompleted`.
+// 7. If an error occurs, it is displayed using the `onDownloadError` callback.
+```
+
+<-- END_MAIN -->
