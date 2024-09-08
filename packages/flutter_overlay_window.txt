@@ -1,0 +1,175 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Overlay Window Package
+
+The `flutter_overlay_window` package is a powerful tool for Flutter developers who need to create overlay windows that can float above other applications. This package is particularly useful for applications that require persistent UI elements, such as chat heads, floating widgets, or any feature that needs to remain visible while the user interacts with other apps.
+
+## When to Use
+
+- **Chat Applications**: Implement chat heads similar to Facebook Messenger.
+- **Media Controls**: Display media controls that remain accessible while using other apps.
+- **Utility Widgets**: Create floating widgets for quick access to tools like calculators or note pads.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS, though with some platform-specific configurations.
+- **Customizable**: Offers flexibility in terms of size, position, and appearance of the overlay window.
+- **Interactive**: Allows user interaction with the overlay, making it suitable for dynamic applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using Flutter Overlay Window
+
+In this tutorial, we will walk through the process of setting up the `flutter_overlay_window` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `flutter_overlay_window` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_overlay_window: ^latest_version
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Modify AndroidManifest.xml**: Add the following permissions and service declaration:
+
+```xml
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+<application>
+    ...
+    <service android:name="com.example.RealFlutterOverlayService"
+             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+        <intent-filter>
+            <action android:name="android.accessibilityservice.AccessibilityService" />
+        </intent-filter>
+    </service>
+</application>
+```
+
+2. **Request Overlay Permission**: Ensure your app requests the necessary permissions to display overlays.
+
+#### iOS
+
+1. **Modify Info.plist**: Add the following key to request permission for screen recording if needed:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to the microphone for overlay features.</string>
+```
+
+### Step 3: Initialize the Package
+
+Initialize the package in your main Dart file:
+
+```dart
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+
+void main() {
+  runApp(MyApp());
+}
+```
+
+## Using the Package
+
+To use the `flutter_overlay_window`, you need to create an instance of the `RealFlutter` class and manage the overlay window's lifecycle.
+
+- **Create Overlay**: Use `RealFlutter.createOverlay()` to create and display the overlay.
+- **Close Overlay**: Use `RealFlutter.closeOverlay()` to close the overlay when it's no longer needed.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Overlay Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  // Function to create and display the overlay window
+  void _showOverlay() async {
+    // Check if overlay permission is granted
+    bool isGranted = await FlutterOverlayWindow.isPermissionGranted();
+    if (!isGranted) {
+      // Request permission if not granted
+      await FlutterOverlayWindow.requestPermission();
+    }
+    // Create and display the overlay
+    RealFlutter.createOverlay(
+      child: OverlayContent(),
+      width: 200,
+      height: 200,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Overlay Window Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _showOverlay,
+          child: Text('Show Overlay'),
+        ),
+      ),
+    );
+  }
+}
+
+class OverlayContent extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: Text(
+          'Overlay Window',
+          style: TextStyle(fontSize: 20, color: Colors.black),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the HomeScreen widget, displaying a button to show the overlay.
+// 2. When the button is pressed, the _showOverlay function is called.
+// 3. The function checks for overlay permission and requests it if not granted.
+// 4. Once permission is granted, RealFlutter.createOverlay is called to display the overlay.
+// 5. The overlay displays a simple widget with text, which remains on top of other apps.
+// 6. The overlay can be closed programmatically using RealFlutter.closeOverlay() if needed.
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,138 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Exif Rotation Package: An Overview
+
+The `flutter_exif_rotation` package is a powerful tool for Flutter developers dealing with image manipulation. This package is specifically designed to handle the common issue of incorrect image orientation when images are captured or selected from a device's gallery. It reads the EXIF data of an image and rotates it to the correct orientation, ensuring that images are displayed as intended across all devices.
+
+## When to Use
+
+- **Image Uploads**: When users upload images from their devices, the orientation might not be correct due to how different devices handle image metadata. This package ensures that images are correctly oriented before being uploaded to a server.
+- **Photo Galleries**: In apps that display photo galleries, maintaining the correct orientation of images is crucial for a seamless user experience.
+- **Image Processing**: Before applying filters or other image processing techniques, it's important to ensure the image is in the correct orientation.
+
+## Features
+
+- **Automatic Rotation**: Automatically rotates images based on their EXIF data.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Simple API**: Provides a straightforward API that integrates easily into existing Flutter applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using Flutter Exif Rotation
+
+In this section, we'll walk through the setup process for the `flutter_exif_rotation` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     flutter_exif_rotation: ^0.3.0
+   ```
+
+2. **Install Packages**: Run `flutter pub get` to install the new package.
+
+3. **Platform-Specific Configuration**:
+   - **Android**: No additional configuration is required for Android.
+   - **iOS**: Ensure that your `Info.plist` file includes permissions to access the photo library if you are selecting images from the gallery.
+
+     ```xml
+     <key>NSPhotoLibraryUsageDescription</key>
+     <string>We need access to your photo library to select images.</string>
+     ```
+
+## Using the Package
+
+To use the `flutter_exif_rotation` package, you need to import it into your Dart file and call the `rotateImage` method, which will handle the rotation based on the image's EXIF data.
+
+```dart
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
+
+// Example function to rotate an image
+Future<void> rotateImage(String imagePath) async {
+  final rotatedImage = await FlutterExifRotation.rotateImage(path: imagePath);
+  // Use the rotated image as needed
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+void main() => runApp(RealFlutterApp());
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: ImageRotationExample(),
+    );
+  }
+}
+
+class ImageRotationExample extends StatefulWidget {
+  @override
+  _ImageRotationExampleState createState() => _ImageRotationExampleState();
+}
+
+class _ImageRotationExampleState extends State<ImageRotationExample> {
+  File? _image;
+
+  // Function to pick an image from the gallery
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // Rotate the image using flutter_exif_rotation
+      final rotatedImage = await FlutterExifRotation.rotateImage(path: pickedFile.path);
+      setState(() {
+        _image = rotatedImage;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Exif Rotation Example'),
+      ),
+      body: Center(
+        child: _image == null
+            ? Text('No image selected.')
+            : Image.file(_image!),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _pickImage,
+        tooltip: 'Pick Image',
+        child: Icon(Icons.add_a_photo),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutterApp` widget, which sets up the MaterialApp and home screen.
+// 2. The `ImageRotationExample` widget is a stateful widget that manages the image selection and rotation.
+// 3. The `_pickImage` function uses the `image_picker` package to select an image from the gallery.
+// 4. Once an image is selected, `flutter_exif_rotation` is used to correct the image's orientation.
+// 5. The rotated image is then displayed in the app's main body.
+// 6. A FloatingActionButton is provided to trigger the image selection process.
+
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,250 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# sqflite_common Flutter Package
+
+The `sqflite_common` package is a powerful SQLite database library for Flutter applications, providing a common interface for both mobile platforms (iOS and Android). It is built on top of the `sqflite` package, which is widely used for local data storage in Flutter apps. This package allows developers to perform CRUD (Create, Read, Update, Delete) operations on SQLite databases seamlessly.
+
+## When to Use sqflite_common
+
+You should consider using `sqflite_common` when:
+- You need to store structured data locally in your Flutter application.
+- You want to perform complex queries and transactions.
+- You require offline capabilities for your app, allowing users to access data without an internet connection.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS.
+- **Asynchronous API**: Supports asynchronous operations, making it suitable for Flutter's reactive programming model.
+- **Transactions**: Allows for batch operations to ensure data integrity.
+- **Custom Queries**: Supports raw SQL queries for advanced data manipulation.
+- **Data Migration**: Facilitates database versioning and migration.
+
+With these features, `sqflite_common` is an excellent choice for developers looking to implement local data storage in their Flutter applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up sqflite_common
+
+In this tutorial, we will walk through the setup process for the `sqflite_common` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `sqflite_common` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sqflite_common: ^2.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `android/app/build.gradle` file has the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+### iOS
+
+For iOS, you may need to add the following to your `ios/Podfile` to ensure compatibility:
+
+```ruby
+platform :ios, '10.0' # Ensure this is set to at least 10.0
+```
+
+## Step 3: Basic Usage
+
+Now that we have set up the package, let's create a simple database helper class to manage our SQLite database.
+
+```dart
+import 'package:sqflite_common/sqflite.dart';
+
+class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  static Database? _database;
+
+  DatabaseHelper._internal();
+
+  factory DatabaseHelper() {
+    return _instance;
+  }
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    // Open the database and store the reference.
+    return await openDatabase('my_database.db', version: 1, onCreate: (db, version) {
+      return db.execute(
+        'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT)',
+      );
+    });
+  }
+
+  Future<void> insertItem(String name) async {
+    final db = await database;
+    await db.insert('items', {'name': name});
+  }
+
+  Future<List<Map<String, dynamic>>> getItems() async {
+    final db = await database;
+    return await db.query('items');
+  }
+}
+```
+
+This class initializes the database, creates a table, and provides methods to insert and retrieve items.
+
+## Step 4: Using the DatabaseHelper
+
+You can now use the `DatabaseHelper` class in your Flutter application to manage your SQLite database.
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final dbHelper = DatabaseHelper();
+
+  // Insert an item
+  await dbHelper.insertItem('Sample Item');
+
+  // Retrieve items
+  List<Map<String, dynamic>> items = await dbHelper.getItems();
+  print(items);
+}
+```
+
+This code initializes the database, inserts a sample item, and retrieves all items from the database.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of sqflite_common
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sqflite_common/sqflite.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'sqflite_common Example',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+  List<Map<String, dynamic>> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    // Load items from the database
+    _items = await _dbHelper.getItems();
+    setState(() {});
+  }
+
+  Future<void> _addItem(String name) async {
+    // Add a new item to the database
+    await _dbHelper.insertItem(name);
+    _loadItems(); // Refresh the item list
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('sqflite_common Example'),
+      ),
+      body: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_items[index]['name']),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add a new item when the button is pressed
+          _addItem('New Item ${_items.length + 1}');
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  static Database? _database;
+
+  DatabaseHelper._internal();
+
+  factory DatabaseHelper() {
+    return _instance;
+  }
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    // Open the database and store the reference.
+    return await openDatabase('my_database.db', version: 1, onCreate: (db, version) {
+      return db.execute(
+        'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT)',
+      );
+    });
+  }
+
+  Future<void> insertItem(String name) async {
+    final db = await database;
+    await db.insert('items', {'name': name});
+  }
+
+  Future<List<Map<String, dynamic>>> getItems() async {
+    final db = await database;
+    return await db.query('items');
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which sets up the MaterialApp.
+// 2. MyHomePage is the main screen that displays a list of items from the database.
+// 3. On initialization, _loadItems() is called to fetch items from the database.
+// 4. The ListView.builder displays each item in the _items list.
+// 5. When the FloatingActionButton is pressed, a new item is added to the database.
+// 6. After adding an item, _loadItems() is called again to refresh the displayed list.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog provides a comprehensive overview of the `sqflite_common` package, a detailed tutorial on setting it up, and a complete example demonstrating its usage in a Flutter application. Each section is clearly marked for easy navigation and understanding.

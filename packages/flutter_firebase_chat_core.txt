@@ -1,0 +1,244 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `flutter_firebase_chat_core` Package
+
+The `flutter_firebase_chat_core` package is a powerful tool for developers looking to integrate chat functionality into their Flutter applications using Firebase as the backend. This package simplifies the process of building a chat application by providing a set of pre-built functions and classes that handle the core chat functionalities, such as user management, message handling, and real-time updates.
+
+## When to Use
+
+This package is ideal for developers who want to quickly add chat features to their applications without having to build the entire backend infrastructure from scratch. It is particularly useful for:
+
+- Social networking apps that require real-time messaging.
+- Customer support applications where users can chat with support agents.
+- Collaborative platforms where users need to communicate in real-time.
+
+## Features
+
+- **User Management**: Easily manage user authentication and profiles.
+- **Real-time Messaging**: Send and receive messages in real-time using Firebase's robust infrastructure.
+- **Group Chats**: Support for both one-on-one and group chat functionalities.
+- **Message History**: Automatically store and retrieve message history.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `flutter_firebase_chat_core` in Your Flutter Project
+
+In this tutorial, we will walk through the process of setting up the `flutter_firebase_chat_core` package in a Flutter project. We will cover the necessary configurations for both Android and iOS platforms.
+
+## Step 1: Add Dependencies
+
+First, add the necessary dependencies to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_firebase_chat_core: ^0.5.0
+  firebase_core: ^2.0.0
+  firebase_auth: ^4.0.0
+  cloud_firestore: ^4.0.0
+```
+
+## Step 2: Configure Firebase
+
+### Android
+
+1. **Add Firebase to Your Android App**: Follow the instructions on the [Firebase Console](https://console.firebase.google.com/) to add your Android app to Firebase. Download the `google-services.json` file and place it in the `android/app` directory.
+
+2. **Update `android/build.gradle`**: Ensure you have the Google services classpath in your project-level `build.gradle` file:
+
+   ```gradle
+   dependencies {
+       classpath 'com.google.gms:google-services:4.3.10'
+   }
+   ```
+
+3. **Update `android/app/build.gradle`**: Apply the Google services plugin at the bottom of the `build.gradle` file:
+
+   ```gradle
+   apply plugin: 'com.google.gms.google-services'
+   ```
+
+### iOS
+
+1. **Add Firebase to Your iOS App**: Follow the instructions on the [Firebase Console](https://console.firebase.google.com/) to add your iOS app to Firebase. Download the `GoogleService-Info.plist` file and add it to your Xcode project.
+
+2. **Update `ios/Podfile`**: Ensure the platform is set to at least iOS 10:
+
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+3. **Install CocoaPods**: Run `pod install` in the `ios` directory to install the necessary dependencies.
+
+## Step 3: Initialize Firebase
+
+In your `main.dart` file, initialize Firebase before running the app:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
+```
+
+## Step 4: Using `flutter_firebase_chat_core`
+
+Create a class named `RealFlutter` to manage chat functionalities:
+
+```dart
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
+
+class RealFlutter {
+  // Initialize chat core
+  final chatCore = FirebaseChatCore.instance;
+
+  // Add methods to handle user authentication, message sending, etc.
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+# Complete Example: Flutter Chat Application
+
+Below is a complete example of a Flutter application using the `flutter_firebase_chat_core` package. This example demonstrates user authentication, sending messages, and displaying chat history.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Firebase Chat',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ChatScreen(),
+    );
+  }
+}
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseChatCore _chatCore = FirebaseChatCore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _signInAnonymously();
+  }
+
+  Future<void> _signInAnonymously() async {
+    // Sign in the user anonymously
+    await _auth.signInAnonymously();
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      // Send a message using FirebaseChatCore
+      _chatCore.sendMessage(
+        text: _controller.text,
+        roomId: 'testRoom',
+      );
+      _controller.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _chatCore.messages('testRoom'),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                final messages = snapshot.data!.docs;
+                return ListView.builder(
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return ListTile(
+                      title: Text(message['text']),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      labelText: 'Enter your message',
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+// The above code initializes a Flutter application with Firebase.
+// It sets up a simple chat interface where users can send and receive messages in real-time.
+// The `ChatScreen` widget handles user authentication, message input, and message display.
+// The `_signInAnonymously` method signs in the user anonymously using Firebase Authentication.
+// The `_sendMessage` method sends a message to a predefined chat room using `FirebaseChatCore`.
+// The `StreamBuilder` widget listens for new messages in the chat room and updates the UI accordingly.
+// The `TextField` and `IconButton` allow users to input and send messages.
+
+// Application Flow:
+// 1. The app initializes Firebase and signs in the user anonymously.
+// 2. The `ChatScreen` widget is displayed, showing a list of messages and an input field.
+// 3. Users can type a message and press the send button to send it.
+// 4. Messages are sent to the 'testRoom' chat room and displayed in real-time.
+// 5. The `StreamBuilder` updates the message list whenever a new message is received.
+
+<-- END_MAIN -->
+```

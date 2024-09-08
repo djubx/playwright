@@ -1,0 +1,178 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Web Auth 2: A Comprehensive Overview
+
+The `flutter_web_auth_2` package is a powerful tool for Flutter developers looking to implement web-based authentication in their mobile applications. This package is particularly useful when you need to authenticate users via OAuth2 or OpenID Connect, where the authentication process involves redirecting the user to a web page.
+
+## When to Use `flutter_web_auth_2`
+
+- **OAuth2 Authentication**: When your app needs to authenticate users with third-party services like Google, Facebook, or GitHub.
+- **OpenID Connect**: For applications that require user identity verification.
+- **Custom Web Authentication**: Any scenario where you need to redirect users to a web page for authentication and then return to the app with the authentication result.
+
+## Key Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Secure Authentication**: Uses secure web views to handle authentication, ensuring user credentials are protected.
+- **Callback Handling**: Automatically handles the callback URL to return the authentication result to the app.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `flutter_web_auth_2`
+
+In this tutorial, we'll walk through the setup and usage of the `flutter_web_auth_2` package in a Flutter project. We'll cover platform-specific configurations for both Android and iOS.
+
+## Setup Process
+
+### 1. Add Dependency
+
+Add `flutter_web_auth_2` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_auth_2: ^2.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### 2. Android Configuration
+
+For Android, you need to specify the redirect scheme in your `AndroidManifest.xml`:
+
+```xml
+<activity
+  android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+  android:launchMode="singleTask">
+  <intent-filter>
+    <action android:name="android.intent.action.VIEW"/>
+    <category android:name="android.intent.category.DEFAULT"/>
+    <category android:name="android.intent.category.BROWSABLE"/>
+    <data android:scheme="your.app.scheme"/>
+  </intent-filter>
+</activity>
+```
+
+Replace `your.app.scheme` with your app's custom scheme.
+
+### 3. iOS Configuration
+
+For iOS, update your `Info.plist` to handle the custom URL scheme:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>your.app.scheme</string>
+    </array>
+  </dict>
+</array>
+```
+
+Replace `your.app.scheme` with your app's custom scheme.
+
+## Using the Package
+
+To initiate an authentication request, use the `RealFlutter` class to handle the authentication flow:
+
+```dart
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+
+class RealFlutter {
+  Future<void> authenticate() async {
+    final result = await FlutterWebAuth2.authenticate(
+      url: "https://example.com/auth",
+      callbackUrlScheme: "your.app.scheme",
+    );
+    // Handle the result
+    print("Authentication result: $result");
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Web Auth 2 Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: AuthHomePage(),
+    );
+  }
+}
+
+class AuthHomePage extends StatelessWidget {
+  final RealFlutter authHandler = RealFlutter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Web Auth Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            try {
+              // Initiate the authentication process
+              await authHandler.authenticate();
+              // Show success message
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Authentication successful!')),
+              );
+            } catch (e) {
+              // Handle authentication errors
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Authentication failed: $e')),
+              );
+            }
+          },
+          child: Text('Authenticate'),
+        ),
+      ),
+    );
+  }
+}
+
+class RealFlutter {
+  Future<void> authenticate() async {
+    // Start the authentication process
+    final result = await FlutterWebAuth2.authenticate(
+      url: "https://example.com/auth", // The URL to authenticate with
+      callbackUrlScheme: "your.app.scheme", // The custom scheme for callback
+    );
+    // Print the authentication result
+    print("Authentication result: $result");
+  }
+}
+
+// Application Flow:
+// 1. The app starts and displays a button to initiate authentication.
+// 2. When the button is pressed, the `authenticate` method of `RealFlutter` is called.
+// 3. The `FlutterWebAuth2.authenticate` method opens a web view for the user to authenticate.
+// 4. Once authentication is complete, the app receives a callback with the result.
+// 5. The result is printed to the console, and a success or failure message is shown to the user.
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,195 @@
+```markdown
+<-- START_DESCRIPTION -->
+# OAuth2 Client Flutter Package: An Overview
+
+The `oauth2_client` Flutter package is a powerful tool designed to simplify the process of integrating OAuth2 authentication into your Flutter applications. OAuth2 is a widely used authorization framework that allows third-party services to exchange user information securely. This package abstracts the complexities involved in handling OAuth2 flows, making it easier for developers to implement secure authentication in their apps.
+
+## When to Use `oauth2_client`
+
+- **Third-Party Authentication**: When your application needs to authenticate users via third-party services like Google, Facebook, or GitHub.
+- **Secure API Access**: When you need to access APIs that require OAuth2 authentication, ensuring secure data exchange.
+- **User Authorization**: When you need to obtain user consent to access their data on another service.
+
+## Features
+
+- **Simplified OAuth2 Flows**: Supports various OAuth2 flows, including Authorization Code, Implicit, and Client Credentials.
+- **Token Management**: Automatically handles token storage, refresh, and expiration.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Customizable**: Allows customization of the authentication process to fit specific needs.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up and Using `oauth2_client` in Flutter
+
+In this tutorial, we will walk through the process of setting up the `oauth2_client` package in a Flutter project and demonstrate how to use it for authenticating users.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `oauth2_client` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  oauth2_client: ^3.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Modify `AndroidManifest.xml`**: Add an intent filter to handle the redirect URI.
+
+```xml
+<activity android:name="com.linusu.flutter_web_auth.CallbackActivity" android:launchMode="singleTask">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="com.example.app" android:host="callback"/>
+    </intent-filter>
+</activity>
+```
+
+2. **Configure Redirect URI**: Ensure the redirect URI matches the one registered with your OAuth2 provider.
+
+#### iOS
+
+1. **Modify `Info.plist`**: Add a URL scheme to handle the redirect URI.
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.example.app</string>
+        </array>
+    </dict>
+</array>
+```
+
+2. **Configure Redirect URI**: Ensure the redirect URI matches the one registered with your OAuth2 provider.
+
+### Step 3: Implement Authentication
+
+Create a class `RealFlutter` to handle the OAuth2 authentication process.
+
+```dart
+import 'package:oauth2_client/oauth2_client.dart';
+import 'package:oauth2_client/oauth2_helper.dart';
+
+class RealFlutter {
+  final OAuth2Client client;
+
+  RealFlutter(this.client);
+
+  Future<void> authenticate() async {
+    OAuth2Helper oauth2Helper = OAuth2Helper(
+      client,
+      grantType: OAuth2Helper.AUTHORIZATION_CODE,
+      clientId: 'your_client_id',
+      clientSecret: 'your_client_secret',
+      scopes: ['email', 'profile'],
+    );
+
+    var token = await oauth2Helper.getToken();
+    // Use the token to access protected resources
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:oauth2_client/oauth2_client.dart';
+import 'package:oauth2_client/oauth2_helper.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'OAuth2 Client Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final RealFlutter realFlutter = RealFlutter(
+    OAuth2Client(
+      authorizeUrl: 'https://example.com/auth',
+      tokenUrl: 'https://example.com/token',
+      redirectUri: 'com.example.app://callback',
+    ),
+  );
+
+  String _status = 'Not Authenticated';
+
+  void _authenticate() async {
+    try {
+      await realFlutter.authenticate();
+      setState(() {
+        _status = 'Authenticated';
+      });
+    } catch (e) {
+      setState(() {
+        _status = 'Authentication Failed';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('OAuth2 Client Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Status: $_status',
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _authenticate,
+              child: Text('Authenticate'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts and displays a button to authenticate.
+// 2. When the user presses the "Authenticate" button, the `_authenticate` method is called.
+// 3. The `RealFlutter` class is used to initiate the OAuth2 authentication process.
+// 4. If authentication is successful, the status is updated to "Authenticated".
+// 5. If authentication fails, the status is updated to "Authentication Failed".
+// 6. The UI updates to reflect the current authentication status.
+```
+<-- END_MAIN -->
+```

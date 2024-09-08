@@ -1,0 +1,193 @@
+Here's a detailed technical blog on the "kiwi" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Kiwi Flutter Package
+
+The **Kiwi** package is a powerful dependency injection (DI) framework for Flutter applications. It allows developers to manage the lifecycle of their objects and dependencies in a clean and efficient manner. By using Kiwi, you can easily register and resolve dependencies, making your code more modular and testable.
+
+## When to Use Kiwi
+
+- **Complex Applications**: When your application has multiple layers and components that depend on each other, Kiwi helps manage these dependencies effectively.
+- **Testing**: Kiwi makes it easier to mock dependencies during unit testing, allowing for more isolated tests.
+- **Modular Architecture**: If you're following a modular architecture pattern, Kiwi can help you manage dependencies across different modules.
+
+## Features
+
+- **Simple API**: Kiwi provides a straightforward API for registering and resolving dependencies.
+- **Scoped Instances**: You can create scoped instances that are only available within a specific context.
+- **Lazy Loading**: Kiwi supports lazy loading of dependencies, which can improve performance by only creating instances when needed.
+- **Singleton Support**: Easily manage singleton instances to ensure that only one instance of a class is created throughout the application.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Kiwi
+
+## Step 1: Adding Dependency
+
+To use the Kiwi package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  kiwi: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Basic Setup
+
+### Importing Kiwi
+
+In your Dart files, import the Kiwi package:
+
+```dart
+import 'package:kiwi/kiwi.dart';
+```
+
+### Creating a Service
+
+Create a service class that you want to manage with Kiwi:
+
+```dart
+class ApiService {
+  String fetchData() {
+    return "Data fetched from API";
+  }
+}
+```
+
+### Registering the Service
+
+You need to register your service with Kiwi. This is typically done in the main function or a dedicated setup function:
+
+```dart
+void setup() {
+  final container = KiwiContainer();
+  container.registerSingleton((c) => ApiService());
+}
+```
+
+### Resolving the Service
+
+To use the registered service, you can resolve it from the container:
+
+```dart
+void main() {
+  setup();
+  final apiService = KiwiContainer().resolve<ApiService>();
+  print(apiService.fetchData());
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, ensure that your deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Optimizations
+
+- **Lazy Loading**: Use lazy loading for services that are not always needed to improve performance.
+- **Scoped Instances**: Use scoped instances for services that should only exist within a specific context, such as a screen or feature.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Kiwi in a Flutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kiwi/kiwi.dart';
+
+// Define a service class
+class ApiService {
+  String fetchData() {
+    return "Data fetched from API";
+  }
+}
+
+// Define a controller class that uses the service
+class HomeController {
+  final ApiService _apiService;
+
+  HomeController(this._apiService);
+
+  String getData() {
+    return _apiService.fetchData();
+  }
+}
+
+// Setup function to register dependencies
+void setup() {
+  final container = KiwiContainer();
+  // Register ApiService as a singleton
+  container.registerSingleton((c) => ApiService());
+  // Register HomeController with a dependency on ApiService
+  container.registerFactory((c) => HomeController(c.resolve<ApiService>()));
+}
+
+void main() {
+  setup(); // Call setup to register dependencies
+  runApp(MyApp());
+}
+
+// Define the main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Kiwi Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+// Define a home screen widget
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Resolve HomeController from the container
+    final homeController = KiwiContainer().resolve<HomeController>();
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Kiwi Dependency Injection'),
+      ),
+      body: Center(
+        child: Text(homeController.getData()), // Display fetched data
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main() function, which calls the setup() function.
+// 2. In the setup() function, ApiService is registered as a singleton, and HomeController is registered as a factory.
+// 3. The MyApp widget is created, which builds the HomeScreen widget.
+// 4. In the HomeScreen widget, HomeController is resolved from the Kiwi container.
+// 5. The getData() method of HomeController is called, which in turn calls fetchData() from ApiService.
+// 6. The fetched data is displayed in the center of the screen.
+```
+<!-- END_MAIN -->
+
+In this blog, we explored the Kiwi Flutter package, its features, and how to set it up in a Flutter application. The complete example demonstrated how to use Kiwi for dependency injection, making the application modular and easier to manage. By following the steps outlined, you can effectively implement Kiwi in your own Flutter projects.

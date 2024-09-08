@@ -1,0 +1,172 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `dart_ping` Flutter Package
+
+The `dart_ping` package is a powerful tool for Flutter developers who need to perform network diagnostics within their applications. It provides a simple interface to send ICMP ping requests to a specified host and receive responses, making it ideal for applications that require network connectivity checks or latency measurements.
+
+## When to Use `dart_ping`
+
+- **Network Diagnostics**: Use `dart_ping` to check the reachability of a server or service.
+- **Latency Measurement**: Measure the round-trip time for messages sent from the originating host to a destination computer.
+- **Connectivity Checks**: Ensure that your application can connect to necessary services or endpoints.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Customizable**: Allows configuration of ping parameters such as timeout and packet size.
+- **Stream-Based API**: Provides a stream of ping responses, making it easy to handle asynchronous data.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `dart_ping` in Flutter
+
+In this tutorial, we will walk through the setup process for the `dart_ping` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add `dart_ping` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  dart_ping: ^5.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+No additional configuration is required for Android. The package uses native capabilities to perform ping operations.
+
+#### iOS
+
+For iOS, ensure that your `Info.plist` file includes the necessary permissions for network access. Add the following entry:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+### Step 3: Import the Package
+
+In your Dart file, import the `dart_ping` package:
+
+```dart
+import 'package:dart_ping/dart_ping.dart';
+```
+
+## Using the Package
+
+To use `dart_ping`, create an instance of the `Ping` class and listen to the stream of responses:
+
+```dart
+final ping = Ping('example.com', count: 5);
+
+ping.stream.listen((event) {
+  print(event);
+});
+```
+
+This code sends five ping requests to `example.com` and prints each response.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dart_ping/dart_ping.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dart Ping Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PingHomePage(),
+    );
+  }
+}
+
+class PingHomePage extends StatefulWidget {
+  @override
+  _PingHomePageState createState() => _PingHomePageState();
+}
+
+class _PingHomePageState extends State<PingHomePage> {
+  String _pingResult = 'Pinging...';
+
+  @override
+  void initState() {
+    super.initState();
+    _startPing();
+  }
+
+  void _startPing() {
+    // Create a Ping instance targeting 'google.com' with 5 ping requests
+    final ping = Ping('google.com', count: 5);
+
+    // Listen to the ping stream and update the UI with each response
+    ping.stream.listen((event) {
+      setState(() {
+        _pingResult += '\n${event.response}';
+      });
+    }, onDone: () {
+      // When the ping operation is complete, update the UI
+      setState(() {
+        _pingResult += '\nPing complete.';
+      });
+    }, onError: (error) {
+      // Handle any errors that occur during the ping operation
+      setState(() {
+        _pingResult = 'Error: $error';
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Ping Example'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            _pingResult,
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by running the `RealFlutter` widget.
+// `RealFlutter` sets up a MaterialApp with a home page of `PingHomePage`.
+// `PingHomePage` is a stateful widget that manages the ping operation.
+// In `initState`, `_startPing` is called to begin pinging 'google.com'.
+// A `Ping` instance is created, and its stream is listened to for responses.
+// Each response updates the `_pingResult` string, which is displayed in the UI.
+// The UI updates in real-time as ping responses are received.
+// Errors are caught and displayed, and a completion message is shown when done.
+
+<-- END_MAIN -->
+```
