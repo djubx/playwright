@@ -59,9 +59,9 @@ async function enterPrompt(page, command, isFirstPrompt) {
 
 async function sendPrompt(page) {
   console.log("Waiting for send button to be visible and clicking it...");
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(500);
   await page.waitForSelector('button:has(svg.fa-paper-plane)', { visible: true, timeout: 3000000 });
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(500);
   await page.click('button:has(svg.fa-paper-plane)');
   console.log("Send button clicked.");
 }
