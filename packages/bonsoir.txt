@@ -1,0 +1,195 @@
+Here's a detailed technical blog on the "bonsoir" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Bonsoir Flutter Package
+
+The **Bonsoir** package is a Flutter library that simplifies the process of discovering and connecting to local network services using the Bonjour protocol (also known as mDNS). This package is particularly useful for applications that require service discovery on local networks, such as IoT applications, local multiplayer games, or any app that needs to find devices or services without requiring a centralized server.
+
+## When to Use Bonsoir
+
+You should consider using the Bonsoir package in scenarios such as:
+- **Local Networking**: When your app needs to discover devices or services on the same local network.
+- **IoT Applications**: For connecting to smart devices that advertise their services over mDNS.
+- **Multiplayer Games**: To find and connect to other players' devices without needing a server.
+
+## Features
+
+- **Service Discovery**: Automatically discovers services on the local network.
+- **Service Registration**: Allows your app to advertise its own services.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Easy Integration**: Simple API that integrates well with Flutter's reactive programming model.
+
+With these features, Bonsoir makes it easy to build applications that require local network interactions without the complexity of managing network connections manually.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Bonsoir
+
+## Step 1: Adding the Dependency
+
+To get started with the Bonsoir package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  bonsoir: ^2.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, you need to ensure that your app has the necessary permissions to access the network. Add the following permissions to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+```
+
+### iOS
+
+For iOS, you need to add the following keys to your `Info.plist` file to allow local network access:
+
+```xml
+<key>NSLocalNetworkUsageDescription</key>
+<string>This app requires access to the local network to discover services.</string>
+```
+
+## Step 3: Basic Usage
+
+Now that you have set up the package, you can start using it in your Flutter application. Below is a simple example of how to discover and register services using the Bonsoir package.
+
+1. **Import the package** in your Dart file:
+
+```dart
+import 'package:bonsoir/bonsoir.dart';
+```
+
+2. **Create an instance of the Bonsoir class** and start discovering services:
+
+```dart
+final bonsoir = Bonsoir();
+```
+
+3. **Discover services**:
+
+```dart
+bonsoir.discover('your_service_type').listen((Service service) {
+  print('Discovered service: ${service.name}');
+});
+```
+
+4. **Register a service**:
+
+```dart
+final service = Service(
+  name: 'My Service',
+  type: 'your_service_type',
+  port: 1234,
+);
+bonsoir.register(service).then((_) {
+  print('Service registered: ${service.name}');
+});
+```
+
+With these steps, you can easily discover and register services on the local network using the Bonsoir package.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Bonsoir
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:bonsoir/bonsoir.dart';
+
+void main() {
+  runApp(RealFlutterApp());
+}
+
+class RealFlutterApp extends StatefulWidget {
+  @override
+  _RealFlutterAppState createState() => _RealFlutterAppState();
+}
+
+class _RealFlutterAppState extends State<RealFlutterApp> {
+  late Bonsoir bonsoir; // Declare Bonsoir instance
+  List<Service> services = []; // List to hold discovered services
+
+  @override
+  void initState() {
+    super.initState();
+    bonsoir = Bonsoir(); // Initialize Bonsoir
+    _discoverServices(); // Start discovering services
+    _registerService(); // Register a service
+  }
+
+  // Function to discover services
+  void _discoverServices() {
+    bonsoir.discover('_http._tcp').listen((Service service) {
+      // Listen for discovered services
+      setState(() {
+        services.add(service); // Add discovered service to the list
+      });
+      print('Discovered service: ${service.name}'); // Log the service name
+    });
+  }
+
+  // Function to register a service
+  void _registerService() {
+    final service = Service(
+      name: 'My Flutter Service',
+      type: '_http._tcp',
+      port: 1234,
+    );
+    bonsoir.register(service).then((_) {
+      print('Service registered: ${service.name}'); // Log registration
+    });
+  }
+
+  @override
+  void dispose() {
+    bonsoir.stop(); // Stop Bonsoir when disposing
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Bonjour Service Discovery')),
+        body: ListView.builder(
+          itemCount: services.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(services[index].name), // Display service name
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and initializes the Bonsoir instance.
+// 2. It begins discovering services of type '_http._tcp'.
+// 3. When a service is discovered, it is added to the list and displayed in the UI.
+// 4. The app also registers its own service named 'My Flutter Service' on port 1234.
+// 5. The service list is displayed in a ListView, showing all discovered services.
+// 6. When the app is disposed, it stops the Bonsoir instance to clean up resources.
+```
+
+<!-- END_MAIN -->
+
+In this example, the `RealFlutterApp` class initializes the Bonsoir instance, discovers services, and registers its own service. The discovered services are displayed in a list, providing a simple yet effective demonstration of the Bonsoir package's capabilities. 
+
+### Summary of Application Flow
+- The app initializes and starts discovering services on the local network.
+- Discovered services are added to a list and displayed in the UI.
+- The app registers its own service, allowing other devices to discover it.
+- The application cleans up resources when it is disposed, ensuring efficient use of network resources.
