@@ -1,0 +1,169 @@
+Here's a detailed technical blog on the "wifi_iot" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Overview of the `wifi_iot` Flutter Package
+
+The `wifi_iot` package is a powerful tool for Flutter developers looking to integrate Wi-Fi functionalities into their applications. This package allows you to manage Wi-Fi connections, scan for available networks, and perform various operations related to Wi-Fi connectivity. It is particularly useful for Internet of Things (IoT) applications where devices need to connect to Wi-Fi networks seamlessly.
+
+## When to Use `wifi_iot`
+
+You might consider using the `wifi_iot` package in scenarios such as:
+- **IoT Device Management**: When building applications that manage IoT devices that require Wi-Fi connectivity.
+- **Network Scanning**: If your app needs to scan for available Wi-Fi networks and display them to the user.
+- **Connection Management**: For applications that need to connect to specific Wi-Fi networks programmatically.
+
+## Features
+
+- **Scan for Networks**: Discover available Wi-Fi networks in the vicinity.
+- **Connect to Networks**: Connect to a specified Wi-Fi network using SSID and password.
+- **Disconnect from Networks**: Disconnect from the currently connected Wi-Fi network.
+- **Get Connection Info**: Retrieve information about the current Wi-Fi connection, such as SSID and IP address.
+- **Platform Support**: Works on both Android and iOS with platform-specific configurations.
+
+The `wifi_iot` package is a versatile solution for developers looking to enhance their Flutter applications with Wi-Fi capabilities.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the `wifi_iot` Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `wifi_iot` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  wifi_iot: ^0.3.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/> <!-- Required for scanning -->
+```
+
+3. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist`.
+2. Add the following keys to request permission for location services:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app requires access to your location to scan for Wi-Fi networks.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app requires access to your location to scan for Wi-Fi networks.</string>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Below is a simple example demonstrating how to scan for Wi-Fi networks and connect to one.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the `wifi_iot` Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:wifi_iot/wifi_iot.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  List<WifiNetwork> networks = []; // List to hold available networks
+  String? selectedSsid; // Selected SSID for connection
+
+  @override
+  void initState() {
+    super.initState();
+    _scanNetworks(); // Start scanning for networks on initialization
+  }
+
+  // Function to scan for available Wi-Fi networks
+  Future<void> _scanNetworks() async {
+    List<WifiNetwork> results = await WiFiForIoTPlugin.loadWifiList(); // Load the list of Wi-Fi networks
+    setState(() {
+      networks = results; // Update the state with the scanned networks
+    });
+  }
+
+  // Function to connect to the selected Wi-Fi network
+  Future<void> _connectToNetwork(String ssid, String password) async {
+    bool result = await WiFiForIoTPlugin.connect(ssid, password: password); // Attempt to connect
+    if (result) {
+      print('Connected to $ssid'); // Log success
+    } else {
+      print('Failed to connect to $ssid'); // Log failure
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Wi-Fi IoT Example')),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: networks.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(networks[index].ssid ?? 'Unknown SSID'), // Display SSID
+                    onTap: () {
+                      selectedSsid = networks[index].ssid; // Set selected SSID
+                      _connectToNetwork(selectedSsid!, 'your_password'); // Connect to the selected network
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and initializes the RealFlutter widget.
+// 2. In the initState method, the app calls _scanNetworks to load available Wi-Fi networks.
+// 3. The _scanNetworks function uses WiFiForIoTPlugin.loadWifiList to get the list of networks and updates the state.
+// 4. The available networks are displayed in a ListView.
+// 5. When a user taps on a network, the app sets the selected SSID and calls _connectToNetwork to connect to it.
+// 6. The _connectToNetwork function attempts to connect to the selected network and logs the result.
+```
+
+<!-- END_MAIN -->
+
+# Summary
+
+In this blog, we explored the `wifi_iot` Flutter package, detailing its features and use cases. We walked through the setup process, including platform-specific configurations for Android and iOS. Finally, we provided a complete example demonstrating how to scan for Wi-Fi networks and connect to a selected network. This package is a valuable tool for developers looking to enhance their Flutter applications with Wi-Fi capabilities, especially in IoT contexts.
