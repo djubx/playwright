@@ -1,0 +1,185 @@
+Here's a detailed technical blog on the "cryptography_flutter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Cryptography Flutter Package
+
+The `cryptography_flutter` package is a powerful library designed for implementing cryptographic operations in Flutter applications. It provides a wide range of cryptographic functionalities, including hashing, encryption, and decryption, making it an essential tool for developers who need to secure sensitive data in their apps.
+
+## When to Use This Package
+
+You should consider using the `cryptography_flutter` package in scenarios such as:
+- **Secure Data Storage**: When you need to store sensitive information like passwords or personal data securely.
+- **Data Transmission**: When transmitting sensitive data over the network, ensuring that it is encrypted and secure from eavesdropping.
+- **Digital Signatures**: When you need to verify the authenticity of messages or documents.
+
+## Features
+
+- **Hashing**: Supports various hashing algorithms like SHA-256, SHA-512, etc.
+- **Encryption/Decryption**: Provides symmetric and asymmetric encryption methods.
+- **Key Management**: Facilitates secure key generation and management.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+The `cryptography_flutter` package is a versatile tool that can enhance the security of your Flutter applications significantly.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Cryptography Flutter Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `cryptography_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cryptography_flutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/cryptography_flutter).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS Configuration
+
+For iOS, you may need to add the following to your `ios/Runner/Info.plist` to allow for cryptographic operations:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Below is a simple example demonstrating how to hash a password and encrypt/decrypt a message.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Using the Cryptography Flutter Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cryptography_flutter/cryptography_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Cryptography Example',
+      home: CryptographyDemo(),
+    );
+  }
+}
+
+class CryptographyDemo extends StatefulWidget {
+  @override
+  _CryptographyDemoState createState() => _CryptographyDemoState();
+}
+
+class _CryptographyDemoState extends State<CryptographyDemo> {
+  String _hashedPassword = '';
+  String _encryptedMessage = '';
+  String _decryptedMessage = '';
+
+  // Function to hash a password
+  void _hashPassword(String password) async {
+    // Create a SHA-256 hash
+    final hash = await Cryptography.sha256.hash(utf8.encode(password));
+    setState(() {
+      _hashedPassword = hash.toString();
+    });
+  }
+
+  // Function to encrypt a message
+  void _encryptMessage(String message) async {
+    // Generate a random key
+    final key = await SecretKey.generate();
+    // Encrypt the message
+    final encrypted = await AesGcm.with256bits().encrypt(
+      utf8.encode(message),
+      secretKey: key,
+    );
+    setState(() {
+      _encryptedMessage = encrypted.cipherText.toString();
+    });
+
+    // Decrypt the message
+    final decrypted = await AesGcm.with256bits().decrypt(
+      encrypted,
+      secretKey: key,
+    );
+    setState(() {
+      _decryptedMessage = utf8.decode(decrypted);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cryptography Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              onSubmitted: _hashPassword,
+              decoration: InputDecoration(labelText: 'Enter Password to Hash'),
+            ),
+            SizedBox(height: 20),
+            Text('Hashed Password: $_hashedPassword'),
+            SizedBox(height: 20),
+            TextField(
+              onSubmitted: _encryptMessage,
+              decoration: InputDecoration(labelText: 'Enter Message to Encrypt'),
+            ),
+            SizedBox(height: 20),
+            Text('Encrypted Message: $_encryptedMessage'),
+            SizedBox(height: 20),
+            Text('Decrypted Message: $_decryptedMessage'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and home set to CryptographyDemo.
+// 3. CryptographyDemo is a stateful widget that manages the state for hashing and encrypting messages.
+// 4. The user can input a password to hash or a message to encrypt in the provided text fields.
+// 5. When the user submits the password, _hashPassword is called, which hashes the password using SHA-256 and updates the state.
+// 6. When the user submits a message, _encryptMessage is called, which encrypts the message using AES-GCM and then decrypts it, updating the state with both the encrypted and decrypted messages.
+// 7. The UI displays the hashed password, encrypted message, and decrypted message dynamically as the user interacts with the app.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the `cryptography_flutter` package, detailing its features and use cases. We walked through the setup process, including platform-specific configurations for Android and iOS. Finally, we provided a complete example demonstrating how to hash a password and encrypt/decrypt messages using the package. This package is a valuable asset for any Flutter developer looking to implement secure cryptographic operations in their applications.
