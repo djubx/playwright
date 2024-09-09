@@ -1,0 +1,192 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `pdfrx` Flutter Package
+
+The `pdfrx` Flutter package is a powerful tool designed for developers who need to integrate PDF rendering and manipulation capabilities into their Flutter applications. This package provides a seamless way to display PDF documents, extract text, and even manipulate PDF files directly within your app. 
+
+## When to Use `pdfrx`
+
+- **Displaying PDFs**: If your application requires viewing PDF documents, such as e-books, reports, or invoices, `pdfrx` offers a straightforward solution.
+- **Text Extraction**: For applications that need to extract and process text from PDF files, `pdfrx` provides efficient text extraction capabilities.
+- **PDF Manipulation**: If your app needs to modify PDF documents, such as adding annotations or merging files, `pdfrx` can handle these tasks.
+
+## Key Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **High Performance**: Optimized for fast rendering and manipulation of PDF documents.
+- **Rich API**: Provides a comprehensive set of methods for interacting with PDF files, including rendering, text extraction, and manipulation.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `pdfrx` Package
+
+In this tutorial, we will walk through the process of setting up the `pdfrx` package in a Flutter project and demonstrate how to use its features.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add `pdfrx` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  pdfrx: ^1.0.0
+```
+
+### Step 2: Install the Package
+
+Run the following command to install the package:
+
+```bash
+flutter pub get
+```
+
+### Step 3: Platform-Specific Configuration
+
+#### Android
+
+1. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+2. Add necessary permissions in `AndroidManifest.xml` if your app needs to access external storage:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
+
+#### iOS
+
+1. Open your `ios/Podfile` and ensure the platform is set to at least iOS 11.0:
+
+```ruby
+platform :ios, '11.0'
+```
+
+2. Add the following to your `Info.plist` if you need to access files:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Using the Package
+
+To use `pdfrx`, import it into your Dart file:
+
+```dart
+import 'package:pdfrx/pdfrx.dart';
+```
+
+You can now use the `RealFlutter` class to interact with PDF documents.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:pdfrx/pdfrx.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'PDF Viewer',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PDFViewerScreen(),
+    );
+  }
+}
+
+class PDFViewerScreen extends StatefulWidget {
+  @override
+  _PDFViewerScreenState createState() => _PDFViewerScreenState();
+}
+
+class _PDFViewerScreenState extends State<PDFViewerScreen> {
+  RealFlutter _pdfDocument;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPDF();
+  }
+
+  // Load a PDF document from assets
+  Future<void> _loadPDF() async {
+    final pdf = await RealFlutter.loadAsset('assets/sample.pdf');
+    setState(() {
+      _pdfDocument = pdf;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PDF Viewer'),
+      ),
+      body: _pdfDocument == null
+          ? Center(child: CircularProgressIndicator())
+          : PDFView(document: _pdfDocument),
+    );
+  }
+}
+
+class PDFView extends StatelessWidget {
+  final RealFlutter document;
+
+  PDFView({@required this.document});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: document.pageCount,
+      itemBuilder: (context, index) {
+        return FutureBuilder<Widget>(
+          future: document.renderPage(index),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return snapshot.data;
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `MyApp` widget, which sets up the MaterialApp.
+// 2. The `PDFViewerScreen` is the home screen, which initializes the PDF document in `initState`.
+// 3. `_loadPDF` is an asynchronous function that loads a PDF from the assets and updates the state.
+// 4. The `build` method of `PDFViewerScreen` checks if the PDF is loaded and displays a loading indicator if not.
+// 5. Once loaded, the `PDFView` widget is used to render each page of the PDF using a ListView.
+// 6. `PDFView` uses a `FutureBuilder` to render each page asynchronously, displaying a loading indicator until the page is ready.
+
+```
+
+<-- END_MAIN -->
+```

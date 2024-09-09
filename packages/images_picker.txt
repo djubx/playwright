@@ -1,0 +1,190 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `images_picker` Flutter Package
+
+The `images_picker` package is a powerful tool for Flutter developers that simplifies the process of selecting images and videos from the device's gallery or capturing them using the camera. This package is particularly useful in applications that require media input, such as social media apps, photo editing tools, or any app that needs to handle user-generated content.
+
+## When to Use `images_picker`
+
+You should consider using the `images_picker` package when:
+- You need to allow users to select images or videos from their device's gallery.
+- You want to enable users to capture images or videos directly from the camera.
+- You require a simple and efficient way to handle media selection without dealing with complex native code.
+
+## Key Features
+- **Multi-Selection**: Users can select multiple images or videos at once.
+- **Camera Support**: Capture images or videos directly from the camera.
+- **Customizable Options**: Configure the selection limit, media type (images or videos), and more.
+- **Cross-Platform**: Works seamlessly on both Android and iOS.
+
+Overall, the `images_picker` package provides a straightforward and efficient way to integrate media selection capabilities into your Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `images_picker`
+
+## Step 1: Adding the Dependency
+
+To get started, add the `images_picker` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  images_picker: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/images_picker).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure you have the following permissions:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Add the required permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.CAMERA"/>
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add the following keys to request permission to access the camera and photo library:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to select images.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to take pictures.</string>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can use it in your Flutter application. Below is a simple example of how to implement image and video selection.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `images_picker`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:images_picker/images_picker.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Images Picker Example',
+      home: ImagePickerScreen(),
+    );
+  }
+}
+
+class ImagePickerScreen extends StatefulWidget {
+  @override
+  _ImagePickerScreenState createState() => _ImagePickerScreenState();
+}
+
+class _ImagePickerScreenState extends State<ImagePickerScreen> {
+  List<Media>? _mediaList; // List to hold selected media
+
+  // Function to pick images
+  Future<void> _pickImages() async {
+    // Use the images_picker package to select images
+    List<Media>? res = await ImagesPicker.pick(
+      count: 5, // Limit to 5 images
+      pickType: PickType.image, // Specify image type
+      // Optionally, you can set other parameters like maxSize, etc.
+    );
+    setState(() {
+      _mediaList = res; // Update the state with selected media
+    });
+  }
+
+  // Function to capture an image
+  Future<void> _captureImage() async {
+    // Use the images_picker package to capture an image
+    Media? res = await ImagesPicker.openCamera(
+      pickType: PickType.image, // Specify image type
+    );
+    setState(() {
+      if (res != null) {
+        _mediaList = [res]; // Update the state with captured media
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Images Picker Example'),
+      ),
+      body: Column(
+        children: [
+          ElevatedButton(
+            onPressed: _pickImages, // Call the pick images function
+            child: Text('Pick Images'),
+          ),
+          ElevatedButton(
+            onPressed: _captureImage, // Call the capture image function
+            child: Text('Capture Image'),
+          ),
+          Expanded(
+            child: _mediaList != null
+                ? GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, // Display 3 images per row
+                    ),
+                    itemCount: _mediaList!.length,
+                    itemBuilder: (context, index) {
+                      return Image.file(
+                        File(_mediaList![index].path!), // Display selected images
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                : Center(child: Text('No images selected')), // Message when no images are selected
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+### Application Flow Explanation
+
+// The application starts with the `main` function, which runs the `RealFlutter` widget.
+// The `RealFlutter` widget sets up a MaterialApp with a title and a home screen.
+// The `ImagePickerScreen` stateful widget manages the state of selected media.
+// Two buttons allow users to pick images from the gallery or capture an image using the camera.
+// When the user selects images, the `_pickImages` function is called, which uses the `ImagesPicker.pick` method.
+// The selected images are stored in the `_mediaList` variable and displayed in a grid view.
+// If the user captures an image, the `_captureImage` function is called, which uses the `ImagesPicker.openCamera` method.
+// The captured image is also stored in `_mediaList` and displayed in the same grid view.
+// If no images are selected, a message is displayed to inform the user.
+
+<!-- END_MAIN -->
+```
+
+This structured blog provides a comprehensive overview of the `images_picker` package, guiding users through its features, setup, and implementation in a Flutter application.
