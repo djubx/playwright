@@ -48,13 +48,31 @@ function convertToJSON(packageData, packageName) {
         "<-- END_MAIN -->"
     ]
 
+    let alternateSeparators = [
+        "<!-- START_DESCRIPTION -->",
+        "<!-- END_DESCRIPTION -->",
+        "<!-- START_TUTORIAL -->",
+        "<!-- END_TUTORIAL -->",
+        "<!-- START_MAIN -->",
+        "<!-- END_MAIN -->"
+    ]
+
     let descriptionData = "";
     let tutorialData = "";
     let mainData = "";
 
     descriptionData = extractBetweenSeparators(packageData, separators[0], separators[1]);
+    if (descriptionData === "") {
+        descriptionData = extractBetweenSeparators(packageData, alternateSeparators[0], alternateSeparators[1]);
+    }
     tutorialData = extractBetweenSeparators(packageData, separators[2], separators[3]);
+    if (tutorialData === "") {
+        tutorialData = extractBetweenSeparators(packageData, alternateSeparators[2], alternateSeparators[3]);
+    }
     mainData = extractBetweenSeparators(packageData, separators[4], separators[5]);
+    if (mainData === "") {
+        mainData = extractBetweenSeparators(packageData, alternateSeparators[4], alternateSeparators[5]);
+    }
 
     let jsonData = {
         packageName: packageName,
@@ -107,8 +125,24 @@ function verifyDataAndUpdateIfRequired(jsonData, packageName) {
     }
     return jsonData;
 }
-
+async function sanitizeData() {
+    const prompts = JSON.parse(await fs.readFile(path.join(__dirname, 'prompts.json'), 'utf-8'));
+    const packageNames = prompts.map(prompt => prompt.packageName);
+    
+    // check if file exists
+    for (let packageName of packageNames) {
+        try {
+            await fs.access(path.join(__dirname, `packages/${packageName}.txt`), fs.constants.F_OK);
+            const logMessage = `File exists: ${packageName}\n`;
+            await fs.appendFile(path.join(__dirname, 'log.txt'), logMessage, 'utf-8');
+        } catch {
+            const logMessage = `File does not exist: ${packageName}\n`;
+            await fs.appendFile(path.join(__dirname, 'log.txt'), logMessage, 'utf-8');
+        }
+    }
+}
 async function main() {
+    await sanitizeData();
     const prompts = JSON.parse(await fs.readFile(path.join(__dirname, 'prompts.json'), 'utf-8'));
     const packageNames = prompts.map(prompt => prompt.packageName);
     const jsonConvertedDataList = await getPackagesDataFromFiles();

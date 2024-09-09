@@ -115,6 +115,7 @@ async function handleError(page, packageName, command, error) {
   await fs.mkdir('screenshots', { recursive: true });
   await page.screenshot({ path: screenshotPath });
   console.log(`Error screenshot saved as '${screenshotPath}'`);
+  await page.reload();
 }
 
 async function processPrompts(page, context, prompts) {
