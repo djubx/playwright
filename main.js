@@ -101,8 +101,27 @@ async function extractClipboardText(page) {
   });
 }
 
+async function updatePromptsFileWithLastProcessedPrompt(packageName) {
+  // load prompts.json
+  const promptsJson = await fs.readFile('prompts.json', 'utf-8');
+  const prompts = JSON.parse(promptsJson);
+
+  let finalPrompts = [];
+  let startCapturing = false;
+  for (let i = 0; i < prompts.length; i++) {
+    if (prompts[i].packageName === packageName) {
+      startCapturing = true;
+    }
+    if (startCapturing) {
+      finalPrompts.push(prompts[i]);
+    }
+  }
+
+  await fs.writeFile('prompts.json', JSON.stringify(finalPrompts, null, 2));
+}
+
 async function saveResponse(clipboardText, packageName, command) {
-  if (clipboardText) {
+  if (!clipboardText) {
     const filePath = path.join('packages', `${packageName}.txt`);
     await log(`Saving response to file: ${filePath}`);
     await fs.mkdir('packages', { recursive: true });
@@ -113,6 +132,9 @@ async function saveResponse(clipboardText, packageName, command) {
     const errorFilePath = path.join('packages', `error_${packageName}.txt`);
     await fs.mkdir('packages', { recursive: true });
     await fs.writeFile(errorFilePath, `Failed to extract text from clipboard for prompt: ${command}`);
+    await updatePromptsFileWithLastProcessedPrompt(packageName);
+    // quit the program
+    process.exit(1);
   }
 }
 
