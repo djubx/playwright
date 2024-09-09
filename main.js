@@ -70,7 +70,7 @@ async function enterPrompt(page, command, isFirstPrompt) {
 async function sendPrompt(page) {
   await log("Waiting for send button to be visible and clicking it...");
   await page.waitForTimeout(500);
-  await page.waitForSelector('button:has(svg.fa-paper-plane)', { visible: true, timeout: 3000000 });
+  await page.waitForSelector('button:has(svg.fa-paper-plane)', { visible: true, timeout: 300000 });
   await page.waitForTimeout(500);
   await page.click('button:has(svg.fa-paper-plane)');
   await log("Send button clicked.");
@@ -149,6 +149,9 @@ async function handleError(page, packageName, command, error) {
   await page.screenshot({ path: screenshotPath });
   await page.reload();
   await log(`Error screenshot saved as '${screenshotPath}'`);
+  await updatePromptsFileWithLastProcessedPrompt(packageName);
+  // quit the program
+  process.exit(1);
 }
 
 async function processPrompts(page, context, prompts) {
