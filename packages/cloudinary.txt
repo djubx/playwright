@@ -1,0 +1,193 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Cloudinary Flutter Package: An Overview
+
+The Cloudinary Flutter package is a powerful tool for developers looking to integrate Cloudinary's media management capabilities into their Flutter applications. Cloudinary is a cloud-based service that provides an end-to-end solution for all your image and video needs, including upload, storage, manipulation, and delivery.
+
+## When to Use Cloudinary
+
+- **Media Management**: If your application requires handling a large number of images or videos, Cloudinary offers robust solutions for storage and management.
+- **Image and Video Transformation**: Cloudinary provides a wide range of transformation options, allowing you to manipulate media files on-the-fly.
+- **Optimized Delivery**: With Cloudinary, you can deliver media files optimized for different devices and network conditions, improving load times and user experience.
+
+## Key Features
+
+- **Upload API**: Seamlessly upload images and videos from your Flutter app to Cloudinary.
+- **Transformation API**: Apply transformations such as resizing, cropping, and format conversion.
+- **Delivery**: Efficiently deliver media using Cloudinary's CDN, ensuring fast load times.
+- **Security**: Secure your media assets with various authentication and access control options.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Cloudinary in Flutter
+
+Integrating Cloudinary into your Flutter app involves a few steps to ensure proper configuration and functionality across both Android and iOS platforms.
+
+## Step 1: Add Dependency
+
+First, add the Cloudinary package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cloudinary: ^0.0.1 # Replace with the latest version
+```
+
+## Step 2: Platform-Specific Setup
+
+### Android
+
+1. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **Network Security**: If you're targeting Android 9 (API level 28) or higher, ensure you have a network security configuration:
+
+   ```xml
+   <application
+       android:networkSecurityConfig="@xml/network_security_config">
+   </application>
+   ```
+
+3. **Create `res/xml/network_security_config.xml`**:
+
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <network-security-config>
+       <domain-config cleartextTrafficPermitted="true">
+           <domain includeSubdomains="true">res.cloudinary.com</domain>
+       </domain-config>
+   </network-security-config>
+   ```
+
+### iOS
+
+1. **Info.plist**: Add the following to your `ios/Runner/Info.plist` to allow network access:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Initialize Cloudinary
+
+In your Flutter app, initialize Cloudinary with your credentials:
+
+```dart
+import 'package:cloudinary/cloudinary.dart';
+
+final cloudinary = Cloudinary.signedConfig(
+  apiKey: 'your_api_key',
+  apiSecret: 'your_api_secret',
+  cloudName: 'your_cloud_name',
+);
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+# Complete Example: Flutter App with Cloudinary
+
+Below is a complete example of a Flutter application that demonstrates the key features of the Cloudinary package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cloudinary/cloudinary.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  // Initialize Cloudinary with your credentials
+  final cloudinary = Cloudinary.signedConfig(
+    apiKey: 'your_api_key',
+    apiSecret: 'your_api_secret',
+    cloudName: 'your_cloud_name',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Cloudinary Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ImageUploadScreen(cloudinary: cloudinary),
+    );
+  }
+}
+
+class ImageUploadScreen extends StatefulWidget {
+  final Cloudinary cloudinary;
+
+  ImageUploadScreen({required this.cloudinary});
+
+  @override
+  _ImageUploadScreenState createState() => _ImageUploadScreenState();
+}
+
+class _ImageUploadScreenState extends State<ImageUploadScreen> {
+  String? uploadedImageUrl;
+
+  // Function to upload an image to Cloudinary
+  Future<void> uploadImage() async {
+    final response = await widget.cloudinary.upload(
+      file: CloudinaryFile.fromFile('path/to/your/image.jpg', resourceType: CloudinaryResourceType.image),
+    );
+
+    if (response.isSuccessful) {
+      setState(() {
+        uploadedImageUrl = response.secureUrl;
+      });
+    } else {
+      // Handle upload error
+      print('Upload failed: ${response.error?.message}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Upload Image'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (uploadedImageUrl != null)
+              Image.network(uploadedImageUrl!)
+            else
+              Text('No image uploaded yet.'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: uploadImage,
+              child: Text('Upload Image'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by running the `RealFlutter` class, which initializes the Cloudinary configuration.
+// The `ImageUploadScreen` widget is the main screen where users can upload images.
+// The `uploadImage` function handles the image upload process to Cloudinary.
+// Upon successful upload, the image URL is stored and displayed using an `Image.network` widget.
+// The UI consists of a button to trigger the upload and a display area for the uploaded image.
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,174 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `google_mlkit_language_id` Flutter Package
+
+The `google_mlkit_language_id` Flutter package is a powerful tool for developers looking to integrate language identification capabilities into their mobile applications. This package leverages Google's Machine Learning Kit to provide on-device language identification, which is both fast and privacy-conscious since it doesn't require sending data to a server.
+
+## When to Use
+
+This package is particularly useful in applications where you need to:
+- Automatically detect the language of user input, such as text messages or notes.
+- Provide language-specific features or content, like translation or localization.
+- Enhance user experience by adapting the app's interface based on the detected language.
+
+## Features
+
+- **On-device Processing**: Ensures user data privacy and quick response times.
+- **Wide Language Support**: Can identify a large number of languages.
+- **Easy Integration**: Simple API that integrates seamlessly with Flutter applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using `google_mlkit_language_id`
+
+In this section, we'll walk through the process of setting up and using the `google_mlkit_language_id` package in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `google_mlkit_language_id` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mlkit_language_id: ^0.1.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Update `android/app/build.gradle`**: Ensure that your `minSdkVersion` is at least 21.
+
+   ```gradle
+   android {
+       defaultConfig {
+           minSdkVersion 21
+       }
+   }
+   ```
+
+2. **Add Google Play Services**: Make sure your project is set up to use Google Play services.
+
+#### iOS
+
+1. **Update `ios/Podfile`**: Ensure the platform version is at least 11.0.
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+2. **Enable Swift Support**: If your project does not already support Swift, you may need to create a bridging header.
+
+## Using the Package
+
+To use the package, you need to create an instance of the `LanguageIdentifier` class and call its methods to identify the language of a given text.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Language Identifier',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: LanguageIdentifierScreen(),
+    );
+  }
+}
+
+class LanguageIdentifierScreen extends StatefulWidget {
+  @override
+  _LanguageIdentifierScreenState createState() => _LanguageIdentifierScreenState();
+}
+
+class _LanguageIdentifierScreenState extends State<LanguageIdentifierScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final LanguageIdentifier _languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
+  String _identifiedLanguage = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _languageIdentifier.close();
+    super.dispose();
+  }
+
+  Future<void> _identifyLanguage() async {
+    final text = _controller.text;
+    if (text.isEmpty) {
+      setState(() {
+        _identifiedLanguage = 'Please enter some text';
+      });
+      return;
+    }
+
+    try {
+      final language = await _languageIdentifier.identifyLanguage(text);
+      setState(() {
+        _identifiedLanguage = 'Identified Language: $language';
+      });
+    } catch (e) {
+      setState(() {
+        _identifiedLanguage = 'Error identifying language: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Language Identifier'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter text to identify language',
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _identifyLanguage,
+              child: Text('Identify Language'),
+            ),
+            SizedBox(height: 20),
+            Text(_identifiedLanguage),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutter` widget, which sets up the MaterialApp.
+// 2. The `LanguageIdentifierScreen` is the main screen, containing a text field and a button.
+// 3. Users enter text into the text field.
+// 4. When the "Identify Language" button is pressed, `_identifyLanguage` is called.
+// 5. `_identifyLanguage` uses the `LanguageIdentifier` to detect the language of the input text.
+// 6. The identified language is displayed on the screen.
+// 7. The app handles errors gracefully, displaying an error message if language identification fails.
+```
+
+<-- END_MAIN -->
+```

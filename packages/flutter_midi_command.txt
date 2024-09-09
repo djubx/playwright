@@ -1,0 +1,197 @@
+```markdown
+<-- START_DESCRIPTION -->
+# Flutter MIDI Command Package: An Overview
+
+The `flutter_midi_command` package is a powerful tool for Flutter developers looking to integrate MIDI (Musical Instrument Digital Interface) capabilities into their applications. This package allows for sending and receiving MIDI messages, making it ideal for music applications, digital instruments, and any app that requires MIDI communication.
+
+## When to Use `flutter_midi_command`
+
+- **Music Applications**: If you're developing an app that involves music creation, playback, or editing, this package can help you manage MIDI data effectively.
+- **Digital Instruments**: For apps that simulate musical instruments, `flutter_midi_command` can be used to send MIDI signals to external devices.
+- **MIDI Controllers**: If your app needs to interact with MIDI controllers, this package provides the necessary tools to handle MIDI input and output.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS, allowing for seamless MIDI integration across devices.
+- **MIDI Input and Output**: Send and receive MIDI messages to and from connected devices.
+- **Device Management**: Discover and manage connected MIDI devices.
+- **Real-Time Communication**: Handle MIDI messages in real-time, crucial for performance-sensitive applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up `flutter_midi_command` in Your Flutter Project
+
+Integrating `flutter_midi_command` into your Flutter project involves a few setup steps, especially for platform-specific configurations. Below is a step-by-step guide to get you started.
+
+## Installation
+
+Add the `flutter_midi_command` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_midi_command: ^0.3.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Android Setup
+
+1. **Permissions**: Ensure your `AndroidManifest.xml` includes the necessary permissions for MIDI communication:
+
+   ```xml
+   <uses-permission android:name="android.permission.BLUETOOTH" />
+   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+   <uses-permission android:name="android.permission.RECORD_AUDIO" />
+   ```
+
+2. **MIDI Service**: Add the MIDI service to your `AndroidManifest.xml`:
+
+   ```xml
+   <service android:name="com.appleeducate.midi.MidiService" android:exported="true" />
+   ```
+
+## iOS Setup
+
+1. **Permissions**: Update your `Info.plist` to include MIDI permissions:
+
+   ```xml
+   <key>NSBluetoothAlwaysUsageDescription</key>
+   <string>We need your permission to use Bluetooth for MIDI devices.</string>
+   ```
+
+2. **Enable Background Modes**: If your app needs to communicate with MIDI devices in the background, enable the necessary background modes in Xcode.
+
+## Basic Usage
+
+To use the package, import it in your Dart file:
+
+```dart
+import 'package:flutter_midi_command/flutter_midi_command.dart';
+```
+
+Create an instance of the `RealFlutter` class (our main class for this example) to manage MIDI commands:
+
+```dart
+RealFlutter midiCommand = RealFlutter();
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_midi_command/flutter_midi_command.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter MIDI Command Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MidiHomePage(),
+    );
+  }
+}
+
+class MidiHomePage extends StatefulWidget {
+  @override
+  _MidiHomePageState createState() => _MidiHomePageState();
+}
+
+class _MidiHomePageState extends State<MidiHomePage> {
+  final RealFlutter midiCommand = RealFlutter(); // Initialize the MIDI command instance
+  List<MidiDevice> devices = []; // List to store available MIDI devices
+  MidiDevice? selectedDevice; // Currently selected MIDI device
+
+  @override
+  void initState() {
+    super.initState();
+    _setupMidi(); // Call setup function on initialization
+  }
+
+  void _setupMidi() async {
+    // Listen for MIDI device changes
+    midiCommand.onMidiSetupChanged.listen((_) {
+      _getDevices(); // Refresh device list when setup changes
+    });
+
+    // Listen for incoming MIDI data
+    midiCommand.onMidiDataReceived.listen((data) {
+      print('Received MIDI data: $data'); // Log received MIDI data
+    });
+
+    _getDevices(); // Initial device fetch
+  }
+
+  void _getDevices() async {
+    // Fetch available MIDI devices
+    List<MidiDevice> availableDevices = await midiCommand.devices;
+    setState(() {
+      devices = availableDevices; // Update state with available devices
+    });
+  }
+
+  void _connectToDevice(MidiDevice device) {
+    // Connect to the selected MIDI device
+    midiCommand.connectToDevice(device);
+    setState(() {
+      selectedDevice = device; // Update the selected device
+    });
+  }
+
+  void _sendMidiNote() {
+    // Send a MIDI note to the connected device
+    if (selectedDevice != null) {
+      midiCommand.sendData([0x90, 0x40, 0x7F]); // Note on message
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('MIDI Command Demo'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: devices.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(devices[index].name),
+                  onTap: () => _connectToDevice(devices[index]), // Connect on tap
+                  selected: devices[index] == selectedDevice,
+                );
+              },
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _sendMidiNote, // Send MIDI note on button press
+            child: Text('Send MIDI Note'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+// The application starts by initializing the `RealFlutter` instance to manage MIDI commands.
+// In the `initState` method, we set up listeners for MIDI device changes and incoming MIDI data.
+// The `_getDevices` method fetches available MIDI devices and updates the UI.
+// When a device is tapped in the list, `_connectToDevice` connects to that device.
+// The "Send MIDI Note" button sends a MIDI note-on message to the connected device.
+// The UI consists of a list of available MIDI devices and a button to send a MIDI note.
+
+<-- END_MAIN -->
+```

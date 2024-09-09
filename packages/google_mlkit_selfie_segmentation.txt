@@ -1,0 +1,199 @@
+<-- START_DESCRIPTION -->
+
+# Google ML Kit Selfie Segmentation Flutter Package
+=====================================================
+
+The `google_mlkit_selfie_segmentation` Flutter package is a powerful tool for separating the subject (person) from the background in a selfie image. This package is ideal for applications that require editing or manipulating selfie images, such as social media apps, photo editing software, or e-commerce platforms.
+
+### Key Features:
+
+*   Segments the subject (person) from the background in a selfie image
+*   Supports both Android and iOS platforms
+*   Provides a simple and easy-to-use API for image segmentation
+
+### When to Use:
+
+*   Social media apps: Use this package to provide users with advanced image editing capabilities, such as background replacement or blur effects.
+*   Photo editing software: Integrate this package to offer users a more precise and efficient way to separate subjects from backgrounds.
+*   E-commerce platforms: Utilize this package to enhance product images by separating the product from the background.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the Package
+=============================================
+
+### Step 1: Add the Package to Your Flutter Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  google_mlkit_selfie_segmentation: ^0.10.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Configure Platform-Specific Settings
+
+#### Android:
+
+In your `AndroidManifest.xml` file, add the following permission:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+```
+
+#### iOS:
+
+In your `Info.plist` file, add the following key:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to take photos.</string>
+```
+
+### Step 3: Import the Package and Initialize the Selfie Segmentation
+
+```dart
+import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late SelfieSegmenter _selfieSegmenter;
+
+  @override
+  void initState() {
+    super.initState();
+    _selfieSegmenter = SelfieSegmenter(
+      const SelfieSegmenterOptions(
+        enableRawSizeMask: true,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _selfieSegmenter.close();
+    super.dispose();
+  }
+
+  // Use the _selfieSegmenter to segment images
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
+import 'package:image_picker/image_picker.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late SelfieSegmenter _selfieSegmenter;
+  File? _image;
+  Uint8List? _segmentedBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _selfieSegmenter = SelfieSegmenter(
+      const SelfieSegmenterOptions(
+        enableRawSizeMask: true,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _selfieSegmenter.close();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    // Pick an image from the gallery
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _image = File(image.path);
+      });
+      // Segment the picked image
+      _segmentImage(_image!);
+    }
+  }
+
+  Future<void> _segmentImage(File image) async {
+    // Segment the image using the _selfieSegmenter
+    final InputImage inputImage = InputImage.fromFile(image);
+    final List<SelfieSegmentationMask> segmentationMasks =
+        await _selfieSegmenter.processImage(inputImage);
+
+    // Convert the segmentation mask to bytes
+    final SelfieSegmentationMask mask = segmentationMasks.first;
+    final Uint8List bytes = mask.buffer.asUint8List(
+      mask.offsetInBytes,
+      mask.lengthInBytes,
+    );
+
+    setState(() {
+      _segmentedBytes = bytes;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Selfie Segmentation'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (_image != null)
+              Image.file(_image!)
+            else
+              const Text('No image selected'),
+            if (_segmentedBytes != null)
+              Image.memory(_segmentedBytes!)
+            else
+              const Text('No segmented image'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _pickImage,
+              child: const Text('Pick Image'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow:
+// 1. The user clicks the "Pick Image" button to select an image from the gallery.
+// 2. The selected image is displayed on the screen.
+// 3. The image is then segmented using the _selfieSegmenter.
+// 4. The segmented image is displayed on the screen below the original image.
+// 5. The user can repeat the process by clicking the "Pick Image" button again.
+
+```
+
+<-- END_MAIN -->

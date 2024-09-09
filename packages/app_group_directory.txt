@@ -1,0 +1,192 @@
+<-- START_DESCRIPTION -->
+
+# Overview of the app_group_directory Flutter Package
+=====================================================
+
+The `app_group_directory` Flutter package provides a simple way to access and manage directories shared between apps of the same group on both Android and iOS platforms. This package is useful when you need to share files or data between multiple apps, such as when implementing a suite of apps that need to share a common dataset.
+
+### Key Features
+
+*   Provides access to a shared directory that can be used by multiple apps of the same group.
+*   Supports both Android and iOS platforms.
+*   Allows for easy management of shared files and data.
+
+### When to Use This Package
+
+This package is ideal for scenarios where you have multiple apps that need to share data or files, such as:
+
+*   A suite of productivity apps that need to share a common dataset.
+*   A set of games that need to share leaderboards or game data.
+*   A group of social media apps that need to share user data or content.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the app_group_directory Package
+=====================================================
+
+### Step 1: Add the Package to Your Flutter Project
+
+To use the `app_group_directory` package, you need to add it to your Flutter project. You can do this by adding the following line to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  app_group_directory: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Configure the Package
+
+To use the package, you need to configure it by providing the app group ID. You can do this by adding the following code to your `main` function:
+
+```dart
+import 'package:app_group_directory/app_group_directory.dart';
+
+void main() async {
+  // Initialize the app group directory
+  await AppGroupDirectory.init('your_app_group_id');
+  runApp(MyApp());
+}
+```
+
+Replace `'your_app_group_id'` with your actual app group ID.
+
+### Platform-Specific Configurations
+
+#### Android
+
+On Android, you need to add the following configuration to your `AndroidManifest.xml` file:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.your_app">
+    <application>
+        ...
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+    </application>
+</manifest>
+```
+
+You also need to create a `provider_paths.xml` file in your `res/xml` directory with the following content:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="external_files" path="."/>
+</paths>
+```
+
+#### iOS
+
+On iOS, you need to add the following configuration to your `Info.plist` file:
+
+```xml
+<key>NSFileProviderDomain</key>
+<string>your_app_group_id</string>
+```
+
+Replace `'your_app_group_id'` with your actual app group ID.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:app_group_directory/app_group_directory.dart';
+
+void main() async {
+  // Initialize the app group directory
+  await AppGroupDirectory.init('your_app_group_id');
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'App Group Directory Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _textController = TextEditingController();
+
+  Future<void> _writeToFile() async {
+    // Get the app group directory
+    final directory = await AppGroupDirectory.getDirectory();
+    // Create a file in the directory
+    final file = File('${directory.path}/example.txt');
+    // Write to the file
+    await file.writeAsString(_textController.text);
+  }
+
+  Future<void> _readFromFile() async {
+    // Get the app group directory
+    final directory = await AppGroupDirectory.getDirectory();
+    // Create a file in the directory
+    final file = File('${directory.path}/example.txt');
+    // Read from the file
+    final text = await file.readAsString();
+    // Display the text
+    _textController.text = text;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('App Group Directory Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            TextField(
+              controller: _textController,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _writeToFile,
+              child: Text('Write to File'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _readFromFile,
+              child: Text('Read from File'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The app starts by initializing the app group directory.
+// The user can then enter text in the text field and write it to a file in the app group directory.
+// The user can also read from the file and display the text in the text field.
+// The app group directory is shared between apps of the same group, so the file can be accessed from other apps.
+```
+
+<-- END_MAIN -->

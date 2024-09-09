@@ -1,0 +1,177 @@
+<-- START_DESCRIPTION -->
+
+# Cancellation Token Flutter Package
+=====================================
+
+The `cancellation_token` package provides a way to cancel ongoing operations in Flutter. It is useful when you need to cancel a task that is taking too long to complete, or when the user navigates away from the screen.
+
+### Features
+
+*   Cancel ongoing operations
+*   Support for both Android and iOS platforms
+*   Easy to use and integrate into existing code
+
+### When to Use
+
+*   Canceling network requests when the user navigates away from the screen
+*   Stopping ongoing database operations when the app is closed
+*   Interrupting long-running tasks when the user cancels them
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial
+==========
+
+## Setup
+
+To use the `cancellation_token` package, add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  cancellation_token: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Basic Usage
+
+To use the `cancellation_token` package, create a `CancellationToken` object and pass it to the operation you want to cancel:
+
+```dart
+import 'package:cancellation_token/cancellation_token.dart';
+
+class RealFlutter {
+  Future<void> cancelableOperation() async {
+    final cancellationToken = CancellationToken();
+
+    // Start the operation
+    final operation = Future.delayed(Duration(seconds: 5), () {
+      print('Operation completed');
+    });
+
+    // Cancel the operation after 2 seconds
+    Future.delayed(Duration(seconds: 2), () {
+      cancellationToken.cancel();
+    });
+
+    try {
+      await operation.timeout(Duration(seconds: 5), onTimeout: () {
+        print('Operation timed out');
+      });
+    } on OperationCanceledError {
+      print('Operation canceled');
+    }
+  }
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+On Android, the `cancellation_token` package uses the `java.util.concurrent` package to handle cancellations.
+
+### iOS
+
+On iOS, the `cancellation_token` package uses the `Foundation` framework to handle cancellations.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cancellation_token/cancellation_token.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Cancellation Token Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _cancellationToken = CancellationToken();
+
+  @override
+  void initState() {
+    super.initState();
+    _startOperation();
+  }
+
+  @override
+  void dispose() {
+    _cancellationToken.cancel();
+    super.dispose();
+  }
+
+  Future<void> _startOperation() async {
+    // Start the operation
+    final operation = Future.delayed(Duration(seconds: 5), () {
+      print('Operation completed');
+    });
+
+    // Cancel the operation after 2 seconds
+    Future.delayed(Duration(seconds: 2), () {
+      _cancellationToken.cancel();
+    });
+
+    try {
+      await operation.timeout(Duration(seconds: 5), onTimeout: () {
+        print('Operation timed out');
+      });
+    } on OperationCanceledError {
+      print('Operation canceled');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Cancellation Token Demo'),
+      ),
+      body: Center(
+        child: Text('Operation is running...'),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and the operation starts.
+// 2. After 2 seconds, the operation is canceled.
+// 3. The operation times out after 5 seconds.
+// 4. The app displays the result of the operation.
+
+// The cancellation token is used to cancel the operation after 2 seconds.
+// The operation is started in the `_startOperation` method.
+// The cancellation token is canceled in the `dispose` method.
+// The result of the operation is displayed in the `build` method.
+
+// The flow of the application is as follows:
+// 1. `_startOperation` is called in `initState`.
+// 2. The operation is started and the cancellation token is created.
+// 3. After 2 seconds, the cancellation token is canceled.
+// 4. The operation times out after 5 seconds.
+// 5. The result of the operation is displayed in the `build` method.
+```
+
+<-- END_MAIN -->

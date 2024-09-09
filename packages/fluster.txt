@@ -1,0 +1,195 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Fluster Flutter Package: An Overview
+
+The **Fluster** package is a powerful tool for Flutter developers looking to efficiently manage and cluster geographical data points on a map. It is particularly useful in applications that require the visualization of large datasets, such as mapping applications, location-based services, and data analysis tools. By clustering data points, Fluster helps reduce visual clutter and improves the performance of map rendering.
+
+## When to Use Fluster
+
+- **Mapping Applications**: When you need to display a large number of markers on a map, Fluster can help by clustering nearby markers into a single cluster marker.
+- **Data Visualization**: For applications that require the visualization of geographical data, Fluster can simplify the representation by grouping data points.
+- **Performance Optimization**: By reducing the number of markers rendered on the map, Fluster can significantly improve the performance of your application.
+
+## Key Features
+
+- **Efficient Clustering**: Fluster uses a fast algorithm to cluster data points, ensuring smooth performance even with large datasets.
+- **Customizable Clusters**: You can customize the appearance and behavior of clusters to fit the needs of your application.
+- **Cross-Platform Support**: Fluster is designed to work seamlessly on both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Fluster Package
+
+In this tutorial, we will walk through the process of setting up the Fluster package in a Flutter project and demonstrate how to use it to cluster map markers.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the Fluster package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     fluster: ^0.2.0
+   ```
+
+2. **Install Packages**: Run `flutter pub get` to install the new package.
+
+3. **Platform-Specific Configuration**:
+   - **Android**: Ensure that your `AndroidManifest.xml` includes the necessary permissions for accessing the internet and location services.
+   - **iOS**: Update your `Info.plist` to request location permissions from the user.
+
+## Using Fluster
+
+1. **Import the Package**: Import Fluster in your Dart file.
+
+   ```dart
+   import 'package:fluster/fluster.dart';
+   ```
+
+2. **Create a Fluster Instance**: Initialize a Fluster instance with your data points.
+
+   ```dart
+   Fluster<RealFlutter> fluster = Fluster<RealFlutter>(
+     minZoom: 0,
+     maxZoom: 18,
+     radius: 150,
+     extent: 2048,
+     nodeSize: 64,
+     points: yourDataPoints,
+     createCluster: (BaseCluster cluster, double lng, double lat) {
+       return RealFlutter(
+         id: cluster.id.toString(),
+         position: LatLng(lat, lng),
+         isCluster: cluster.isCluster,
+         clusterId: cluster.id,
+         pointsSize: cluster.pointsSize,
+         childMarkerId: cluster.childMarkerId,
+       );
+     },
+   );
+   ```
+
+3. **Generate Clusters**: Use the Fluster instance to generate clusters for a specific zoom level.
+
+   ```dart
+   List<RealFlutter> clusters = fluster.clusters([-180, -85, 180, 85], currentZoom);
+   ```
+
+4. **Render Clusters on Map**: Integrate the clusters into your map widget, customizing the appearance as needed.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:fluster/fluster.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Fluster Example',
+      home: MapScreen(),
+    );
+  }
+}
+
+class MapScreen extends StatefulWidget {
+  @override
+  _MapScreenState createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
+  GoogleMapController? _controller;
+  Fluster<RealFlutter>? _fluster;
+  List<Marker> _markers = [];
+  final List<RealFlutter> _dataPoints = [
+    // Add your data points here
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFluster();
+  }
+
+  void _initializeFluster() {
+    // Initialize Fluster with data points
+    _fluster = Fluster<RealFlutter>(
+      minZoom: 0,
+      maxZoom: 18,
+      radius: 150,
+      extent: 2048,
+      nodeSize: 64,
+      points: _dataPoints,
+      createCluster: (BaseCluster cluster, double lng, double lat) {
+        return RealFlutter(
+          id: cluster.id.toString(),
+          position: LatLng(lat, lng),
+          isCluster: cluster.isCluster,
+          clusterId: cluster.id,
+          pointsSize: cluster.pointsSize,
+          childMarkerId: cluster.childMarkerId,
+        );
+      },
+    );
+    _updateMarkers();
+  }
+
+  void _updateMarkers() {
+    // Generate clusters for the current zoom level
+    final zoom = _controller?.getZoomLevel() ?? 10;
+    final clusters = _fluster?.clusters([-180, -85, 180, 85], zoom.toInt()) ?? [];
+
+    // Convert clusters to markers
+    setState(() {
+      _markers = clusters.map((cluster) {
+        return Marker(
+          markerId: MarkerId(cluster.id),
+          position: cluster.position,
+          infoWindow: InfoWindow(title: cluster.isCluster ? 'Cluster' : 'Marker'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            cluster.isCluster ? BitmapDescriptor.hueBlue : BitmapDescriptor.hueRed,
+          ),
+        );
+      }).toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Fluster Map Example')),
+      body: GoogleMap(
+        onMapCreated: (controller) {
+          _controller = controller;
+          _updateMarkers();
+        },
+        initialCameraPosition: CameraPosition(
+          target: LatLng(37.7749, -122.4194), // San Francisco
+          zoom: 10,
+        ),
+        markers: Set<Marker>.of(_markers),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes and sets up the main widget with a Google Map.
+// 2. The Fluster instance is created with a list of data points.
+// 3. Clusters are generated based on the current zoom level of the map.
+// 4. Markers are updated and displayed on the map, differentiating between clusters and individual markers.
+// 5. The map updates markers dynamically as the user interacts with it, ensuring efficient rendering and clustering.
+```
+
+<-- END_MAIN -->
+```

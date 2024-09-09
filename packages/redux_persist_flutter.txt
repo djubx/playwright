@@ -1,0 +1,204 @@
+<-- START_DESCRIPTION -->
+
+# Redux Persist Flutter Package
+================================
+
+The `redux_persist_flutter` package provides a simple way to persist and rehydrate a Redux state tree in Flutter. It uses the `redux_persist` package under the hood to handle the serialization and deserialization of the state tree.
+
+## When to Use
+--------------
+
+This package is useful when you want to persist the state of your app even after the user closes it. This can be useful for storing user preferences, cached data, or any other state that you want to retain between app sessions.
+
+## Features
+------------
+
+*   Supports both Android and iOS platforms
+*   Uses the `redux_persist` package for serialization and deserialization
+*   Provides a simple API for persisting and rehydrating the state tree
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial
+==========
+
+## Setup
+--------
+
+To use the `redux_persist_flutter` package, you need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  redux_persist_flutter: ^0.9.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Usage
+-----
+
+To use the package, you need to create a `Persistor` instance and pass it to the `Store` constructor:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:redux_persist/redux_persist.dart';
+import 'package:redux_persist_flutter/redux_persist_flutter.dart';
+
+void main() async {
+  final persistor = Persistor<RealFlutter>(
+    storage: FlutterStorage(),
+    serializer: JsonSerializer<RealFlutter>(),
+  );
+
+  final initialState = await persistor.load();
+
+  final store = Store<RealFlutter>(
+    reducer,
+    initialState: initialState ?? RealFlutter(),
+    middleware: [persistor.createMiddleware()],
+  );
+
+  runApp(MyApp(store: store));
+}
+```
+
+In the above code, we create a `Persistor` instance with the `FlutterStorage` and `JsonSerializer`. We then load the initial state from the persistor and create a `Store` instance with the loaded state and the persistor middleware.
+
+## Platform-Specific Details
+---------------------------
+
+The `redux_persist_flutter` package uses the `path_provider` package to determine the storage directory. On Android, it uses the `getExternalStorageDirectory` method, while on iOS, it uses the `getApplicationDocumentsDirectory` method.
+
+You can customize the storage directory by passing a custom `storage` instance to the `Persistor` constructor.
+
+## Configurations and Optimizations
+-----------------------------------
+
+You can configure the `redux_persist_flutter` package by passing a custom `serializer` instance to the `Persistor` constructor. For example, you can use the `JsonSerializer` with a custom `json` converter:
+
+```dart
+final serializer = JsonSerializer<RealFlutter>(
+  jsonConverter: (json) => RealFlutter.fromJson(json),
+);
+```
+
+You can also optimize the persistence process by using a custom `middleware` instance. For example, you can use the `thunkMiddleware` to persist the state only when the app is in the background:
+
+```dart
+final middleware = thunkMiddleware<RealFlutter>((store, action, next) {
+  if (action is PersistAction) {
+    store.dispatch(action);
+  } else {
+    next(action);
+  }
+});
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:redux_persist/redux_persist.dart';
+import 'package:redux_persist_flutter/redux_persist_flutter.dart';
+
+// Define the state class
+class RealFlutter {
+  final String title;
+
+  RealFlutter({this.title = ''});
+
+  factory RealFlutter.fromJson(json) => RealFlutter(title: json['title']);
+
+  Map<String, dynamic> toJson() => {'title': title};
+}
+
+// Define the reducer
+RealFlutter reducer(RealFlutter state, dynamic action) {
+  if (action is UpdateTitleAction) {
+    return RealFlutter(title: action.title);
+  } else {
+    return state;
+  }
+}
+
+// Define the action
+class UpdateTitleAction {
+  final String title;
+
+  UpdateTitleAction({required this.title});
+}
+
+void main() async {
+  // Create a persistor instance
+  final persistor = Persistor<RealFlutter>(
+    storage: FlutterStorage(),
+    serializer: JsonSerializer<RealFlutter>(),
+  );
+
+  // Load the initial state from the persistor
+  final initialState = await persistor.load();
+
+  // Create a store instance with the loaded state and the persistor middleware
+  final store = Store<RealFlutter>(
+    reducer,
+    initialState: initialState ?? RealFlutter(),
+    middleware: [persistor.createMiddleware()],
+  );
+
+  // Run the app
+  runApp(MyApp(store: store));
+}
+
+class MyApp extends StatelessWidget {
+  final Store<RealFlutter> store;
+
+  MyApp({required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Redux Persist Flutter Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(store.state.title),
+        ),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              store.dispatch(UpdateTitleAction(title: 'New Title'));
+            },
+            child: Text('Update Title'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The app starts by creating a persistor instance and loading the initial state from the persistor.
+// The initial state is then used to create a store instance with the persistor middleware.
+// The store instance is then passed to the MyApp widget, which uses the store state to display the title.
+// When the user clicks the update title button, the store dispatches an UpdateTitleAction, which updates the store state.
+// The updated store state is then persisted by the persistor middleware.
+
+// The app flow is as follows:
+// 1. The app starts and creates a persistor instance.
+// 2. The persistor instance loads the initial state from the storage.
+// 3. The initial state is used to create a store instance with the persistor middleware.
+// 4. The store instance is passed to the MyApp widget.
+// 5. The MyApp widget uses the store state to display the title.
+// 6. The user clicks the update title button.
+// 7. The store dispatches an UpdateTitleAction.
+// 8. The UpdateTitleAction updates the store state.
+// 9. The updated store state is persisted by the persistor middleware.
+
+<-- END_MAIN -->

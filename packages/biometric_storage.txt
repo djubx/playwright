@@ -1,0 +1,190 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Biometric Storage Flutter Package
+
+The `biometric_storage` Flutter package is a powerful tool for developers looking to integrate secure biometric authentication into their applications. This package allows you to store sensitive data securely using the device's biometric capabilities, such as fingerprint or facial recognition. It is particularly useful in scenarios where you need to protect user data, such as passwords, tokens, or any sensitive information that should not be easily accessible.
+
+## When to Use
+
+- **Secure Authentication**: Use biometric storage to enhance the security of your authentication process by storing tokens or credentials.
+- **Data Protection**: Protect sensitive user data that requires a high level of security.
+- **User Experience**: Improve user experience by allowing quick and secure access to the app without needing to remember passwords.
+
+## Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Biometric Authentication**: Utilizes the device's biometric capabilities for secure access.
+- **Secure Storage**: Stores data in a secure enclave, ensuring it is protected from unauthorized access.
+- **Easy Integration**: Simple API for quick setup and integration into your Flutter app.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the Biometric Storage Package
+
+In this tutorial, we will walk through the process of setting up and using the `biometric_storage` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup
+
+### Step 1: Add Dependency
+
+Add the `biometric_storage` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  biometric_storage: ^3.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Ensure that your `AndroidManifest.xml` includes the necessary permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+   ```
+
+2. **Biometric Prompt**: Ensure your app targets Android API level 28 or higher to use the BiometricPrompt API.
+
+#### iOS
+
+1. **Info.plist**: Add the following keys to your `Info.plist` to request biometric permissions:
+
+   ```xml
+   <key>NSFaceIDUsageDescription</key>
+   <string>We use Face ID to secure your data.</string>
+   ```
+
+### Step 3: Initialize and Use the Package
+
+Create a class named `RealFlutter` to handle biometric storage operations.
+
+```dart
+import 'package:biometric_storage/biometric_storage.dart';
+
+class RealFlutter {
+  Future<void> storeData(String key, String value) async {
+    final canAuthenticate = await BiometricStorage().canAuthenticate();
+    if (canAuthenticate == CanAuthenticateResponse.success) {
+      final storage = await BiometricStorage().getStorage(key);
+      await storage.write(value);
+    }
+  }
+
+  Future<String?> retrieveData(String key) async {
+    final storage = await BiometricStorage().getStorage(key);
+    return await storage.read();
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:biometric_storage/biometric_storage.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Biometric Storage Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final RealFlutter _realFlutter = RealFlutter();
+  String _status = "No data stored";
+
+  // Function to store data using biometric authentication
+  Future<void> _storeData() async {
+    try {
+      await _realFlutter.storeData('my_key', 'my_secure_data');
+      setState(() {
+        _status = "Data stored successfully!";
+      });
+    } catch (e) {
+      setState(() {
+        _status = "Failed to store data: $e";
+      });
+    }
+  }
+
+  // Function to retrieve data using biometric authentication
+  Future<void> _retrieveData() async {
+    try {
+      final data = await _realFlutter.retrieveData('my_key');
+      setState(() {
+        _status = data ?? "No data found";
+      });
+    } catch (e) {
+      setState(() {
+        _status = "Failed to retrieve data: $e";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Biometric Storage Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _status,
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _storeData,
+              child: Text('Store Data'),
+            ),
+            ElevatedButton(
+              onPressed: _retrieveData,
+              child: Text('Retrieve Data'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by running the `MyApp` widget, which sets up the MaterialApp.
+// The home screen is `MyHomePage`, a stateful widget that manages the UI and interactions.
+// The `_MyHomePageState` class contains two main functions: `_storeData` and `_retrieveData`.
+// `_storeData` uses the `RealFlutter` class to store data securely using biometric authentication.
+// `_retrieveData` retrieves the stored data, also using biometric authentication.
+// The UI consists of a text widget to display the status and two buttons to trigger storing and retrieving data.
+// When a button is pressed, the corresponding function is called, and the status is updated based on the result.
+
+<-- END_MAIN -->
+```

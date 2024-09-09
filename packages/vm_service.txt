@@ -1,0 +1,169 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `vm_service` Flutter Package
+
+The `vm_service` package is a powerful tool for developers working with Flutter and Dart applications. It provides a programmatic interface to the Dart VM Service Protocol, which is essential for debugging, profiling, and inspecting Dart applications. This package is particularly useful for developers who need to interact with the Dart VM for tasks such as monitoring application performance, capturing stack traces, or managing isolates.
+
+## When to Use `vm_service`
+
+- **Debugging**: When you need to set breakpoints, step through code, or inspect variables.
+- **Profiling**: To analyze the performance of your application, including CPU and memory usage.
+- **Isolate Management**: For advanced use cases where you need to manage multiple isolates within your application.
+
+## Key Features
+
+- **Connection to Dart VM**: Establishes a connection to the Dart VM for real-time data access.
+- **Event Streams**: Listens to various events such as garbage collection, isolate creation, and more.
+- **Service Requests**: Allows sending requests to the Dart VM for specific data or actions.
+- **Profiling Tools**: Provides access to CPU and memory profiling data.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `vm_service` Package
+
+In this tutorial, we will walk through the setup process for the `vm_service` package and demonstrate how to use it in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup Process
+
+1. **Add Dependency**
+
+   Add the `vm_service` package to your `pubspec.yaml` file:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     vm_service: ^9.0.0
+   ```
+
+2. **Platform-Specific Configuration**
+
+   - **Android**: Ensure that your `AndroidManifest.xml` allows network access if you plan to connect to a remote Dart VM.
+   - **iOS**: No specific configuration is required, but ensure that your app has the necessary permissions if you are connecting to a remote service.
+
+3. **Import the Package**
+
+   In your Dart code, import the `vm_service` package:
+
+   ```dart
+   import 'package:vm_service/vm_service.dart';
+   import 'package:vm_service/vm_service_io.dart';
+   ```
+
+## Using the Package
+
+1. **Establish a Connection**
+
+   Use the `vmServiceConnectUri` function to connect to the Dart VM:
+
+   ```dart
+   Future<void> connectToVmService() async {
+     final service = await vmServiceConnectUri('ws://127.0.0.1:8181/ws');
+     // Use the service to interact with the Dart VM
+   }
+   ```
+
+2. **Listen to Events**
+
+   Subscribe to various events to monitor the application's behavior:
+
+   ```dart
+   service.onGCEvent.listen((event) {
+     print('Garbage collection event: $event');
+   });
+   ```
+
+3. **Send Requests**
+
+   Send requests to the Dart VM to retrieve information or perform actions:
+
+   ```dart
+   final vm = await service.getVM();
+   print('Connected to VM: ${vm.name}');
+   ```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:vm_service/vm_service.dart';
+import 'package:vm_service/vm_service_io.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'VM Service Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  VmService? _vmService;
+  String _vmName = 'Unknown';
+
+  @override
+  void initState() {
+    super.initState();
+    _connectToVmService();
+  }
+
+  Future<void> _connectToVmService() async {
+    // Establish a connection to the Dart VM Service
+    _vmService = await vmServiceConnectUri('ws://127.0.0.1:8181/ws');
+    
+    // Retrieve the VM information
+    final vm = await _vmService!.getVM();
+    
+    // Update the state with the VM name
+    setState(() {
+      _vmName = vm.name!;
+    });
+
+    // Listen to garbage collection events
+    _vmService!.onGCEvent.listen((event) {
+      print('Garbage collection event: $event');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('VM Service Demo'),
+      ),
+      body: Center(
+        child: Text('Connected to VM: $_vmName'),
+      ),
+    );
+  }
+}
+
+// The application starts by running the MyApp widget, which sets up the MaterialApp.
+// The RealFlutter widget is the main screen of the app, which is a stateful widget.
+// In the initState method, we establish a connection to the Dart VM Service using vmServiceConnectUri.
+// Once connected, we retrieve the VM information and update the UI with the VM name.
+// We also set up a listener for garbage collection events to demonstrate event handling.
+// The build method returns a simple UI displaying the name of the connected VM.
+```
+
+<-- END_MAIN -->
+```

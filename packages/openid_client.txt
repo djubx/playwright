@@ -1,0 +1,180 @@
+<-- START_DESCRIPTION -->
+
+Openid Client Flutter Package
+=============================
+
+The `openid_client` package is a Flutter library that provides an easy-to-use interface for authenticating with OpenID Connect (OIDC) providers. It supports various OIDC flows, including authorization code, implicit, and client credentials.
+
+When to Use This Package
+------------------------
+
+You should use this package when you need to authenticate users with an OIDC provider, such as Google, Microsoft, or Okta, in your Flutter application.
+
+Features
+--------
+
+* Supports authorization code, implicit, and client credentials flows
+* Handles token refresh and revocation
+* Provides a simple API for authenticating and accessing user data
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+Setup and Configuration
+-----------------------
+
+### Android
+
+1. Add the following dependencies to your `android/app/build.gradle` file:
+```groovy
+dependencies {
+    implementation 'com.android.volley:volley:1.2.1'
+}
+```
+2. Create a new file called `android/app/src/main/res/xml/network_security_config.xml` with the following content:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
+```
+3. Add the following line to your `android/app/src/main/AndroidManifest.xml` file:
+```xml
+<application
+    ...
+    android:networkSecurityConfig="@xml/network_security_config"
+    ...
+>
+```
+### iOS
+
+1. Add the following dependencies to your `ios/Podfile` file:
+```ruby
+pod 'openid-client'
+```
+2. Run `pod install` in your terminal to install the dependencies.
+
+Using the Package
+-----------------
+
+1. Import the package in your Dart file:
+```dart
+import 'package:openid_client/openid_client.dart';
+```
+2. Create an instance of the `OpenIdClient` class:
+```dart
+final client = OpenIdClient(
+  issuer: 'https://example.com',
+  clientId: 'your_client_id',
+  clientSecret: 'your_client_secret',
+  redirectUri: 'your_redirect_uri',
+);
+```
+3. Authenticate the user:
+```dart
+final tokenResponse = await client.getToken();
+```
+4. Use the access token to access protected resources:
+```dart
+final response = await http.get(
+  Uri.parse('https://example.com/protected'),
+  headers: {
+    'Authorization': 'Bearer ${tokenResponse.accessToken}',
+  },
+);
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:openid_client/openid_client.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'OpenID Client Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _client = OpenIdClient(
+    issuer: 'https://example.com',
+    clientId: 'your_client_id',
+    clientSecret: 'your_client_secret',
+    redirectUri: 'your_redirect_uri',
+  );
+
+  String _tokenResponse = '';
+
+  void _login() async {
+    // 1. Authenticate the user
+    final tokenResponse = await _client.getToken();
+
+    // 2. Store the token response
+    setState(() {
+      _tokenResponse = tokenResponse.toJson().toString();
+    });
+
+    // 3. Use the access token to access protected resources
+    final response = await http.get(
+      Uri.parse('https://example.com/protected'),
+      headers: {
+        'Authorization': 'Bearer ${tokenResponse.accessToken}',
+      },
+    );
+
+    // 4. Display the response
+    print(response.body);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('OpenID Client Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_tokenResponse),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              child: Text('Login'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application flow is as follows:
+// 1. The user clicks the "Login" button, which calls the `_login` function.
+// 2. The `_login` function authenticates the user using the `OpenIdClient` instance.
+// 3. The token response is stored in the `_tokenResponse` variable and displayed on the screen.
+// 4. The access token is used to access a protected resource on the server.
+// 5. The response from the server is displayed in the console.
+
+<-- END_MAIN -->

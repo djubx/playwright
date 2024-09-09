@@ -1,0 +1,214 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `photo_gallery` Flutter Package
+
+The `photo_gallery` Flutter package is a powerful tool designed to facilitate the integration of photo and video galleries within Flutter applications. It provides a seamless way to access and display media stored on a user's device, making it an ideal choice for applications that require media browsing capabilities.
+
+## When to Use the `photo_gallery` Package
+
+This package is particularly useful in scenarios where your application needs to:
+- Display a gallery of photos and videos stored on the user's device.
+- Allow users to select and upload media files.
+- Create custom photo or video viewing experiences.
+
+## Key Features
+
+- **Media Access**: Retrieve photos and videos from the device's storage.
+- **Albums**: Organize media into albums for easy navigation.
+- **Filtering**: Filter media by type, date, or album.
+- **Thumbnails**: Efficiently load and display media thumbnails.
+- **Cross-Platform**: Supports both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `photo_gallery` Package
+
+In this tutorial, we will walk through the process of setting up the `photo_gallery` package in a Flutter project and demonstrate how to use its features effectively.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `photo_gallery` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  photo_gallery: ^1.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Update `AndroidManifest.xml` to include necessary permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+   ```
+
+2. **Request Permissions**: Ensure you request runtime permissions for Android 6.0 (API level 23) and above.
+
+#### iOS
+
+1. **Permissions**: Add the following keys to your `Info.plist` file:
+
+   ```xml
+   <key>NSPhotoLibraryUsageDescription</key>
+   <string>We need access to your photo library to display photos and videos.</string>
+   ```
+
+2. **Enable iCloud**: If you plan to access iCloud photos, ensure iCloud capabilities are enabled.
+
+### Step 3: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:photo_gallery/photo_gallery.dart';
+```
+
+## Using the Package
+
+1. **Initialize the Gallery**: Before accessing media, ensure the gallery is initialized.
+2. **Fetch Albums**: Use the package to fetch albums from the device.
+3. **Display Media**: Retrieve and display media items from the selected album.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:photo_gallery/photo_gallery.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Photo Gallery Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: GalleryScreen(),
+    );
+  }
+}
+
+class GalleryScreen extends StatefulWidget {
+  @override
+  _GalleryScreenState createState() => _GalleryScreenState();
+}
+
+class _GalleryScreenState extends State<GalleryScreen> {
+  List<Album> _albums = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAlbums();
+  }
+
+  Future<void> _fetchAlbums() async {
+    // Request permission to access media
+    if (await PhotoGallery.requestPermission()) {
+      // Fetch albums from the device
+      List<Album> albums = await PhotoGallery.listAlbums(mediumType: MediumType.image);
+      setState(() {
+        _albums = albums;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Photo Gallery'),
+      ),
+      body: _albums.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _albums.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_albums[index].name),
+                  onTap: () => _openAlbum(_albums[index]),
+                );
+              },
+            ),
+    );
+  }
+
+  void _openAlbum(Album album) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AlbumScreen(album: album),
+      ),
+    );
+  }
+}
+
+class AlbumScreen extends StatelessWidget {
+  final Album album;
+
+  AlbumScreen({required this.album});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(album.name),
+      ),
+      body: FutureBuilder<MediaPage>(
+        future: album.listMedia(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error loading media'));
+          } else {
+            final mediaItems = snapshot.data!.items;
+            return GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 4.0,
+                mainAxisSpacing: 4.0,
+              ),
+              itemCount: mediaItems.length,
+              itemBuilder: (context, index) {
+                return Image(
+                  image: ThumbnailProvider(
+                    mediumId: mediaItems[index].id,
+                    mediumType: mediaItems[index].mediumType,
+                  ),
+                  fit: BoxFit.cover,
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutter` widget, which sets up the MaterialApp.
+// 2. The `GalleryScreen` is the home screen, displaying a list of photo albums.
+// 3. On initialization, `GalleryScreen` requests permission and fetches albums using `PhotoGallery`.
+// 4. Albums are displayed in a ListView, and tapping an album opens `AlbumScreen`.
+// 5. `AlbumScreen` fetches and displays media items in a GridView using thumbnails.
+// 6. The app handles permissions and errors gracefully, ensuring a smooth user experience.
+```
+
+<-- END_MAIN -->
+```
