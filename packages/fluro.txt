@@ -1,0 +1,261 @@
+Here's a detailed technical blog on the "fluro" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Fluro: A Powerful Flutter Routing Package
+
+Fluro is a powerful routing library for Flutter that simplifies the process of managing routes in your application. It provides a flexible and easy-to-use API for defining routes, handling parameters, and managing transitions between screens. Fluro is particularly useful for larger applications where managing navigation can become complex.
+
+## When to Use Fluro
+
+You should consider using Fluro in the following scenarios:
+
+- **Complex Navigation**: If your app has multiple screens and complex navigation flows, Fluro can help manage these routes more effectively.
+- **Dynamic Routing**: When you need to pass parameters between routes or handle deep linking, Fluro provides a straightforward way to achieve this.
+- **Custom Transitions**: If you want to implement custom transitions between screens, Fluro allows you to define these easily.
+
+## Key Features
+
+- **Named Routes**: Define routes with names for easy navigation.
+- **Parameter Handling**: Pass parameters easily between routes.
+- **Custom Transitions**: Create custom animations for route transitions.
+- **Deep Linking**: Support for deep linking to specific routes in your app.
+
+With these features, Fluro enhances the navigation experience in Flutter applications, making it a valuable tool for developers.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up Fluro in Your Flutter Project
+
+In this tutorial, we will walk through the setup process for the Fluro package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Fluro to Your Project
+
+To get started, add the Fluro package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  fluro: ^1.7.8  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Configure Fluro
+
+Next, you need to set up Fluro in your Flutter application. Create a new file called `router.dart` to define your routes.
+
+```dart
+import 'package:fluro/fluro.dart';
+import 'package:flutter/material.dart';
+import 'main.dart'; // Import your main file or other screens
+
+class FluroRouter {
+  static final FluroRouter _instance = FluroRouter._internal();
+  factory FluroRouter() => _instance;
+
+  FluroRouter._internal();
+
+  final router = Router();
+
+  void defineRoutes() {
+    router.define("/", handler: Handler(handlerFunc: (context, params) => HomeScreen()));
+    router.define("/details/:id", handler: Handler(handlerFunc: (context, params) {
+      final id = params["id"]?.first;
+      return DetailsScreen(id: id);
+    }));
+  }
+}
+```
+
+### Platform-Specific Configuration
+
+#### Android
+
+For Android, ensure that your `AndroidManifest.xml` file has the correct intent filters if you plan to support deep linking. Add the following inside the `<activity>` tag:
+
+```xml
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="yourapp" android:host="example.com" />
+</intent-filter>
+```
+
+#### iOS
+
+For iOS, you need to configure your `Info.plist` to handle deep links. Add the following:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>yourapp</string>
+        </array>
+    </dict>
+</array>
+```
+
+## Step 3: Initialize Fluro in Your Main File
+
+In your `main.dart`, initialize Fluro and define your routes:
+
+```dart
+import 'package:flutter/material.dart';
+import 'router.dart';
+
+void main() {
+  FluroRouter().defineRoutes(); // Define routes
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Fluro Example',
+      onGenerateRoute: FluroRouter().router.generator, // Use Fluro's route generator
+      home: HomeScreen(),
+    );
+  }
+}
+```
+
+## Step 4: Create Screens
+
+Create your screens, such as `HomeScreen` and `DetailsScreen`, to navigate between them.
+
+```dart
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Home")),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            FluroRouter().router.navigateTo(context, "/details/1"); // Navigate to details
+          },
+          child: Text("Go to Details"),
+        ),
+      ),
+    );
+  }
+}
+
+class DetailsScreen extends StatelessWidget {
+  final String? id;
+
+  DetailsScreen({this.id});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Details")),
+      body: Center(
+        child: Text("Details for item: $id"),
+      ),
+    );
+  }
+}
+```
+
+Now you have a basic setup for using Fluro in your Flutter application!
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Fluro in a Flutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:fluro/fluro.dart';
+
+// Define the FluroRouter class to manage routes
+class FluroRouter {
+  static final FluroRouter _instance = FluroRouter._internal();
+  factory FluroRouter() => _instance;
+
+  FluroRouter._internal();
+
+  final router = Router();
+
+  // Define application routes
+  void defineRoutes() {
+    // Home route
+    router.define("/", handler: Handler(handlerFunc: (context, params) => HomeScreen()));
+    // Details route with parameter
+    router.define("/details/:id", handler: Handler(handlerFunc: (context, params) {
+      final id = params["id"]?.first; // Extract the id parameter
+      return DetailsScreen(id: id); // Pass the id to DetailsScreen
+    }));
+  }
+}
+
+void main() {
+  FluroRouter().defineRoutes(); // Initialize routes
+  runApp(MyApp());
+}
+
+// Main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Fluro Example',
+      onGenerateRoute: FluroRouter().router.generator, // Use Fluro's route generator
+      home: HomeScreen(), // Set the home screen
+    );
+  }
+}
+
+// Home screen widget
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Home")), // App bar title
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Navigate to the details screen with an id parameter
+            FluroRouter().router.navigateTo(context, "/details/1");
+          },
+          child: Text("Go to Details"), // Button text
+        ),
+      ),
+    );
+  }
+}
+
+// Details screen widget
+class DetailsScreen extends StatelessWidget {
+  final String? id; // Parameter to hold the id
+
+  DetailsScreen({this.id}); // Constructor to receive the id
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Details")), // App bar title
+      body: Center(
+        child: Text("Details for item: $id"), // Display the id
+      ),
+    );
+  }
+}
+
+// Application flow explanation:
+// 1. The application starts in the main() function, where FluroRouter is initialized and routes are defined.
+// 2. MyApp is the root widget, which sets up the MaterialApp and specifies the home screen as HomeScreen.
+// 3. HomeScreen displays a button that, when pressed, navigates to the DetailsScreen with an id parameter.
+// 4. DetailsScreen receives the id and displays it on the screen.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the Fluro package, set it up in a Flutter application, and provided a complete example demonstrating its features. Fluro simplifies navigation in Flutter apps, making it easier to manage routes and transitions. By following the steps outlined, you can effectively implement Fluro in your own projects.

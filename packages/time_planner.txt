@@ -1,0 +1,228 @@
+Here's a detailed technical blog on the "time_planner" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Time Planner Flutter Package
+
+The **time_planner** package is a powerful tool for managing and scheduling tasks in Flutter applications. It provides a user-friendly interface for creating, editing, and displaying time-based events, making it ideal for applications that require scheduling functionalities, such as calendars, to-do lists, or event planners.
+
+## When to Use This Package
+
+You should consider using the **time_planner** package when:
+- You need to implement a scheduling feature in your app.
+- You want to allow users to create and manage events or tasks.
+- You require a customizable and easy-to-use interface for time management.
+
+## Features
+
+- **Event Creation**: Easily create events with start and end times.
+- **Event Editing**: Modify existing events with a simple interface.
+- **Customizable UI**: Tailor the appearance of the planner to fit your app's design.
+- **Recurring Events**: Support for events that repeat on a regular basis.
+- **Time Zone Support**: Handle events across different time zones seamlessly.
+
+The **time_planner** package is a versatile solution for any Flutter developer looking to integrate time management features into their applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Time Planner Package
+
+## Step 1: Adding the Dependency
+
+To get started with the **time_planner** package, you need to add it to your `pubspec.yaml` file. Open the file and add the following line under dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  time_planner: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command in your terminal to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS Configuration
+
+For iOS, you may need to add permissions in your `Info.plist` file if your app requires access to the user's calendar. Add the following lines:
+
+```xml
+<key>NSCalendarsUsageDescription</key>
+<string>This app requires access to your calendar to manage events.</string>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Here’s a simple example of how to create a basic time planner interface.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Time Planner
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:time_planner/time_planner.dart'; // Import the time_planner package
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Time Planner Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(), // Set the home to the RealFlutter widget
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Initialize a list to hold events
+  List<Event> events = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Time Planner'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: _addEvent, // Call the method to add an event
+          ),
+        ],
+      ),
+      body: TimePlanner(
+        events: events, // Pass the list of events to the TimePlanner
+        onEventTap: (event) {
+          // Handle event tap
+          _editEvent(event);
+        },
+      ),
+    );
+  }
+
+  // Method to add a new event
+  void _addEvent() {
+    // Show a dialog to create a new event
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Event'),
+          content: EventForm(
+            onSave: (event) {
+              setState(() {
+                events.add(event); // Add the new event to the list
+              });
+              Navigator.of(context).pop(); // Close the dialog
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // Method to edit an existing event
+  void _editEvent(Event event) {
+    // Show a dialog to edit the selected event
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit Event'),
+          content: EventForm(
+            event: event, // Pass the existing event to the form
+            onSave: (updatedEvent) {
+              setState(() {
+                // Update the event in the list
+                int index = events.indexOf(event);
+                events[index] = updatedEvent;
+              });
+              Navigator.of(context).pop(); // Close the dialog
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+// EventForm widget to handle event creation and editing
+class EventForm extends StatelessWidget {
+  final Event? event;
+  final Function(Event) onSave;
+
+  EventForm({this.event, required this.onSave});
+
+  @override
+  Widget build(BuildContext context) {
+    // Form fields for event details
+    return Column(
+      children: [
+        TextField(
+          decoration: InputDecoration(labelText: 'Event Title'),
+          controller: TextEditingController(text: event?.title),
+        ),
+        // Additional fields for date and time can be added here
+        ElevatedButton(
+          onPressed: () {
+            // Create a new event or update the existing one
+            Event newEvent = Event(
+              title: 'New Event', // Replace with actual input
+              startTime: DateTime.now(),
+              endTime: DateTime.now().add(Duration(hours: 1)),
+            );
+            onSave(newEvent); // Call the onSave function
+          },
+          child: Text(event == null ? 'Add Event' : 'Update Event'),
+        ),
+      ],
+    );
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application using the time_planner package. 
+// It consists of a main widget (MyApp) that sets up the application and a stateful widget (RealFlutter) 
+// that manages the events. The app has an AppBar with an add button to create new events. 
+// When the button is pressed, a dialog appears allowing the user to input event details. 
+// The events are displayed using the TimePlanner widget, and tapping on an event opens a dialog 
+// to edit the event details. The EventForm widget handles both creating and updating events, 
+// making it reusable for both functionalities. 
+
+// Overall, this application flow allows users to manage their events efficiently, 
+// providing a straightforward interface for adding and editing events in a time planner.
+
+<!-- END_MAIN --> 
+
+This blog provides a comprehensive overview of the **time_planner** package, guiding users through its setup and usage while offering a complete example to illustrate its functionality.

@@ -1,0 +1,181 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Isolate Manager Flutter Package
+
+The `isolate_manager` Flutter package is designed to simplify the management of isolates in Flutter applications. Isolates are a fundamental part of Dart's concurrency model, allowing developers to run code in parallel without shared memory, which can lead to performance improvements in CPU-bound tasks.
+
+## When to Use
+
+You should consider using the `isolate_manager` package when:
+- You need to perform heavy computations that could block the main UI thread.
+- You want to handle tasks like image processing, data parsing, or any CPU-intensive operations without affecting the user experience.
+- You require a straightforward way to manage multiple isolates without dealing with the complexities of Dart's native isolate API.
+
+## Features
+
+- **Easy Management**: Simplifies the creation, communication, and termination of isolates.
+- **Error Handling**: Provides built-in mechanisms for handling errors that occur within isolates.
+- **Data Transfer**: Facilitates the transfer of data between the main isolate and worker isolates using `SendPort` and `ReceivePort`.
+- **Performance Monitoring**: Offers tools to monitor the performance of isolates, helping you optimize your application.
+
+By leveraging the `isolate_manager` package, developers can create responsive applications that efficiently utilize system resources.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Isolate Manager Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `isolate_manager` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  isolate_manager: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Importing the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:isolate_manager/isolate_manager.dart';
+```
+
+## Step 3: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, no specific configurations are required for using isolates. However, ensure that your deployment target is set appropriately in your `ios/Podfile`.
+
+## Step 4: Basic Usage
+
+Here’s a simple example of how to use the `isolate_manager` package:
+
+1. Create an instance of `IsolateManager`.
+2. Define the function that will run in the isolate.
+3. Start the isolate and communicate with it.
+
+```dart
+void main() async {
+  // Create an instance of IsolateManager
+  final isolateManager = IsolateManager();
+
+  // Define the function to run in the isolate
+  Future<String> heavyComputation(String input) async {
+    // Simulate a heavy computation
+    await Future.delayed(Duration(seconds: 2));
+    return 'Processed: $input';
+  }
+
+  // Start the isolate
+  final result = await isolateManager.run(heavyComputation, 'Hello, Isolate!');
+  print(result); // Output: Processed: Hello, Isolate!
+}
+```
+
+This example demonstrates how to set up and use the `isolate_manager` package effectively.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using Isolate Manager
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:isolate_manager/isolate_manager.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Isolate Manager Example',
+      home: IsolateExample(),
+    );
+  }
+}
+
+class IsolateExample extends StatefulWidget {
+  @override
+  _IsolateExampleState createState() => _IsolateExampleState();
+}
+
+class _IsolateExampleState extends State<IsolateExample> {
+  String _result = 'Result will be shown here';
+  final IsolateManager _isolateManager = IsolateManager();
+
+  // Function to run in the isolate
+  Future<String> heavyComputation(String input) async {
+    // Simulate a heavy computation
+    await Future.delayed(Duration(seconds: 2));
+    return 'Processed: $input';
+  }
+
+  // Method to start the computation
+  void _startComputation() async {
+    // Start the isolate and pass the function and input
+    final result = await _isolateManager.run(heavyComputation, 'Hello, Isolate!');
+    // Update the UI with the result
+    setState(() {
+      _result = result;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Isolate Manager Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_result), // Display the result
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startComputation, // Start computation on button press
+              child: Text('Start Heavy Computation'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The IsolateExample widget is created, which contains a button to start the computation.
+// 3. When the button is pressed, the _startComputation method is called.
+// 4. This method uses the IsolateManager to run the heavyComputation function in a separate isolate.
+// 5. After the computation is complete, the result is returned and the UI is updated to display the result.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog provides a comprehensive overview of the `isolate_manager` Flutter package, guiding users through its features, setup, and practical usage with a complete example.
