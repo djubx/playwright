@@ -124,8 +124,8 @@ async function handleError(page, packageName, command, error) {
   const screenshotPath = path.join('screenshots', `error_screenshot_${packageName}.png`);
   await fs.mkdir('screenshots', { recursive: true });
   await page.screenshot({ path: screenshotPath });
-  await log(`Error screenshot saved as '${screenshotPath}'`);
   await page.reload();
+  await log(`Error screenshot saved as '${screenshotPath}'`);
 }
 
 async function processPrompts(page, context, prompts) {
@@ -170,6 +170,7 @@ async function main() {
       await page.screenshot({ path: errorScreenshotPath });
       await log(`Error screenshot saved as '${errorScreenshotPath}'`);
       await page.reload();
+      await log("Reloaded the page.");
     }
   } finally {
     if (browser) {
