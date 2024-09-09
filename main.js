@@ -59,11 +59,11 @@ async function enterPrompt(page, command, isFirstPrompt) {
       }
     });
     await page.fill('#text', command);
-  
+
     await log("Clicking Regenerate button...");
     await page.click('button:has-text("Regenerate")');
   }
-  
+
   await log(`Prompt entered and Regenerate clicked: "${command}"`);
 }
 
@@ -120,6 +120,7 @@ async function updatePromptsFileWithLastProcessedPrompt(packageName) {
   await fs.writeFile('prompts.json', JSON.stringify(finalPrompts, null, 2));
 }
 
+let counter = 0;
 async function saveResponse(clipboardText, packageName, command) {
   if (clipboardText) {
     const filePath = path.join('packages', `${packageName}.txt`);
@@ -153,7 +154,7 @@ async function handleError(page, packageName, command, error) {
 async function processPrompts(page, context, prompts) {
   for (let i = 0; i < prompts.length; i++) {
     const { packageName, command } = prompts[i];
-    await log(`\nProcessing prompt ${i+1} of ${prompts.length}`);
+    await log(`\nProcessing prompt ${i + 1} of ${prompts.length}`);
 
     try {
       await enterPrompt(page, command, i === 0);
