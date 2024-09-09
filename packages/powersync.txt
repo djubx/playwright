@@ -1,0 +1,210 @@
+Here's a detailed technical blog on the "powersync" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Powersync Flutter Package
+
+The **Powersync** package is a powerful tool for Flutter developers that facilitates the synchronization of data between local storage and remote servers. It is particularly useful in applications that require real-time data updates, such as chat applications, collaborative tools, or any app that needs to keep data in sync across multiple devices.
+
+## When to Use Powersync
+
+You should consider using the Powersync package in scenarios such as:
+
+- **Real-time Collaboration**: Applications where multiple users need to see updates in real-time.
+- **Offline Support**: Apps that need to function offline and sync data once the connection is restored.
+- **Data Consistency**: Ensuring that the local data is consistent with the server data, especially in applications that handle critical information.
+
+## Features
+
+- **Automatic Synchronization**: Automatically syncs data between local storage and remote servers.
+- **Conflict Resolution**: Provides mechanisms to handle data conflicts that may arise during synchronization.
+- **Customizable Sync Intervals**: Allows developers to set custom intervals for data synchronization.
+- **Support for Multiple Platforms**: Works seamlessly on both Android and iOS.
+
+With these features, Powersync simplifies the process of managing data synchronization in Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Powersync
+
+In this tutorial, we will walk through the setup process for the Powersync package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the Powersync package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  powersync: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure that the `minSdkVersion` is set to at least 21:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+2. Add the necessary permissions in `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add the following permissions:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. Ensure that your deployment target is set to at least iOS 10.0 in `ios/Podfile`:
+
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+## Step 3: Using Powersync in Your Application
+
+Now that we have set up the package, let's see how to use it in a Flutter application.
+
+1. Import the package in your Dart file:
+
+   ```dart
+   import 'package:powersync/powersync.dart';
+   ```
+
+2. Initialize the Powersync instance in your main application class:
+
+   ```dart
+   class RealFlutter extends StatelessWidget {
+     @override
+     Widget build(BuildContext context) {
+       // Initialize Powersync
+       final powersync = Powersync();
+
+       // Start synchronization
+       powersync.startSync();
+
+       return MaterialApp(
+         title: 'Powersync Example',
+         home: HomeScreen(),
+       );
+     }
+   }
+   ```
+
+3. Create a simple UI to display and sync data.
+
+This setup will allow you to start using the Powersync package in your Flutter application effectively.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Powersync in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:powersync/powersync.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Initialize Powersync
+    final powersync = Powersync();
+
+    // Start synchronization
+    powersync.startSync();
+
+    return MaterialApp(
+      title: 'Powersync Example',
+      home: HomeScreen(powersync: powersync),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  final Powersync powersync;
+
+  HomeScreen({required this.powersync});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<String> _data = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for data changes
+    widget.powersync.onDataChanged.listen((newData) {
+      setState(() {
+        _data = newData; // Update local data with new data from sync
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Powersync Example'),
+      ),
+      body: ListView.builder(
+        itemCount: _data.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(_data[index]), // Display synced data
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Simulate adding new data
+          widget.powersync.addData('New Item ${_data.length + 1}');
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(RealFlutter());
+}
+```
+
+### Application Flow Explanation
+
+// The application starts with the `main` function, which runs the `RealFlutter` widget.
+// Inside `RealFlutter`, we initialize the Powersync instance and start the synchronization process.
+// The `HomeScreen` widget is created, which takes the Powersync instance as a parameter.
+// In the `HomeScreen`, we listen for data changes from the Powersync instance.
+// When new data is received, we update the local state to reflect the changes in the UI.
+// The UI consists of a ListView that displays the synced data and a FloatingActionButton to add new items.
+// When the button is pressed, a new item is added to the Powersync instance, which triggers a data change event.
+// This event updates the ListView with the new item, demonstrating real-time synchronization.
+
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the Powersync package, including its features, setup instructions, and a complete example of how to implement it in a Flutter application.
