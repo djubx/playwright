@@ -1,0 +1,155 @@
+Here's a detailed technical blog on the "readsms" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `readsms` Flutter package is a powerful tool that allows developers to read SMS messages directly from the user's device. This package is particularly useful for applications that require SMS verification, such as two-factor authentication, or for apps that need to read incoming messages for processing.
+
+## When to Use This Package
+
+- **SMS Verification**: When implementing features that require users to verify their phone numbers via SMS.
+- **Automated SMS Processing**: For applications that need to read and process incoming SMS messages automatically.
+- **User Notifications**: To provide users with notifications based on SMS content.
+
+## Features
+
+- **Read SMS Messages**: Access and read SMS messages from the device.
+- **Platform Support**: Works on both Android and iOS, with specific configurations for each platform.
+- **Permissions Handling**: Manages permissions required to read SMS messages seamlessly.
+
+The `readsms` package simplifies the process of integrating SMS reading capabilities into your Flutter applications, making it a valuable addition for developers looking to enhance user experience through SMS functionalities.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `readsms` package, follow these steps:
+
+### Step 1: Add Dependency
+
+Add the `readsms` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  readsms: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Open `AndroidManifest.xml` located at `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.READ_SMS"/>
+   <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+   ```
+
+2. **Request Permissions**: Ensure that you handle runtime permissions in your Flutter app. You can use the `permission_handler` package to request SMS permissions.
+
+#### iOS
+
+1. **Permissions**: Open `Info.plist` located at `ios/Runner/Info.plist` and add the following entry:
+
+   ```xml
+   <key>NSSMSUsageDescription</key>
+   <string>This app requires access to read SMS messages.</string>
+   ```
+
+2. **Limitations**: Note that iOS has strict limitations on reading SMS messages, and you may not be able to access SMS content directly.
+
+### Step 3: Import the Package
+
+In your Dart file, import the `readsms` package:
+
+```dart
+import 'package:readsms/readsms.dart';
+```
+
+### Step 4: Using the Package
+
+You can now use the `readsms` package to read SMS messages. Below is a simple example of how to implement this in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:readsms/readsms.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  String _smsContent = "No SMS read yet"; // Variable to hold SMS content
+
+  @override
+  void initState() {
+    super.initState();
+    _readSms(); // Call the method to read SMS on initialization
+  }
+
+  // Method to read SMS messages
+  Future<void> _readSms() async {
+    try {
+      // Request SMS permissions
+      final permissionStatus = await ReadSms.requestSmsPermission();
+      if (permissionStatus == SmsPermissionStatus.granted) {
+        // If permission is granted, read the SMS
+        final smsList = await ReadSms.readSms();
+        if (smsList.isNotEmpty) {
+          setState(() {
+            _smsContent = smsList[0].body; // Get the body of the first SMS
+          });
+        }
+      } else {
+        setState(() {
+          _smsContent = "Permission denied"; // Handle permission denial
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _smsContent = "Error reading SMS: $e"; // Handle any errors
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Read SMS Example'),
+        ),
+        body: Center(
+          child: Text(_smsContent), // Display the SMS content
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and the main function runs the RealFlutter widget.
+// 2. In the RealFlutter widget, the initState method is called, which triggers the _readSms method.
+// 3. The _readSms method requests SMS permissions from the user.
+// 4. If permissions are granted, it reads the SMS messages using the ReadSms.readSms() method.
+// 5. The first SMS message's body is stored in the _smsContent variable and displayed on the screen.
+// 6. If permissions are denied or an error occurs, appropriate messages are displayed to the user.
+```
+<!-- END_MAIN -->
+
+In this blog, we explored the `readsms` Flutter package, detailing its features, setup process, and providing a complete example of how to implement it in a Flutter application. This package is a valuable tool for developers looking to enhance their applications with SMS reading capabilities, ensuring a smooth user experience.

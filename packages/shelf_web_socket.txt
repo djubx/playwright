@@ -1,0 +1,248 @@
+Here's a detailed technical blog on the `shelf_web_socket` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `shelf_web_socket` package is a powerful tool for building WebSocket servers in Flutter applications. It allows developers to create real-time applications that can communicate with clients over WebSocket connections. This package is particularly useful for applications that require live updates, such as chat applications, online gaming, or real-time data feeds.
+
+## When to Use `shelf_web_socket`
+
+You should consider using the `shelf_web_socket` package when:
+- You need to implement real-time communication in your Flutter app.
+- Your application requires a server-side component to handle WebSocket connections.
+- You want to leverage the simplicity of the Shelf framework for building HTTP servers alongside WebSocket support.
+
+## Features
+- **Easy Integration**: Seamlessly integrates with the Shelf framework, allowing you to build a WebSocket server with minimal setup.
+- **Real-time Communication**: Supports full-duplex communication, enabling both the server and client to send messages independently.
+- **Scalability**: Built on top of the Shelf framework, it can handle multiple connections efficiently.
+- **Cross-Platform Support**: Works on both Android and iOS, making it suitable for mobile applications.
+
+In the following sections, we will walk through the setup process and provide a complete example of how to use the `shelf_web_socket` package in a Flutter application.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `shelf_web_socket` package, follow these steps:
+
+1. **Add Dependency**: Open your `pubspec.yaml` file and add the `shelf_web_socket` package under dependencies:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     shelf_web_socket: ^0.2.0
+     shelf: ^1.2.0
+   ```
+
+2. **Install Packages**: Run the following command in your terminal to install the new dependencies:
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Platform-Specific Configuration**:
+   - **Android**: Ensure that your `AndroidManifest.xml` file has the necessary permissions for internet access. Add the following line inside the `<manifest>` tag:
+
+     ```xml
+     <uses-permission android:name="android.permission.INTERNET"/>
+     ```
+
+   - **iOS**: For iOS, you may need to add the following to your `Info.plist` to allow arbitrary loads (if you're testing with a non-secure WebSocket):
+
+     ```xml
+     <key>NSAppTransportSecurity</key>
+     <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+     </dict>
+     ```
+
+## Using the Package
+
+### Basic Usage
+
+Here’s a simple example of how to set up a WebSocket server using the `shelf_web_socket` package:
+
+1. **Create a WebSocket Handler**: Define a function that will handle WebSocket connections.
+
+   ```dart
+   import 'package:shelf/shelf.dart';
+   import 'package:shelf_web_socket/shelf_web_socket.dart';
+
+   // Function to handle WebSocket connections
+   void webSocketHandler(WebSocketChannel webSocket) {
+     webSocket.stream.listen((message) {
+       // Echo the received message back to the client
+       webSocket.sink.add('Server: $message');
+     });
+   }
+   ```
+
+2. **Set Up the Server**: Create a Shelf server and add the WebSocket handler.
+
+   ```dart
+   import 'package:shelf/shelf.dart';
+   import 'package:shelf/shelf_io.dart' as shelf_io;
+   import 'package:shelf_web_socket/shelf_web_socket.dart';
+
+   void main() async {
+     // Create a handler for WebSocket connections
+     var handler = const Pipeline()
+         .addMiddleware(logRequests())
+         .addHandler(webSocketHandler);
+
+     // Start the server
+     var server = await shelf_io.serve(handler, 'localhost', 8080);
+     print('Server running on http://${server.address.host}:${server.port}');
+   }
+   ```
+
+This setup will create a WebSocket server that listens for incoming connections and echoes back any messages received from clients.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+Here’s a complete Flutter application that demonstrates the use of the `shelf_web_socket` package:
+
+```dart
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+// Main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'WebSocket Example',
+      home: WebSocketPage(),
+    );
+  }
+}
+
+// WebSocket page widget
+class WebSocketPage extends StatefulWidget {
+  @override
+  _WebSocketPageState createState() => _WebSocketPageState();
+}
+
+class _WebSocketPageState extends State<WebSocketPage> {
+  final TextEditingController _controller = TextEditingController();
+  final List<String> _messages = [];
+  late WebSocketChannel _channel;
+
+  @override
+  void initState() {
+    super.initState();
+    // Connect to the WebSocket server
+    _channel = WebSocketChannel.connect(Uri.parse('ws://localhost:8080'));
+    // Listen for messages from the server
+    _channel.stream.listen((message) {
+      setState(() {
+        _messages.add(message);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _channel.sink.close();
+    super.dispose();
+  }
+
+  // Send message to the server
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      _channel.sink.add(_controller.text);
+      _controller.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('WebSocket Example')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(title: Text(_messages[index]));
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(labelText: 'Send a message'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Function to handle WebSocket connections
+void webSocketHandler(WebSocketChannel webSocket) {
+  webSocket.stream.listen((message) {
+    // Echo the received message back to the client
+    webSocket.sink.add('Server: $message');
+  });
+}
+
+// Start the WebSocket server
+void startServer() async {
+  var handler = const Pipeline()
+      .addMiddleware(logRequests())
+      .addHandler(webSocketHandler);
+
+  var server = await shelf_io.serve(handler, 'localhost', 8080);
+  print('Server running on http://${server.address.host}:${server.port}');
+}
+
+// Call startServer() in the main function to run the server
+```
+
+### Application Flow Explanation
+
+// The application starts by running the `MyApp` widget, which sets up the main structure of the app.
+// The `WebSocketPage` widget is created, which manages the WebSocket connection and message display.
+// In the `initState` method, a connection to the WebSocket server is established.
+// The app listens for incoming messages from the server and updates the UI accordingly.
+// Users can type messages into a text field and send them to the server by pressing the send button.
+// The server echoes back the messages, which are displayed in a list on the screen.
+// When the app is disposed, the WebSocket connection is closed to free up resources.
+// The `startServer` function sets up the WebSocket server, which listens for incoming connections and handles messages.
+// This server runs on localhost at port 8080, allowing clients to connect and communicate in real-time.
+
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the `shelf_web_socket` package, including its features, setup instructions, and a complete example application. By following this guide, developers can easily implement real-time communication in their Flutter applications.

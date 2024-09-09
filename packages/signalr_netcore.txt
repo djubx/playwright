@@ -1,0 +1,227 @@
+Here's a detailed technical blog on the "signalr_netcore" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# SignalR NetCore Flutter Package
+
+The `signalr_netcore` package is a powerful library that allows Flutter applications to communicate with ASP.NET Core SignalR servers. SignalR is a library for ASP.NET that simplifies adding real-time web functionality to applications, enabling server-side code to push content to clients instantly. This package is particularly useful for applications that require real-time updates, such as chat applications, live notifications, or collaborative tools.
+
+## When to Use This Package
+You should consider using the `signalr_netcore` package in scenarios where:
+- You need real-time communication between the server and clients.
+- Your application requires instant updates, such as in chat applications or live dashboards.
+- You want to implement features like notifications, live data feeds, or collaborative editing.
+
+## Features
+- **Real-time Communication**: Establishes a persistent connection to the server for real-time data exchange.
+- **Automatic Reconnection**: Automatically attempts to reconnect if the connection is lost.
+- **Multiple Transport Protocols**: Supports WebSockets, Server-Sent Events, and Long Polling.
+- **Strongly Typed Hub Methods**: Allows calling server methods directly from the client with type safety.
+
+With these features, the `signalr_netcore` package provides a robust solution for building responsive and interactive applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the SignalR NetCore Package
+
+## Step 1: Add Dependency
+To get started, add the `signalr_netcore` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  signalr_netcore: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+   ```groovy
+   android {
+       ...
+       compileOptions {
+           sourceCompatibility JavaVersion.VERSION_1_8
+           targetCompatibility JavaVersion.VERSION_1_8
+       }
+   }
+   ```
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following permissions for network access:
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Basic Setup
+Create a new Dart file, e.g., `signalr_service.dart`, to manage your SignalR connection.
+
+```dart
+import 'package:signalr_netcore/signalr_netcore.dart';
+
+class RealFlutter {
+  HubConnection? hubConnection;
+
+  // Initialize the connection
+  void initConnection() {
+    hubConnection = HubConnectionBuilder()
+        .withUrl("https://yourserver.com/signalrhub") // Replace with your SignalR hub URL
+        .build();
+
+    // Start the connection
+    hubConnection!.start().then((_) {
+      print("Connection started");
+    }).catchError((error) {
+      print("Error starting connection: $error");
+    });
+
+    // Listen for messages from the server
+    hubConnection!.on("ReceiveMessage", (message) {
+      print("Message received: $message");
+    });
+  }
+
+  // Send a message to the server
+  void sendMessage(String message) {
+    hubConnection!.invoke("SendMessage", args: [message]);
+  }
+}
+```
+
+## Step 4: Using the Service in Your App
+In your main application file, you can use the `RealFlutter` class to manage the SignalR connection and send/receive messages.
+
+```dart
+import 'package:flutter/material.dart';
+import 'signalr_service.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SignalR Demo',
+      home: SignalRHome(),
+    );
+  }
+}
+
+class SignalRHome extends StatefulWidget {
+  @override
+  _SignalRHomeState createState() => _SignalRHomeState();
+}
+
+class _SignalRHomeState extends State<SignalRHome> {
+  final RealFlutter realFlutter = RealFlutter();
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    realFlutter.initConnection(); // Initialize the SignalR connection
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("SignalR Demo")),
+      body: Column(
+        children: [
+          TextField(
+            controller: _controller,
+            decoration: InputDecoration(labelText: "Enter message"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              realFlutter.sendMessage(_controller.text); // Send message to server
+              _controller.clear(); // Clear the input field
+            },
+            child: Text("Send"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of SignalR in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'signalr_service.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SignalR Demo',
+      home: SignalRHome(),
+    );
+  }
+}
+
+class SignalRHome extends StatefulWidget {
+  @override
+  _SignalRHomeState createState() => _SignalRHomeState();
+}
+
+class _SignalRHomeState extends State<SignalRHome> {
+  final RealFlutter realFlutter = RealFlutter(); // Create an instance of RealFlutter
+  final TextEditingController _controller = TextEditingController(); // Controller for the text input
+
+  @override
+  void initState() {
+    super.initState();
+    realFlutter.initConnection(); // Initialize the SignalR connection
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("SignalR Demo")), // App bar title
+      body: Column(
+        children: [
+          TextField(
+            controller: _controller, // Bind the controller to the text field
+            decoration: InputDecoration(labelText: "Enter message"), // Input field label
+          ),
+          ElevatedButton(
+            onPressed: () {
+              realFlutter.sendMessage(_controller.text); // Send message to server
+              _controller.clear(); // Clear the input field
+            },
+            child: Text("Send"), // Button label
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds the MaterialApp and sets SignalRHome as the home widget.
+// 3. SignalRHome initializes the RealFlutter instance and sets up the SignalR connection in initState.
+// 4. The UI consists of a TextField for user input and a button to send messages.
+// 5. When the button is pressed, the message from the TextField is sent to the server using the sendMessage method.
+// 6. The TextField is cleared after sending the message, ready for the next input.
+```
+<!-- END_MAIN -->
+
+In this blog, we covered the `signalr_netcore` Flutter package, detailing its features, setup process, and a complete example application. This package is essential for developers looking to implement real-time communication in their Flutter applications, providing a seamless way to connect with ASP.NET Core SignalR servers.

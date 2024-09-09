@@ -1,0 +1,168 @@
+Here's a detailed technical blog on the "beamer" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Beamer Flutter Package
+
+The **Beamer** package is a powerful routing and navigation solution for Flutter applications. It provides a declarative way to manage navigation, making it easier to handle complex routing scenarios. Beamer is particularly useful for applications that require deep linking, nested navigation, and a clear separation of concerns between the UI and navigation logic.
+
+## When to Use Beamer
+
+- **Complex Navigation**: When your app has multiple nested routes or requires deep linking.
+- **Separation of Concerns**: If you want to keep your navigation logic separate from your UI code.
+- **Declarative Routing**: When you prefer a declarative approach to define your routes and navigation flows.
+
+## Key Features
+
+- **Declarative API**: Define routes and navigation flows in a clear and concise manner.
+- **Nested Navigation**: Support for nested navigation, allowing for complex routing structures.
+- **Deep Linking**: Easily handle deep links to specific parts of your application.
+- **Custom Transitions**: Create custom page transitions for a more engaging user experience.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Beamer
+
+## Step 1: Adding Beamer to Your Project
+
+To get started with Beamer, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  beamer: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Basic Setup
+
+In your main Flutter application file, you need to set up Beamer. Here’s how to do it:
+
+### Android Configuration
+
+For Android, ensure that your `AndroidManifest.xml` is set up correctly to handle deep links. Add the following intent filter inside the `<activity>` tag:
+
+```xml
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="yourapp" android:host="example.com" />
+</intent-filter>
+```
+
+### iOS Configuration
+
+For iOS, you need to configure your `Info.plist` to handle deep links. Add the following:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>yourapp</string>
+        </array>
+    </dict>
+</array>
+```
+
+## Step 3: Using Beamer in Your App
+
+Now, let’s create a simple app using Beamer. Below is a basic example of how to set up routes and navigation.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:beamer/beamer.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      // Setting up the router delegate and back button dispatcher
+      routerDelegate: BeamerRouterDelegate(
+        locationBuilder: (routeInformation, _) {
+          return BeamLocation(
+            routeInformation: routeInformation,
+            pathBlueprints: ['/home', '/details/:id'],
+          );
+        },
+      ),
+      backButtonDispatcher: BeamerBackButtonDispatcher(),
+    );
+  }
+}
+
+// Custom BeamLocation to define routes
+class BeamLocation extends BeamLocation<BeamState> {
+  BeamLocation({required RouteInformation routeInformation, required List<String> pathBlueprints})
+      : super(routeInformation: routeInformation, pathBlueprints: pathBlueprints);
+
+  @override
+  List<BeamState> get beams => [
+        BeamState(
+          pathBlueprint: '/home',
+          child: HomeScreen(),
+        ),
+        BeamState(
+          pathBlueprint: '/details/:id',
+          child: DetailsScreen(),
+        ),
+      ];
+
+  @override
+  String get pathBlueprint => '/home';
+}
+
+// Home screen widget
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Home')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Navigating to details screen with an ID
+            context.beamToNamed('/details/1');
+          },
+          child: Text('Go to Details'),
+        ),
+      ),
+    );
+  }
+}
+
+// Details screen widget
+class DetailsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Extracting the ID from the route
+    final id = context.currentBeamLocation.state.pathParameters['id'];
+    return Scaffold(
+      appBar: AppBar(title: Text('Details')),
+      body: Center(
+        child: Text('Details for item $id'),
+      ),
+    );
+  }
+}
+
+// Application flow explanation:
+// 1. The app starts with the RealFlutter widget, which sets up the MaterialApp with Beamer.
+// 2. The BeamerRouterDelegate manages the routing based on the defined BeamLocation.
+// 3. The HomeScreen displays a button that, when pressed, navigates to the DetailsScreen with a specific ID.
+// 4. The DetailsScreen retrieves the ID from the route parameters and displays it.
+```
+<!-- END_MAIN -->
+
+In this blog, we explored the Beamer Flutter package, detailing its features, setup process, and a complete example. The application flow is straightforward: it starts at the home screen, where users can navigate to a details screen, demonstrating the power of Beamer in managing complex navigation scenarios.
