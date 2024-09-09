@@ -1,0 +1,192 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Yandex Geocoder Flutter Package
+
+The `yandex_geocoder` Flutter package is a powerful tool for developers who need to integrate geocoding capabilities into their Flutter applications. This package leverages the Yandex Geocoding API to convert addresses into geographic coordinates and vice versa. It is particularly useful for applications that require location-based services, such as mapping, navigation, or location tracking.
+
+## When to Use
+
+- **Mapping Applications**: Convert user-entered addresses into coordinates to display on a map.
+- **Location-Based Services**: Enhance user experience by providing location suggestions or auto-complete features.
+- **Data Analysis**: Convert large datasets of addresses into coordinates for spatial analysis.
+
+## Features
+
+- **Forward Geocoding**: Convert a physical address into geographic coordinates.
+- **Reverse Geocoding**: Convert geographic coordinates into a human-readable address.
+- **Batch Processing**: Handle multiple geocoding requests efficiently.
+- **Customizable**: Configure request parameters to suit specific needs, such as language and result limits.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using Yandex Geocoder in Flutter
+
+In this tutorial, we will walk through the process of setting up the `yandex_geocoder` package in a Flutter project and demonstrate how to use its features effectively.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `yandex_geocoder` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  yandex_geocoder: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Configure API Key
+
+To use the Yandex Geocoding API, you need an API key. Obtain it from the [Yandex Developer Portal](https://developer.tech.yandex.com/).
+
+### Step 3: Platform-Specific Configuration
+
+#### Android
+
+1. Open `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permission:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+3. Ensure your `minSdkVersion` in `android/app/build.gradle` is set to at least 21.
+
+#### iOS
+
+1. Open `ios/Runner/Info.plist`.
+2. Add the following key:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+### Step 4: Initialize the Geocoder
+
+In your Dart code, initialize the `YandexGeocoder` with your API key:
+
+```dart
+import 'package:yandex_geocoder/yandex_geocoder.dart';
+
+final geocoder = YandexGeocoder(apiKey: 'YOUR_API_KEY');
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:yandex_geocoder/yandex_geocoder.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Yandex Geocoder Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: GeocodeScreen(),
+    );
+  }
+}
+
+class GeocodeScreen extends StatefulWidget {
+  @override
+  _GeocodeScreenState createState() => _GeocodeScreenState();
+}
+
+class _GeocodeScreenState extends State<GeocodeScreen> {
+  final YandexGeocoder geocoder = YandexGeocoder(apiKey: 'YOUR_API_KEY');
+  String _address = '';
+  String _coordinates = '';
+
+  // Function to perform forward geocoding
+  Future<void> _getCoordinates(String address) async {
+    try {
+      final response = await geocoder.getGeocode(GeocodeRequest(
+        geocode: address,
+      ));
+      setState(() {
+        _coordinates = response.firstPoint?.toString() ?? 'No coordinates found';
+      });
+    } catch (e) {
+      setState(() {
+        _coordinates = 'Error: $e';
+      });
+    }
+  }
+
+  // Function to perform reverse geocoding
+  Future<void> _getAddress(double lat, double lon) async {
+    try {
+      final response = await geocoder.getReverseGeocode(ReverseGeocodeRequest(
+        point: Point(latitude: lat, longitude: lon),
+      ));
+      setState(() {
+        _address = response.firstAddress?.formatted ?? 'No address found';
+      });
+    } catch (e) {
+      setState(() {
+        _address = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Yandex Geocoder Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(labelText: 'Enter Address'),
+              onSubmitted: _getCoordinates,
+            ),
+            SizedBox(height: 20),
+            Text('Coordinates: $_coordinates'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _getAddress(55.751244, 37.618423), // Example coordinates for Moscow
+              child: Text('Get Address for Moscow'),
+            ),
+            SizedBox(height: 20),
+            Text('Address: $_address'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutter` widget, which sets up the MaterialApp.
+// 2. The `GeocodeScreen` is the home screen, containing a text field and buttons for geocoding operations.
+// 3. Users can enter an address, which triggers `_getCoordinates` to perform forward geocoding.
+// 4. The result is displayed as coordinates on the screen.
+// 5. A button allows users to perform reverse geocoding for a fixed location (Moscow in this example).
+// 6. The reverse geocoding result is displayed as an address.
+// 7. Error handling is included to manage API call failures gracefully.
+```
+
+<-- END_MAIN -->
+```

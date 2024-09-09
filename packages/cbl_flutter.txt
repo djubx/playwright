@@ -1,0 +1,193 @@
+Here's a detailed technical blog on the "cbl_flutter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# cbl_flutter Package Overview
+
+The `cbl_flutter` package is a powerful tool for integrating Couchbase Lite into Flutter applications. Couchbase Lite is a NoSQL database that allows for local data storage and synchronization with a Couchbase server. This package is particularly useful for mobile applications that require offline capabilities, real-time data synchronization, and a flexible data model.
+
+## When to Use `cbl_flutter`
+
+You should consider using the `cbl_flutter` package in scenarios such as:
+
+- **Offline-First Applications**: When your app needs to function without an internet connection and sync data when connectivity is restored.
+- **Real-Time Collaboration**: For applications that require multiple users to interact with the same data in real-time.
+- **Complex Data Structures**: When your application needs to handle complex data types and relationships that are better suited for a NoSQL database.
+
+## Key Features
+
+- **Local Data Storage**: Store data locally on the device, allowing for fast access and offline capabilities.
+- **Data Synchronization**: Automatically sync data with a Couchbase server when the device is online.
+- **Flexible Data Model**: Use JSON-like documents to represent data, making it easy to work with complex structures.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+With these features, `cbl_flutter` empowers developers to build robust applications that can handle data efficiently, even in challenging network conditions.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using `cbl_flutter`
+
+In this tutorial, we will walk through the setup process for the `cbl_flutter` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `cbl_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cbl_flutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/cbl_flutter).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update Android Manifest**: Open `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+2. **Gradle Configuration**: Ensure your `android/app/build.gradle` file includes the necessary configurations for Couchbase Lite.
+
+### iOS Configuration
+
+1. **Update Info.plist**: Open `ios/Runner/Info.plist` and add the following permissions:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **Podfile**: Ensure your `ios/Podfile` is set to use frameworks:
+
+   ```ruby
+   platform :ios, '10.0'
+   use_frameworks!
+   ```
+
+## Step 3: Basic Usage
+
+Now that we have set up the package, let's see how to use it in our Flutter application.
+
+1. **Initialize the Database**: Create an instance of the Couchbase Lite database.
+2. **Perform CRUD Operations**: Use the provided methods to create, read, update, and delete documents.
+
+Here’s a simple example of how to initialize the database and perform basic operations.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of `cbl_flutter`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cbl_flutter/cbl_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CBL Flutter Example',
+      home: HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Database database; // Declare a database variable
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDatabase(); // Initialize the database on startup
+  }
+
+  // Function to initialize the Couchbase Lite database
+  Future<void> _initializeDatabase() async {
+    // Create or open the database
+    database = await Database.open('my_database');
+    print('Database initialized: ${database.name}');
+  }
+
+  // Function to add a document to the database
+  Future<void> _addDocument() async {
+    // Create a new document
+    final document = MutableDocument()
+      ..setString('type', 'example')
+      ..setString('content', 'Hello, Couchbase Lite!');
+    
+    // Save the document to the database
+    await database.saveDocument(document);
+    print('Document added: ${document.id}');
+  }
+
+  // Function to fetch all documents from the database
+  Future<List<MutableDocument>> _fetchDocuments() async {
+    final query = QueryBuilder
+        .select(SelectResult.all())
+        .from(DataSource.database(database));
+    
+    final result = await database.executeQuery(query);
+    return result.map((row) => row.getDictionary('my_database')).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('CBL Flutter Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _addDocument, // Add document on button press
+              child: Text('Add Document'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final documents = await _fetchDocuments(); // Fetch documents
+                print('Fetched documents: $documents');
+              },
+              child: Text('Fetch Documents'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and a home page (HomePage).
+// 3. HomePage initializes the Couchbase Lite database in the initState method.
+// 4. The _addDocument function creates a new document and saves it to the database when the button is pressed.
+// 5. The _fetchDocuments function retrieves all documents from the database and prints them to the console when the corresponding button is pressed.
+// 6. The UI consists of two buttons: one for adding a document and another for fetching documents.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the `cbl_flutter` package, which allows Flutter developers to integrate Couchbase Lite into their applications. We covered the package's features, setup instructions for both Android and iOS, and provided a complete example demonstrating how to initialize the database, add documents, and fetch them. This package is ideal for building offline-first applications that require robust data management capabilities.
