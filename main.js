@@ -120,8 +120,10 @@ async function updatePromptsFileWithLastProcessedPrompt(packageName) {
   await fs.writeFile('prompts.json', JSON.stringify(finalPrompts, null, 2));
 }
 
+let counter = 0;
 async function saveResponse(clipboardText, packageName, command) {
-  if (!clipboardText) {
+  if (clipboardText && counter < 2) {
+    counter++;
     const filePath = path.join('packages', `${packageName}.txt`);
     await log(`Saving response to file: ${filePath}`);
     await fs.mkdir('packages', { recursive: true });
