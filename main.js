@@ -121,7 +121,7 @@ async function updatePromptsFileWithLastProcessedPrompt(packageName) {
 }
 
 async function saveResponse(clipboardText, packageName, command) {
-  if (!clipboardText) {
+  if (clipboardText) {
     const filePath = path.join('packages', `${packageName}.txt`);
     await log(`Saving response to file: ${filePath}`);
     await fs.mkdir('packages', { recursive: true });
