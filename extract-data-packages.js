@@ -1,4 +1,6 @@
-// just run this file to clean the packages data, usually called after prompts-manager.js has generated the prompts and main has generated the packages data
+// just run this file to clean the packages data,
+// usually called after prompts-manager.js has generated the prompts 
+// and main has generated the packages data
 
 const fs = require('fs').promises;
 const path = require('path');
@@ -109,10 +111,12 @@ function ensureEndsWithCodeBlock(text) {
     }
 }
 
+let packagesThatDontExist = [];
 function verifyDataAndUpdateIfRequired(jsonData, packageName) {
     // description and tutorial should start with #
     if (!jsonData.description.startsWith("#")) {
         console.log("description does not start with # for package: ", packageName);
+        packagesThatDontExist.push(packageName);
     }
     if (!jsonData.tutorial.startsWith("#")) {
         console.log("tutorial does not start with # for package: ", packageName);
@@ -153,7 +157,9 @@ async function main() {
         jsonData = verifyDataAndUpdateIfRequired(jsonData, packageNames[i]);
         extractedDataPackages.push(jsonData);
     }
+    console.log("packages that dont exist: ", packagesThatDontExist);
 
+    extractedDataPackages = extractedDataPackages.filter(package => package.description != "");
     // write to file
     await fs.writeFile(path.join(__dirname, 'extractedDataPackages.json'), JSON.stringify(extractedDataPackages, null, 2), 'utf-8');
 }
