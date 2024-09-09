@@ -1,0 +1,233 @@
+Here's a detailed technical blog on the `yandex_mobileads` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Yandex Mobile Ads Flutter Package
+
+The `yandex_mobileads` Flutter package is a powerful tool for integrating Yandex's advertising services into your Flutter applications. This package allows developers to display various ad formats, including banners, interstitials, and rewarded ads, providing a seamless monetization strategy for mobile applications.
+
+## When to Use This Package
+
+You should consider using the `yandex_mobileads` package when:
+- You want to monetize your Flutter application through ads.
+- You are targeting users in regions where Yandex is popular, particularly in Russia and neighboring countries.
+- You need a reliable and easy-to-integrate solution for displaying ads in your app.
+
+## Features
+
+- **Multiple Ad Formats**: Supports banner ads, interstitial ads, and rewarded video ads.
+- **Easy Integration**: Simple setup process with clear documentation.
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Event Handling**: Provides callbacks for ad events, allowing you to manage ad lifecycle events effectively.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Yandex Mobile Ads in Flutter
+
+In this tutorial, we will walk through the setup process for the `yandex_mobileads` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the `yandex_mobileads` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  yandex_mobileads: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/yandex_mobileads).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml` and add the following permissions and metadata:
+
+```xml
+<manifest>
+    <application>
+        ...
+        <meta-data
+            android:name="com.yandex.mobile.ads.APP_ID"
+            android:value="YOUR_APP_ID"/>
+    </application>
+</manifest>
+```
+
+Replace `YOUR_APP_ID` with your actual Yandex app ID.
+
+2. **Gradle Configuration**: Ensure your `android/build.gradle` file includes the Google services classpath:
+
+```groovy
+buildscript {
+    dependencies {
+        ...
+        classpath 'com.google.gms:google-services:4.3.10' // Check for the latest version
+    }
+}
+```
+
+### iOS Configuration
+
+1. **Update Info.plist**: Open your `Info.plist` file located at `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>YandexMobileAdsAppID</key>
+<string>YOUR_APP_ID</string>
+```
+
+Replace `YOUR_APP_ID` with your actual Yandex app ID.
+
+## Step 3: Initialize the SDK
+
+In your main Dart file, initialize the Yandex Mobile Ads SDK before using any ad features:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:yandex_mobileads/yandex_mobileads.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  YandexMobileAds.init();
+  runApp(MyApp());
+}
+```
+
+## Step 4: Using Ads
+
+You can now use the various ad formats provided by the package. Here’s a brief overview of how to implement banner ads:
+
+```dart
+BannerAd bannerAd;
+
+@override
+void initState() {
+  super.initState();
+  bannerAd = BannerAd(
+    adUnitId: 'YOUR_BANNER_AD_UNIT_ID',
+    listener: BannerAdListener(
+      onAdLoaded: (ad) {
+        print('Banner Ad loaded');
+      },
+      onAdFailedToLoad: (ad, error) {
+        print('Banner Ad failed to load: $error');
+        ad.dispose();
+      },
+    ),
+  );
+  bannerAd.load();
+}
+
+@override
+void dispose() {
+  bannerAd.dispose();
+  super.dispose();
+}
+```
+
+Make sure to replace `YOUR_BANNER_AD_UNIT_ID` with your actual ad unit ID.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Yandex Mobile Ads in Flutter
+
+Here’s a complete example of a Flutter application that demonstrates the use of the `yandex_mobileads` package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:yandex_mobileads/yandex_mobileads.dart';
+
+void main() {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Yandex Mobile Ads SDK
+  YandexMobileAds.init();
+  // Run the application
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Declare a BannerAd variable
+  BannerAd bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the BannerAd
+    bannerAd = BannerAd(
+      adUnitId: 'YOUR_BANNER_AD_UNIT_ID', // Replace with your ad unit ID
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          // Callback when the ad is loaded successfully
+          print('Banner Ad loaded');
+          setState(() {}); // Update the UI to show the ad
+        },
+        onAdFailedToLoad: (ad, error) {
+          // Callback when the ad fails to load
+          print('Banner Ad failed to load: $error');
+          ad.dispose(); // Dispose of the ad
+        },
+      ),
+    );
+    // Load the ad
+    bannerAd.load();
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the ad when the widget is removed from the widget tree
+    bannerAd.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Yandex Mobile Ads Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Welcome to Yandex Mobile Ads Example!'),
+              // Display the banner ad if it's loaded
+              if (bannerAd != null)
+                Container(
+                  height: 50, // Set the height for the banner ad
+                  child: AdWidget(ad: bannerAd), // Display the ad
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes the Flutter app and the Yandex Mobile Ads SDK.
+// 2. The RealFlutter widget is created, which manages the state of the application.
+// 3. In the initState method, a BannerAd is created and loaded with the specified ad unit ID.
+// 4. The listener callbacks handle the ad loading events, updating the UI accordingly.
+// 5. The build method constructs the UI, displaying a welcome message and the banner ad if it has loaded successfully.
+// 6. The dispose method ensures that the banner ad is properly disposed of when the widget is removed from the widget tree.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the `yandex_mobileads` Flutter package, including its features, setup process, and a complete example application. By following the steps outlined, you can easily integrate Yandex ads into your Flutter applications, enhancing your monetization strategy.

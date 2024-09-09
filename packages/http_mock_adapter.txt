@@ -1,0 +1,185 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `http_mock_adapter` Flutter Package
+
+The `http_mock_adapter` package is a powerful tool for Flutter developers that allows for easy mocking of HTTP requests. This package is particularly useful during the development and testing phases of an application, enabling developers to simulate various server responses without needing a live backend. 
+
+## When to Use `http_mock_adapter`
+
+- **Testing**: When writing unit tests for your application, you can use this package to mock HTTP responses, ensuring that your tests are not dependent on a live server.
+- **Development**: While developing an application, if the backend is not yet ready, you can simulate API responses to continue building the frontend.
+- **Error Handling**: You can simulate different types of server responses (e.g., 404 errors, timeouts) to test how your application handles these scenarios.
+
+## Features
+
+- **Flexible Mocking**: Easily define mock responses for different endpoints.
+- **Customizable**: You can customize the response time, status codes, and response bodies.
+- **Integration with Dio**: Works seamlessly with the Dio HTTP client, which is a popular choice among Flutter developers.
+
+By using `http_mock_adapter`, you can streamline your development process and ensure that your application behaves as expected under various conditions.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `http_mock_adapter`
+
+## Step 1: Adding the Dependency
+
+To get started, you need to add the `http_mock_adapter` package to your `pubspec.yaml` file. Open your `pubspec.yaml` and add the following line under dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.0.0  # Ensure you have Dio as a dependency
+  http_mock_adapter: ^0.3.0  # Add the http_mock_adapter package
+```
+
+Run `flutter pub get` to install the new dependency.
+
+## Step 2: Basic Setup
+
+In your Flutter application, you will need to set up the `http_mock_adapter` with Dio. Here’s how to do it:
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:http_mock_adapter/http_mock_adapter.dart';
+
+void main() {
+  final dio = Dio();
+  final dioAdapter = DioAdapter(dio: dio);
+  
+  // Add the adapter to Dio
+  dio.httpClientAdapter = dioAdapter;
+
+  // Now you can start mocking requests
+}
+```
+
+## Step 3: Mocking HTTP Requests
+
+You can now define mock responses for your HTTP requests. Here’s an example of how to mock a GET request:
+
+```dart
+dioAdapter.onGet(
+  'https://api.example.com/data',
+  (server) => server.reply(200, {'message': 'Success'}),
+);
+```
+
+### Platform-Specific Details
+
+- **Android**: Ensure that your `AndroidManifest.xml` has the necessary permissions for internet access:
+  ```xml
+  <uses-permission android:name="android.permission.INTERNET"/>
+  ```
+
+- **iOS**: For iOS, ensure that you have the appropriate permissions set in your `Info.plist`:
+  ```xml
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+  </dict>
+  ```
+
+## Step 4: Running Your Application
+
+Once you have set up the mocking, you can run your application. The mocked responses will be returned whenever you make a request to the specified endpoint.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `http_mock_adapter`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:http_mock_adapter/http_mock_adapter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'HTTP Mock Adapter Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final Dio dio = Dio();
+  final DioAdapter dioAdapter;
+
+  String responseMessage = '';
+
+  _HomeScreenState() : dioAdapter = DioAdapter(dio: dio) {
+    // Set up the mock adapter
+    dio.httpClientAdapter = dioAdapter;
+
+    // Mocking a GET request
+    dioAdapter.onGet(
+      'https://api.example.com/data',
+      (server) => server.reply(200, {'message': 'Success'}),
+    );
+  }
+
+  void fetchData() async {
+    try {
+      // Making a GET request
+      final response = await dio.get('https://api.example.com/data');
+      setState(() {
+        responseMessage = response.data['message'];
+      });
+    } catch (e) {
+      setState(() {
+        responseMessage = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('HTTP Mock Adapter Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(responseMessage.isEmpty ? 'Press the button to fetch data' : responseMessage),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: fetchData,
+              child: Text('Fetch Data'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the `main` function, which runs the `MyApp` widget.
+// 2. `MyApp` builds a MaterialApp with a title and a home screen.
+// 3. The `HomeScreen` widget initializes a Dio instance and a DioAdapter for mocking.
+// 4. The adapter is set to respond to a GET request to 'https://api.example.com/data' with a 200 status and a success message.
+// 5. When the user presses the "Fetch Data" button, the `fetchData` method is called.
+// 6. This method makes a GET request to the mocked endpoint, and upon receiving the response, updates the UI with the message.
+// 7. If an error occurs during the request, it updates the UI to display the error message.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog provides a comprehensive overview of the `http_mock_adapter` package, guiding readers through its features, setup, and practical usage with a complete example.
