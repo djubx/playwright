@@ -4,44 +4,54 @@ const { chromium } = require('playwright');
 const fs = require('fs').promises;
 const path = require('path');
 
+// Add this function at the beginning of the file
+async function log(message) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `${timestamp}: ${message}\n`;
+  console.log(message);
+  await fs.appendFile('log.txt', logMessage);
+}
+
 async function launchBrowser() {
+  await log("Launching browser...");
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
+  await log("Browser launched successfully.");
   return { browser, context, page };
 }
 
 async function login(page) {
-  console.log("Navigating to the website...");
+  await log("Navigating to the website...");
   await page.goto('https://apps.abacus.ai/chatllm/62d3636d8/?forceAppId=62d3636d8');
-  console.log("Website loaded successfully.");
+  await log("Website loaded successfully.");
 
-  console.log("Logging in...");
+  await log("Logging in...");
   await page.waitForSelector('input[placeholder=" Email"]');
   await page.fill('input[placeholder=" Email"]', 'contact.dheeraj.jha@gmail.com');
   await page.waitForSelector('input[placeholder=" Password"]');
   await page.fill('input[placeholder=" Password"]', 'Flower1!!Flower1!!');
   await page.click('button[type="submit"]');
 
-  console.log("Waiting for logged-in state...");
+  await log("Waiting for logged-in state...");
   await page.waitForSelector('textarea[placeholder="Write something..."]', { timeout: 8000000 });
-  console.log("Logged in successfully.");
+  await log("Logged in successfully.");
 }
 
 async function loadPrompts() {
-  console.log("Loading prompts from JSON file...");
+  await log("Loading prompts from JSON file...");
   const promptsJson = await fs.readFile('prompts.json', 'utf-8');
   const prompts = JSON.parse(promptsJson);
-  console.log(`Loaded ${prompts.length} prompts.`);
+  await log(`Loaded ${prompts.length} prompts.`);
   return prompts;
 }
 
 async function enterPrompt(page, command, isFirstPrompt) {
   if (isFirstPrompt) {
-    console.log("Filling prompt input...");
+    await log("Filling prompt input...");
     await page.fill('textarea[placeholder="Write something..."]', command);
   } else {
-    console.log("Editing existing prompt...");
+    await log("Editing existing prompt...");
     await page.evaluate(() => {
       const hiddenElement = document.querySelector('.cursor-pointer.hidden.p-1');
       if (hiddenElement) {
@@ -50,37 +60,37 @@ async function enterPrompt(page, command, isFirstPrompt) {
     });
     await page.fill('#text', command);
   
-    console.log("Clicking Regenerate button...");
+    await log("Clicking Regenerate button...");
     await page.click('button:has-text("Regenerate")');
   }
   
-  console.log(`Prompt entered and Regenerate clicked: "${command}"`);
+  await log(`Prompt entered and Regenerate clicked: "${command}"`);
 }
 
 async function sendPrompt(page) {
-  console.log("Waiting for send button to be visible and clicking it...");
+  await log("Waiting for send button to be visible and clicking it...");
   await page.waitForTimeout(500);
   await page.waitForSelector('button:has(svg.fa-paper-plane)', { visible: true, timeout: 3000000 });
   await page.waitForTimeout(500);
   await page.click('button:has(svg.fa-paper-plane)');
-  console.log("Send button clicked.");
+  await log("Send button clicked.");
 }
 
 async function waitForResponse(page, context) {
-  console.log("Waiting for response...");
+  await log("Waiting for response...");
   await page.waitForSelector('button:has(svg.fa-clipboard)', { timeout: 300000 });
-  console.log("Response received and copy button is visible.");
+  await log("Response received and copy button is visible.");
 
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.waitForTimeout(1000);
 
-  console.log("Clicking copy button...");
+  await log("Clicking copy button...");
   await page.click('button:has(svg.fa-clipboard)');
-  console.log("Copy button clicked.");
+  await log("Copy button clicked.");
 }
 
 async function extractClipboardText(page) {
-  console.log("Extracting response text from clipboard...");
+  await log("Extracting response text from clipboard...");
   return await page.evaluate(async () => {
     try {
       return await navigator.clipboard.readText();
@@ -94,12 +104,12 @@ async function extractClipboardText(page) {
 async function saveResponse(clipboardText, packageName, command) {
   if (clipboardText) {
     const filePath = path.join('packages', `${packageName}.txt`);
-    console.log(`Saving response to file: ${filePath}`);
+    await log(`Saving response to file: ${filePath}`);
     await fs.mkdir('packages', { recursive: true });
     await fs.writeFile(filePath, clipboardText);
-    console.log(`Response saved to file: ${filePath}`);
+    await log(`Response saved to file: ${filePath}`);
   } else {
-    console.log("Failed to extract text from clipboard.");
+    await log("Failed to extract text from clipboard.");
     const errorFilePath = path.join('packages', `error_${packageName}.txt`);
     await fs.mkdir('packages', { recursive: true });
     await fs.writeFile(errorFilePath, `Failed to extract text from clipboard for prompt: ${command}`);
@@ -107,21 +117,21 @@ async function saveResponse(clipboardText, packageName, command) {
 }
 
 async function handleError(page, packageName, command, error) {
-  console.error(`Error processing response:`, error);
+  await log(`Error processing response: ${error}`);
   const errorFilePath = path.join('packages', `error_${packageName}.txt`);
   await fs.mkdir('packages', { recursive: true });
   await fs.writeFile(errorFilePath, `Error processing prompt: ${command}\nError: ${error.message}`);
   const screenshotPath = path.join('screenshots', `error_screenshot_${packageName}.png`);
   await fs.mkdir('screenshots', { recursive: true });
   await page.screenshot({ path: screenshotPath });
-  console.log(`Error screenshot saved as '${screenshotPath}'`);
+  await log(`Error screenshot saved as '${screenshotPath}'`);
   await page.reload();
 }
 
 async function processPrompts(page, context, prompts) {
   for (let i = 0; i < prompts.length; i++) {
     const { packageName, command } = prompts[i];
-    console.log(`\nProcessing prompt ${i+1} of ${prompts.length}`);
+    await log(`\nProcessing prompt ${i+1} of ${prompts.length}`);
 
     try {
       await enterPrompt(page, command, i === 0);
@@ -137,35 +147,35 @@ async function processPrompts(page, context, prompts) {
       await handleError(page, packageName, command, error);
     }
 
-    console.log("Waiting before next prompt...");
+    await log("Waiting before next prompt...");
   }
 }
 
 async function main() {
   let browser, context, page;
   try {
+    await log("Starting main process...");
     ({ browser, context, page } = await launchBrowser());
     await login(page);
-    // wait for 20 seconds
     await page.waitForTimeout(10000);
+    await log("Waiting for 10 seconds completed.");
     const prompts = await loadPrompts();
     await processPrompts(page, context, prompts);
-    console.log("\nAll prompts processed successfully.");
+    await log("All prompts processed successfully.");
   } catch (error) {
-    console.error('An error occurred:', error);
+    await log(`An error occurred: ${error}`);
     if (page) {
       const errorScreenshotPath = path.join('screenshots', 'error-screenshot.png');
       await fs.mkdir('screenshots', { recursive: true });
       await page.screenshot({ path: errorScreenshotPath });
-      console.log(`Error screenshot saved as '${errorScreenshotPath}'`);
-      // reload the page
+      await log(`Error screenshot saved as '${errorScreenshotPath}'`);
       await page.reload();
     }
   } finally {
     if (browser) {
-      console.log("Closing browser...");
+      await log("Closing browser...");
       await browser.close();
-      console.log("Browser closed.");
+      await log("Browser closed.");
     }
   }
 }
