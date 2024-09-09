@@ -1,0 +1,230 @@
+Here's a detailed technical blog on the "email_otp" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Email OTP Flutter Package
+
+The `email_otp` Flutter package is a powerful tool designed to facilitate the implementation of email-based One-Time Password (OTP) authentication in Flutter applications. This package simplifies the process of sending OTPs to users via email, making it an essential component for applications that require secure user verification.
+
+## When to Use This Package
+
+You should consider using the `email_otp` package in scenarios such as:
+- **User Registration**: To verify the email address of new users during the registration process.
+- **Password Recovery**: To send a verification code to users who have forgotten their passwords.
+- **Two-Factor Authentication**: To enhance security by requiring users to enter an OTP sent to their email.
+
+## Features
+
+- **Easy Integration**: The package is straightforward to integrate into any Flutter application.
+- **Customizable Email Templates**: You can customize the email content sent to users.
+- **Secure OTP Generation**: The package generates secure OTPs that can be validated easily.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+With these features, the `email_otp` package provides a robust solution for implementing email-based OTP authentication in your Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the Email OTP Package
+
+In this tutorial, we will walk through the setup process for the `email_otp` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `email_otp` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  email_otp: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Configure Android
+
+For Android, ensure that you have the necessary permissions in your `AndroidManifest.xml` file. Add the following permissions:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+## Step 3: Configure iOS
+
+For iOS, you need to enable the appropriate capabilities. Open your `Info.plist` file and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 4: Import the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:email_otp/email_otp.dart';
+```
+
+## Step 5: Initialize the Package
+
+You can now initialize the `EmailOTP` class in your application. Here’s how to set it up:
+
+```dart
+EmailOTP emailOTP = EmailOTP();
+```
+
+## Step 6: Sending OTP
+
+To send an OTP, use the following method:
+
+```dart
+emailOTP.sendOTP(recipientEmail: "user@example.com");
+```
+
+## Step 7: Verifying OTP
+
+To verify the OTP entered by the user, use:
+
+```dart
+bool isVerified = emailOTP.verifyOTP(otp: "123456");
+```
+
+This will return `true` if the OTP is correct, and `false` otherwise.
+
+With these steps, you can successfully set up and use the `email_otp` package in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Email OTP Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:email_otp/email_otp.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Email OTP Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: OTPVerificationScreen(),
+    );
+  }
+}
+
+class OTPVerificationScreen extends StatefulWidget {
+  @override
+  _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
+}
+
+class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
+  final EmailOTP emailOTP = EmailOTP();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController otpController = TextEditingController();
+  String message = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the EmailOTP package with your email service configuration
+    emailOTP.setConfig(
+      appEmail: "your_email@example.com", // Your email address
+      appName: "Your App Name", // Your app name
+      userEmail: "", // User's email will be set when sending OTP
+    );
+  }
+
+  void sendOTP() async {
+    // Get the email from the text field
+    String email = emailController.text;
+
+    // Send OTP to the provided email
+    bool sent = await emailOTP.sendOTP(recipientEmail: email);
+    if (sent) {
+      setState(() {
+        message = 'OTP sent to $email';
+      });
+    } else {
+      setState(() {
+        message = 'Failed to send OTP';
+      });
+    }
+  }
+
+  void verifyOTP() {
+    // Get the OTP entered by the user
+    String otp = otpController.text;
+
+    // Verify the OTP
+    bool isVerified = emailOTP.verifyOTP(otp: otp);
+    if (isVerified) {
+      setState(() {
+        message = 'OTP verified successfully!';
+      });
+    } else {
+      setState(() {
+        message = 'Invalid OTP. Please try again.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Email OTP Verification'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(labelText: 'Enter your email'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: sendOTP,
+              child: Text('Send OTP'),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: otpController,
+              decoration: InputDecoration(labelText: 'Enter OTP'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: verifyOTP,
+              child: Text('Verify OTP'),
+            ),
+            SizedBox(height: 20),
+            Text(message),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp class, which sets up the MaterialApp.
+// 2. The OTPVerificationScreen is displayed, where users can enter their email and request an OTP.
+// 3. When the user clicks 'Send OTP', the sendOTP method is called, which sends an OTP to the provided email.
+// 4. The user then enters the OTP received in their email and clicks 'Verify OTP'.
+// 5. The verifyOTP method checks if the entered OTP is correct and updates the message accordingly.
+```
+
+<!-- END_MAIN -->
+
+### Summary
+
+In this blog, we explored the `email_otp` Flutter package, detailing its features and use cases. We walked through the setup process, including platform-specific configurations for Android and iOS. Finally, we provided a complete example of a Flutter application that demonstrates how to send and verify OTPs via email, with detailed comments explaining each part of the code. This package is a valuable tool for enhancing user authentication in your Flutter applications.

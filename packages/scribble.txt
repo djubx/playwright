@@ -1,0 +1,220 @@
+Here's a detailed technical blog on the "scribble" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Scribble Flutter Package
+
+The **Scribble** package for Flutter is a powerful tool that allows developers to create drawing applications with ease. It provides a simple and intuitive interface for users to draw, sketch, and annotate on the screen. This package is particularly useful for applications that require user-generated content, such as note-taking apps, educational tools, or creative drawing applications.
+
+## When to Use Scribble
+
+You might consider using the Scribble package in scenarios such as:
+- **Educational Apps**: Where students can draw diagrams or annotate notes.
+- **Artistic Applications**: For users to create sketches or digital art.
+- **Annotation Tools**: Allowing users to mark up documents or images.
+- **Games**: Where drawing mechanics are part of the gameplay.
+
+## Features
+
+- **Customizable Brush Styles**: Users can select different brush sizes and colors.
+- **Eraser Functionality**: Users can easily erase parts of their drawings.
+- **Undo/Redo Support**: Users can revert or reapply their actions.
+- **Save and Share**: Users can save their drawings to the device or share them.
+
+The Scribble package is designed to be flexible and easy to integrate into any Flutter application, making it a great choice for developers looking to add drawing capabilities.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Scribble Package
+
+## Step 1: Adding the Dependency
+
+To get started with the Scribble package, you need to add it to your `pubspec.yaml` file. Open your Flutter project and add the following line under dependencies:
+
+```yaml
+dependencies:
+  scribble: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, you may need to enable certain permissions in your `Info.plist` file if you plan to save images to the gallery. Add the following keys:
+
+```xml
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>We need access to your photo library to save drawings.</string>
+```
+
+## Step 3: Importing the Package
+
+In your Dart file, import the Scribble package:
+
+```dart
+import 'package:scribble/scribble.dart';
+```
+
+## Step 4: Using the Scribble Widget
+
+You can now use the Scribble widget in your application. Here’s a simple example of how to implement it:
+
+```dart
+Scribble(
+  onDraw: (points) {
+    // Handle the drawn points
+  },
+  brushColor: Colors.blue,
+  brushSize: 5.0,
+)
+```
+
+This widget allows you to customize the brush color and size, and it provides a callback to handle the drawn points.
+
+## Step 5: Additional Features
+
+You can also implement features like undo/redo and saving drawings. Refer to the package documentation for more details on these functionalities.
+
+With these steps, you should be able to set up and start using the Scribble package in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the Scribble Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:scribble/scribble.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Scribble Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ScribblePage(),
+    );
+  }
+}
+
+class ScribblePage extends StatefulWidget {
+  @override
+  _ScribblePageState createState() => _ScribblePageState();
+}
+
+class _ScribblePageState extends State<ScribblePage> {
+  // Initialize a list to hold the drawn points
+  List<Offset?> points = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Scribble Example'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.save),
+            onPressed: () {
+              // Save the drawing logic will go here
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.undo),
+            onPressed: () {
+              // Undo the last action
+              if (points.isNotEmpty) {
+                points.removeLast();
+                setState(() {});
+              }
+            },
+          ),
+        ],
+      ),
+      body: GestureDetector(
+        onPanUpdate: (details) {
+          // Capture the points as the user draws
+          setState(() {
+            RenderBox renderBox = context.findRenderObject() as RenderBox;
+            points.add(renderBox.globalToLocal(details.globalPosition));
+          });
+        },
+        onPanEnd: (details) {
+          // When the user lifts their finger, add a null point to signify the end of a stroke
+          points.add(null);
+        },
+        child: CustomPaint(
+          painter: ScribblePainter(points),
+          child: Container(),
+        ),
+      ),
+    );
+  }
+}
+
+// Custom painter to draw the points on the canvas
+class ScribblePainter extends CustomPainter {
+  final List<Offset?> points;
+
+  ScribblePainter(this.points);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Set the paint style
+    Paint paint = Paint()
+      ..color = Colors.blue
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0;
+
+    // Draw the points on the canvas
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true; // Repaint whenever the points change
+  }
+}
+```
+
+```
+// The application starts with the main function, which runs the MyApp widget.
+// MyApp sets up the MaterialApp with a title and theme, and it directs to the ScribblePage.
+// ScribblePage is a stateful widget that maintains a list of points drawn by the user.
+// The AppBar contains buttons for saving and undoing the last action.
+// The body of the page is a GestureDetector that captures user touch events.
+// On pan update, it adds the current touch point to the points list.
+// On pan end, it adds a null point to signify the end of a stroke.
+// The CustomPaint widget uses the ScribblePainter to draw the points on the canvas.
+// ScribblePainter takes the list of points and draws lines between them on the canvas.
+// The paint method sets the paint style and draws the lines based on the points.
+// The shouldRepaint method ensures the canvas is redrawn whenever the points change.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provides a comprehensive overview of the Scribble Flutter package, including its features, setup instructions, and a complete example. The example demonstrates how to create a simple drawing application, allowing users to draw on the screen, undo their actions, and visualize their drawings in real-time.

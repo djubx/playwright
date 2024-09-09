@@ -1,0 +1,204 @@
+Here's a detailed technical blog on the "sentry_dio" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Sentry Dio Flutter Package
+
+The **sentry_dio** package is a powerful integration that allows developers to capture and report errors in their Flutter applications using the Sentry error tracking service. This package is particularly useful for applications that rely on the Dio HTTP client for making network requests. By integrating Sentry with Dio, developers can automatically log any errors that occur during HTTP requests, providing valuable insights into issues that users may encounter.
+
+## When to Use Sentry Dio
+
+You should consider using the **sentry_dio** package in scenarios such as:
+
+- **Error Tracking**: When you want to monitor and track errors that occur during network requests in your Flutter application.
+- **User Experience Improvement**: To gather data on failed requests, which can help you improve the user experience by addressing issues proactively.
+- **Debugging**: When you need detailed error reports that include stack traces and context about the request that failed.
+
+## Features
+
+- **Automatic Error Reporting**: Automatically captures and reports errors that occur during HTTP requests made with Dio.
+- **Contextual Information**: Provides detailed context about the error, including the request URL, headers, and response data.
+- **Customizable**: Allows customization of error reporting, including the ability to filter out certain errors or add additional context.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Sentry Dio
+
+In this tutorial, we will walk through the setup process for the **sentry_dio** package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependencies
+
+First, you need to add the **sentry_dio** and **dio** packages to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.0.0
+  sentry_dio: ^6.0.0
+```
+
+Run `flutter pub get` to install the new dependencies.
+
+## Step 2: Configure Sentry
+
+Before using Sentry, you need to initialize it with your Sentry DSN (Data Source Name). You can find your DSN in your Sentry project settings.
+
+In your `main.dart` file, initialize Sentry as follows:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sentry/sentry.dart';
+
+void main() async {
+  // Initialize Sentry
+  await Sentry.init(
+    (options) {
+      options.dsn = 'YOUR_SENTRY_DSN';
+    },
+    appRunner: () => runApp(MyApp()),
+  );
+}
+```
+
+## Step 3: Set Up Dio with Sentry
+
+Now, you need to configure Dio to use the Sentry interceptor. This interceptor will automatically capture errors from HTTP requests.
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:sentry_dio/sentry_dio.dart';
+
+class ApiService {
+  final Dio dio;
+
+  ApiService()
+      : dio = Dio()..interceptors.add(SentryDioInterceptor());
+}
+```
+
+## Step 4: Making Requests
+
+You can now use the `ApiService` class to make HTTP requests. Any errors that occur during these requests will be automatically reported to Sentry.
+
+```dart
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Sentry Dio Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              final apiService = ApiService();
+              try {
+                final response = await apiService.dio.get('https://api.example.com/data');
+                print(response.data);
+              } catch (e) {
+                // Handle error
+                print('Error occurred: $e');
+              }
+            },
+            child: Text('Make Request'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+Ensure that you have the necessary permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+
+For iOS, ensure that you have the appropriate permissions in your `Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+With these steps completed, your Flutter application is now set up to use the **sentry_dio** package for error tracking during HTTP requests.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Sentry Dio in Action
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:sentry/sentry.dart';
+import 'package:sentry_dio/sentry_dio.dart';
+
+void main() async {
+  // Initialize Sentry with your DSN
+  await Sentry.init(
+    (options) {
+      options.dsn = 'YOUR_SENTRY_DSN'; // Replace with your actual Sentry DSN
+    },
+    appRunner: () => runApp(RealFlutter()), // Start the app
+  );
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Sentry Dio Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              final apiService = ApiService(); // Create an instance of ApiService
+              try {
+                // Make a GET request to the API
+                final response = await apiService.dio.get('https://api.example.com/data');
+                print(response.data); // Print the response data
+              } catch (e) {
+                // Handle any errors that occur during the request
+                print('Error occurred: $e');
+              }
+            },
+            child: Text('Make Request'), // Button to trigger the request
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ApiService {
+  final Dio dio;
+
+  ApiService()
+      : dio = Dio()..interceptors.add(SentryDioInterceptor()); // Add Sentry interceptor to Dio
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes Sentry with the provided DSN.
+// 2. The RealFlutter widget is the main application widget.
+// 3. Inside RealFlutter, a button is displayed that, when pressed, triggers an HTTP GET request.
+// 4. The ApiService class is instantiated, which sets up Dio with the Sentry interceptor.
+// 5. The GET request is made to the specified URL.
+// 6. If the request is successful, the response data is printed to the console.
+// 7. If an error occurs during the request, it is caught and printed to the console.
+// 8. Any errors that occur during the request are automatically reported to Sentry due to the interceptor.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the **sentry_dio** package, detailing its features, setup process, and providing a complete example of its usage in a Flutter application. By integrating Sentry with Dio, developers can effectively monitor and manage errors, enhancing the overall reliability of their applications.

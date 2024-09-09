@@ -1,0 +1,159 @@
+Here's a detailed technical blog on the "network_image_mock" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `network_image_mock` package is a powerful tool for Flutter developers that allows for easy mocking of network images in your applications. This package is particularly useful during the development and testing phases, where you may not want to rely on actual network calls to fetch images. Instead, you can use this package to simulate image loading, ensuring that your UI behaves as expected without the need for a live internet connection.
+
+## When to Use
+
+- **Development Phase**: When building your app, you may want to test how your UI handles image loading without making actual network requests.
+- **Testing**: In unit tests or widget tests, you can use this package to provide mock images, allowing you to verify that your widgets display correctly.
+- **Offline Mode**: If your app has an offline mode, you can use this package to show placeholder images when the network is unavailable.
+
+## Features
+
+- **Easy Integration**: Simple to add to your Flutter project with minimal setup.
+- **Customizable**: You can specify different mock images for different scenarios.
+- **Flexible**: Works seamlessly with the `Image.network` widget, allowing you to replace network images with mock images effortlessly.
+
+## Example Usage
+
+To use the `network_image_mock` package, you would typically wrap your `Image.network` calls with the `NetworkImageMock` widget provided by the package. This allows you to specify a mock image that will be displayed instead of fetching from the network.
+
+```dart
+import 'package:network_image_mock/network_image_mock.dart';
+
+mockNetworkImage(() => Image.network('https://example.com/image.png'));
+```
+
+This simple line of code will replace the network image with a mock image during development or testing.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `network_image_mock` package, follow these steps:
+
+1. **Add Dependency**: Open your `pubspec.yaml` file and add the package under dependencies.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     network_image_mock: ^2.0.0
+   ```
+
+2. **Install the Package**: Run the following command in your terminal to install the package.
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Platform-Specific Configuration**:
+   - **Android**: Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21.
+   - **iOS**: No additional configuration is required, but ensure you have the latest version of Xcode.
+
+4. **Import the Package**: In your Dart files, import the package to start using it.
+
+   ```dart
+   import 'package:network_image_mock/network_image_mock.dart';
+   ```
+
+## Using the Package
+
+To use the `network_image_mock` package, you can wrap your image loading logic with the `mockNetworkImage` function. Here’s a simple example:
+
+```dart
+mockNetworkImage(() {
+  return Image.network('https://example.com/image.png');
+});
+```
+
+This will replace the network image with a mock image during development. You can also specify a custom image to be used as a mock.
+
+### Example of Custom Mock Image
+
+```dart
+mockNetworkImage(() {
+  return Image.network('https://example.com/image.png', 
+    loadingBuilder: (context, child, loadingProgress) {
+      return Center(child: CircularProgressIndicator());
+    },
+    errorBuilder: (context, error, stackTrace) {
+      return Image.asset('assets/images/error_image.png');
+    },
+  );
+});
+```
+
+This example shows how to handle loading and error states while using mock images.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:network_image_mock/network_image_mock.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Network Image Mock Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Network Image Mock Example'),
+        ),
+        body: Center(
+          child: mockNetworkImage(() {
+            // This function will return a mock image instead of fetching from the network.
+            return Image.network(
+              'https://example.com/image.png',
+              // Loading builder to show a progress indicator while the image is loading.
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            (loadingProgress.expectedTotalBytes ?? 1)
+                        : null,
+                  ),
+                );
+              },
+              // Error builder to show a placeholder image in case of an error.
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset('assets/images/error_image.png');
+              },
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes the Flutter app by calling runApp with the RealFlutter widget.
+// 2. The RealFlutter widget builds a MaterialApp with a title and a home Scaffold.
+// 3. Inside the Scaffold, an AppBar is created with the title "Network Image Mock Example".
+// 4. The body of the Scaffold contains a Center widget that centers its child.
+// 5. The mockNetworkImage function is called, which wraps the Image.network widget.
+// 6. The Image.network widget attempts to load an image from the specified URL.
+// 7. If the image is loading, a CircularProgressIndicator is displayed.
+// 8. If there is an error loading the image, a placeholder image from assets is shown.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the `network_image_mock` package, detailing its purpose, setup, and usage in a complete Flutter application. This package is invaluable for developers looking to streamline their image handling during development and testing, ensuring a smoother workflow and better user experience.
