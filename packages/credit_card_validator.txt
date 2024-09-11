@@ -1,0 +1,181 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `credit_card_validator` Flutter Package
+
+The `credit_card_validator` package is a powerful tool for Flutter developers who need to validate credit card information within their applications. This package provides a simple and efficient way to ensure that credit card numbers, expiration dates, and CVV codes are valid before processing payments or storing card information.
+
+## When to Use
+
+This package is ideal for any Flutter application that requires credit card processing, such as e-commerce apps, subscription services, or any platform that involves financial transactions. By integrating `credit_card_validator`, developers can enhance the security and reliability of their payment systems.
+
+## Features
+
+- **Card Number Validation**: Checks if the credit card number is valid using the Luhn algorithm.
+- **Expiration Date Validation**: Ensures the card is not expired.
+- **CVV Validation**: Verifies the CVV code based on card type.
+- **Card Type Detection**: Automatically detects the type of card (e.g., Visa, MasterCard) based on the number.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `credit_card_validator` Package
+
+In this tutorial, we will walk through the process of setting up the `credit_card_validator` package in a Flutter project and demonstrate how to use its features effectively.
+
+## Setup Process
+
+1. **Add Dependency**
+
+   First, add the `credit_card_validator` package to your `pubspec.yaml` file:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     credit_card_validator: ^1.0.0
+   ```
+
+2. **Install Packages**
+
+   Run the following command to install the new dependency:
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Import the Package**
+
+   Import the package in your Dart file where you intend to use it:
+
+   ```dart
+   import 'package:credit_card_validator/credit_card_validator.dart';
+   ```
+
+## Platform-Specific Details
+
+### Android
+
+No additional configuration is required for Android. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21 to support all features.
+
+### iOS
+
+Ensure that your iOS deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Using the Package
+
+To validate a credit card, create an instance of `CreditCardValidator` and use its methods to validate card details:
+
+```dart
+final validator = CreditCardValidator();
+final isValidCardNumber = validator.validateCCNum('4111111111111111').isValid;
+final isValidExpiryDate = validator.validateExpDate('12/24').isValid;
+final isValidCVV = validator.validateCVV('123', 'Visa').isValid;
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:credit_card_validator/credit_card_validator.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Credit Card Validator Demo',
+      home: CreditCardForm(),
+    );
+  }
+}
+
+class CreditCardForm extends StatefulWidget {
+  @override
+  _CreditCardFormState createState() => _CreditCardFormState();
+}
+
+class _CreditCardFormState extends State<CreditCardForm> {
+  final _cardNumberController = TextEditingController();
+  final _expiryDateController = TextEditingController();
+  final _cvvController = TextEditingController();
+  final _validator = CreditCardValidator();
+
+  String _validationMessage = '';
+
+  void _validateCardDetails() {
+    // Validate card number
+    final cardNumberResult = _validator.validateCCNum(_cardNumberController.text);
+    // Validate expiry date
+    final expiryDateResult = _validator.validateExpDate(_expiryDateController.text);
+    // Validate CVV
+    final cvvResult = _validator.validateCVV(_cvvController.text, cardNumberResult.ccType.name);
+
+    // Check if all validations are successful
+    if (cardNumberResult.isValid && expiryDateResult.isValid && cvvResult.isValid) {
+      setState(() {
+        _validationMessage = 'Credit Card is valid!';
+      });
+    } else {
+      setState(() {
+        _validationMessage = 'Invalid Credit Card details!';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Credit Card Validator'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _cardNumberController,
+              decoration: InputDecoration(labelText: 'Card Number'),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: _expiryDateController,
+              decoration: InputDecoration(labelText: 'Expiry Date (MM/YY)'),
+              keyboardType: TextInputType.datetime,
+            ),
+            TextField(
+              controller: _cvvController,
+              decoration: InputDecoration(labelText: 'CVV'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _validateCardDetails,
+              child: Text('Validate'),
+            ),
+            SizedBox(height: 20),
+            Text(_validationMessage),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutter` widget, which sets up a MaterialApp.
+// 2. The `CreditCardForm` widget is the home screen, containing text fields for card details.
+// 3. Users input their card number, expiry date, and CVV into the respective fields.
+// 4. When the "Validate" button is pressed, `_validateCardDetails` is called.
+// 5. This function uses `CreditCardValidator` to check each input field for validity.
+// 6. If all fields are valid, a success message is displayed; otherwise, an error message is shown.
+<-- END_MAIN -->
+```

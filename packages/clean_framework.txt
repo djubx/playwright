@@ -1,0 +1,190 @@
+Here's a detailed technical blog on the "clean_framework" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Clean Framework Flutter Package
+
+The **clean_framework** package is a powerful tool designed to help Flutter developers implement clean architecture principles in their applications. It provides a structured way to separate concerns, making your codebase more maintainable, testable, and scalable. 
+
+## When to Use This Package
+
+You should consider using the **clean_framework** package when:
+- You are building a complex application that requires a clear separation of business logic from UI.
+- You want to implement a test-driven development (TDD) approach.
+- You need to maintain a large codebase with multiple developers, ensuring that everyone adheres to the same architectural principles.
+
+## Key Features
+- **Separation of Concerns**: The package encourages a clear division between the UI, business logic, and data layers.
+- **Testability**: By following clean architecture principles, your code becomes easier to test.
+- **Scalability**: The structure allows for easy scaling of the application as new features are added.
+- **Flexibility**: You can easily swap out implementations for different platforms or services.
+
+In summary, the **clean_framework** package is an excellent choice for developers looking to implement clean architecture in their Flutter applications, ensuring a robust and maintainable codebase.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Clean Framework
+
+In this tutorial, we will walk through the setup process for the **clean_framework** package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the **clean_framework** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  clean_framework: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/clean_framework).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS Configuration
+
+For iOS, ensure that your `ios/Podfile` is set to use at least iOS 10.0:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Basic Usage
+
+To use the **clean_framework** package, you will typically create a `ViewModel`, `UseCase`, and `Repository`. Here’s a simple example of how to set up these components:
+
+1. **Create a Model**: Define your data model.
+2. **Create a Repository**: Implement the repository pattern to manage data.
+3. **Create a UseCase**: Define the business logic.
+4. **Create a ViewModel**: Connect the UI with the UseCase.
+5. **Build the UI**: Use the ViewModel in your Flutter widgets.
+
+This structure allows you to maintain a clean separation of concerns, making your application easier to manage and test.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Clean Framework
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:clean_framework/clean_framework.dart';
+
+// Define a simple model
+class UserModel {
+  final String name;
+  UserModel({required this.name});
+}
+
+// Create a repository to manage user data
+class UserRepository {
+  UserModel getUser() {
+    // Simulate fetching user data
+    return UserModel(name: "John Doe");
+  }
+}
+
+// Define a use case for user-related business logic
+class GetUserUseCase {
+  final UserRepository userRepository;
+
+  GetUserUseCase(this.userRepository);
+
+  UserModel execute() {
+    // Fetch user data from the repository
+    return userRepository.getUser();
+  }
+}
+
+// Create a ViewModel to connect the UI with the use case
+class UserViewModel extends ViewModel {
+  final GetUserUseCase getUserUseCase;
+  UserModel? user;
+
+  UserViewModel(this.getUserUseCase);
+
+  void fetchUser() {
+    // Call the use case to fetch user data
+    user = getUserUseCase.execute();
+    notifyListeners(); // Notify the UI to rebuild
+  }
+}
+
+// Main application entry point
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Clean Framework Example',
+      home: UserScreen(),
+    );
+  }
+}
+
+// Create a screen to display user information
+class UserScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Initialize the repository and use case
+    final userRepository = UserRepository();
+    final getUserUseCase = GetUserUseCase(userRepository);
+    final userViewModel = UserViewModel(getUserUseCase);
+
+    // Fetch user data
+    userViewModel.fetchUser();
+
+    return Scaffold(
+      appBar: AppBar(title: Text('User Info')),
+      body: Center(
+        child: ValueListenableBuilder(
+          valueListenable: userViewModel,
+          builder: (context, value, child) {
+            // Display user name when available
+            return Text(userViewModel.user?.name ?? 'Loading...');
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main() function, which runs MyApp.
+// 2. MyApp builds the UserScreen widget.
+// 3. In UserScreen, we initialize the UserRepository and GetUserUseCase.
+// 4. We create a UserViewModel instance and call fetchUser() to get user data.
+// 5. The ViewModel fetches the user data from the repository and notifies listeners.
+// 6. The UI updates to display the user's name once it's fetched.
+```
+
+<!-- END_MAIN -->
+
+In this example, we demonstrated how to set up a simple Flutter application using the **clean_framework** package. The application fetches user data and displays it on the screen, showcasing the separation of concerns and the clean architecture principles that the package promotes.
+
+### Summary of Application Flow
+- The application starts with the `main()` function, which initializes the `MyApp` widget.
+- The `UserScreen` widget is built, where the `UserRepository` and `GetUserUseCase` are instantiated.
+- The `UserViewModel` is created, and the `fetchUser()` method is called to retrieve user data.
+- The UI listens for changes in the `UserViewModel` and updates accordingly when the user data is available.
+
+This structured approach not only enhances code readability but also makes it easier to test and maintain the application as it grows.

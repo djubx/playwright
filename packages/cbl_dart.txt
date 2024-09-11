@@ -1,0 +1,225 @@
+Here's a detailed technical blog on the "cbl_dart" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# cbl_dart Flutter Package
+
+The `cbl_dart` package is a powerful tool for Flutter developers looking to integrate Couchbase Lite into their applications. Couchbase Lite is a NoSQL database that allows for local data storage and synchronization with a Couchbase server, making it ideal for mobile applications that require offline capabilities and real-time data synchronization.
+
+## When to Use `cbl_dart`
+
+You should consider using the `cbl_dart` package in scenarios such as:
+
+- **Offline-First Applications**: If your app needs to function without an internet connection, `cbl_dart` allows you to store data locally and sync it when connectivity is restored.
+- **Real-Time Data Sync**: For applications that require real-time updates across multiple devices, this package provides the necessary tools to manage data synchronization seamlessly.
+- **Complex Data Structures**: If your application deals with complex data types and relationships, Couchbase Lite's document-based storage can simplify data management.
+
+## Features
+
+- **Local Data Storage**: Store data locally on the device, ensuring that your application can function offline.
+- **Data Synchronization**: Automatically sync data with a Couchbase server when the device is online.
+- **Querying Capabilities**: Use powerful querying features to retrieve and manipulate data efficiently.
+- **Cross-Platform Support**: Works on both Android and iOS, making it a versatile choice for Flutter developers.
+
+In summary, the `cbl_dart` package is an excellent choice for developers looking to build robust, offline-capable applications with real-time data synchronization features.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `cbl_dart`
+
+In this tutorial, we will walk through the setup process for the `cbl_dart` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `cbl_dart` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cbl_dart: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update `android/app/build.gradle`**: Ensure that your `minSdkVersion` is set to at least 21.
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+2. **Permissions**: Add the necessary permissions in `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+### iOS Configuration
+
+1. **Update `ios/Podfile`**: Ensure that the platform is set to at least 10.0.
+
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+2. **Permissions**: Add the necessary permissions in `Info.plist`:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Basic Usage
+
+Now that we have set up the package, let's see how to use it in our Flutter application.
+
+1. **Initialize the Database**: Create an instance of the database in your main application file.
+2. **Perform CRUD Operations**: Use the provided methods to create, read, update, and delete documents in the database.
+
+### Example Code Snippet
+
+```dart
+import 'package:cbl_dart/cbl_dart.dart';
+
+void main() async {
+  // Initialize the database
+  final database = await Database.open('my_database');
+
+  // Create a new document
+  final document = MutableDocument('doc_id')
+    ..setString('name', 'John Doe')
+    ..setInt('age', 30);
+  await database.save(document);
+
+  // Read the document
+  final retrievedDocument = await database.getDocument('doc_id');
+  print('Retrieved Document: ${retrievedDocument?.toMap()}');
+
+  // Update the document
+  retrievedDocument?.setInt('age', 31);
+  await database.save(retrievedDocument!);
+
+  // Delete the document
+  await database.deleteDocument('doc_id');
+}
+```
+
+This code snippet demonstrates how to initialize the database, create a document, read it, update it, and finally delete it.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of `cbl_dart` in a Flutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cbl_dart/cbl_dart.dart';
+
+void main() async {
+  // Ensure that Flutter is initialized before running the app
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the Couchbase Lite database
+  final database = await Database.open('my_database');
+
+  runApp(MyApp(database: database));
+}
+
+class MyApp extends StatelessWidget {
+  final Database database;
+
+  MyApp({required this.database});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CBL Dart Example',
+      home: HomePage(database: database),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  final Database database;
+
+  HomePage({required this.database});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Map<String, dynamic>> documents = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDocuments();
+  }
+
+  // Load documents from the database
+  Future<void> _loadDocuments() async {
+    final allDocs = await widget.database.getAllDocuments();
+    setState(() {
+      documents = allDocs.map((doc) => doc.toMap()).toList();
+    });
+  }
+
+  // Add a new document
+  Future<void> _addDocument() async {
+    final newDoc = MutableDocument('doc_${documents.length + 1}')
+      ..setString('name', 'User ${documents.length + 1}')
+      ..setInt('age', 20 + documents.length);
+    await widget.database.save(newDoc);
+    _loadDocuments(); // Refresh the document list
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('CBL Dart Example')),
+      body: ListView.builder(
+        itemCount: documents.length,
+        itemBuilder: (context, index) {
+          final doc = documents[index];
+          return ListTile(
+            title: Text(doc['name']),
+            subtitle: Text('Age: ${doc['age']}'),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addDocument,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes the Flutter app and opens the Couchbase Lite database.
+// 2. MyApp is the root widget that takes the database instance and passes it to the HomePage.
+// 3. HomePage initializes the state and loads documents from the database on startup.
+// 4. The _loadDocuments method retrieves all documents and updates the state to display them in a ListView.
+// 5. The _addDocument method creates a new document with a unique ID and adds it to the database, then refreshes the document list.
+// 6. The UI consists of a ListView displaying the documents and a FloatingActionButton to add new documents.
+```
+
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the `cbl_dart` Flutter package, including its features, setup instructions, and a complete example application. The application demonstrates how to initialize the database, perform CRUD operations, and manage the application state effectively. By following this guide, developers can leverage the power of Couchbase Lite in their Flutter applications, enabling offline capabilities and real-time data synchronization.

@@ -1,0 +1,219 @@
+Here's a detailed technical blog on the `supabase_auth_ui` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Supabase Auth UI Flutter Package
+
+The `supabase_auth_ui` package is a powerful tool for integrating authentication features into Flutter applications using Supabase as the backend. Supabase is an open-source Firebase alternative that provides a suite of tools for building applications, including authentication, database management, and real-time capabilities.
+
+## When to Use This Package
+
+You should consider using the `supabase_auth_ui` package when:
+- You need a quick and easy way to implement user authentication in your Flutter app.
+- You want to leverage Supabase's backend services for user management, including sign-up, sign-in, password recovery, and social logins.
+- You prefer a customizable UI for authentication that can be easily integrated into your existing Flutter application.
+
+## Features
+
+- **Pre-built UI Components**: The package provides pre-built UI components for common authentication tasks, such as sign-up and sign-in forms.
+- **Customizable**: You can easily customize the appearance of the authentication UI to match your app's design.
+- **Support for Multiple Auth Providers**: The package supports various authentication providers, including email/password, OAuth providers (like Google, GitHub, etc.), and magic link authentication.
+- **Real-time Updates**: It integrates seamlessly with Supabase's real-time capabilities, allowing you to respond to authentication state changes in real-time.
+
+By using the `supabase_auth_ui` package, developers can save time and effort in implementing authentication features, allowing them to focus on building the core functionalities of their applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Supabase Auth UI in Flutter
+
+In this tutorial, we will walk through the setup process for the `supabase_auth_ui` package in a Flutter application. We will cover platform-specific details for both Android and iOS, as well as any required configurations.
+
+## Step 1: Create a New Flutter Project
+
+First, create a new Flutter project using the following command:
+
+```bash
+flutter create supabase_auth_example
+cd supabase_auth_example
+```
+
+## Step 2: Add Dependencies
+
+Open your `pubspec.yaml` file and add the `supabase` and `supabase_auth_ui` packages:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase: ^0.2.0
+  supabase_auth_ui: ^0.1.0
+```
+
+Run `flutter pub get` to install the new dependencies.
+
+## Step 3: Configure Supabase
+
+1. **Create a Supabase Project**: Go to the [Supabase website](https://supabase.io/) and create a new project. Once created, you will receive a URL and an API key.
+
+2. **Initialize Supabase**: In your Flutter app, initialize Supabase in the `main.dart` file. You can do this in the `main()` function:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:supabase/supabase.dart';
+
+void main() {
+  // Initialize Supabase with your URL and API key
+  Supabase.initialize(
+    url: 'YOUR_SUPABASE_URL',
+    anonKey: 'YOUR_SUPABASE_ANON_KEY',
+  );
+  runApp(MyApp());
+}
+```
+
+## Step 4: Platform-Specific Configurations
+
+### For Android
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Add internet permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### For iOS
+
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+2. Ensure your iOS deployment target is set to at least 11.0 in `ios/Podfile`:
+
+```ruby
+platform :ios, '11.0'
+```
+
+## Step 5: Using the Package
+
+Now that we have set up the package, we can use it in our application. The next section will provide a complete example of how to implement the authentication UI.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Supabase Auth UI in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:supabase/supabase.dart';
+import 'package:supabase_auth_ui/supabase_auth_ui.dart';
+
+void main() {
+  // Initialize Supabase with your URL and API key
+  Supabase.initialize(
+    url: 'YOUR_SUPABASE_URL',
+    anonKey: 'YOUR_SUPABASE_ANON_KEY',
+  );
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Supabase Auth UI Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: AuthScreen(),
+    );
+  }
+}
+
+class AuthScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Authentication'),
+      ),
+      body: Center(
+        child: SupabaseAuthUi(
+          // This widget provides the authentication UI
+          onAuthSuccess: (session) {
+            // Handle successful authentication
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+          },
+          onAuthError: (error) {
+            // Handle authentication error
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error.message)),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              // Log out the user
+              await Supabase.instance.client.auth.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => AuthScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Center(
+        child: Text('Welcome to the Home Screen!'),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts by initializing Supabase with the provided URL and API key.
+// 2. The main widget is `RealFlutter`, which sets up the MaterialApp and the home screen.
+// 3. The `AuthScreen` widget displays the Supabase authentication UI.
+// 4. Upon successful authentication, the user is navigated to the `HomeScreen`.
+// 5. The `HomeScreen` displays a welcome message and a logout button.
+// 6. When the logout button is pressed, the user is signed out and redirected back to the `AuthScreen`.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the `supabase_auth_ui` Flutter package, detailing its features and use cases. We walked through the setup process, including platform-specific configurations for Android and iOS. Finally, we provided a complete example of a Flutter application that demonstrates the key features of the package, including user authentication and session management. This package simplifies the integration of authentication in Flutter apps, allowing developers to focus on building their applications without worrying about the complexities of user management.

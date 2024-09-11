@@ -1,0 +1,171 @@
+<-- START_DESCRIPTION -->
+
+# Isolated Worker Flutter Package
+=====================================
+
+The isolated_worker package is a Flutter package that allows you to run tasks in the background, isolated from the main thread. This is useful for tasks that are computationally expensive or take a long time to complete, as it prevents the main thread from being blocked and causing the app to freeze.
+
+### When to Use
+
+*   Performing network requests or database queries that take a long time to complete.
+*   Running computationally expensive tasks, such as image processing or data compression.
+*   Updating the app's state in the background, such as updating the app's badge count.
+
+### Features
+
+*   Run tasks in the background, isolated from the main thread.
+*   Support for both Android and iOS platforms.
+*   Ability to send messages between the main thread and the isolated worker.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial
+==========
+
+## Step 1: Add the Package to Your Pubspec.yaml File
+
+Add the following line to your pubspec.yaml file:
+
+```yml
+dependencies:
+  isolated_worker: ^1.0.0
+```
+
+## Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:isolated_worker/isolated_worker.dart';
+```
+
+## Step 3: Create an Isolated Worker
+
+Create an isolated worker by extending the `IsolatedWorker` class:
+
+```dart
+class RealFlutter extends IsolatedWorker {
+  @override
+  Future<void> run() async {
+    // Run your task here
+  }
+}
+```
+
+## Step 4: Send Messages Between the Main Thread and the Isolated Worker
+
+You can send messages between the main thread and the isolated worker using the `send` and `receive` methods:
+
+```dart
+class RealFlutter extends IsolatedWorker {
+  @override
+  Future<void> run() async {
+    // Send a message to the main thread
+    send('Hello from isolated worker!');
+    
+    // Receive a message from the main thread
+    final message = await receive();
+    print(message);
+  }
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+On Android, the isolated worker runs in a separate thread, but it still shares the same memory space as the main thread. This means that you need to be careful when accessing shared resources.
+
+### iOS
+
+On iOS, the isolated worker runs in a separate process, which means that it has its own memory space. This makes it safer to access shared resources, but it also means that you need to use inter-process communication (IPC) to send messages between the main thread and the isolated worker.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:isolated_worker/isolated_worker.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Isolated Worker Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _worker = RealFlutter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Isolated Worker Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Press the button to start the isolated worker',
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _worker.start();
+              },
+              child: Text('Start Isolated Worker'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RealFlutter extends IsolatedWorker {
+  @override
+  Future<void> run() async {
+    // Send a message to the main thread
+    send('Hello from isolated worker!');
+    
+    // Simulate some work
+    await Future.delayed(Duration(seconds: 2));
+    
+    // Receive a message from the main thread
+    final message = await receive();
+    print(message);
+  }
+}
+
+// The application flow is as follows:
+// 1. The user presses the "Start Isolated Worker" button, which starts the isolated worker.
+// 2. The isolated worker sends a message to the main thread, which is received by the main thread.
+// 3. The main thread simulates some work by delaying for 2 seconds.
+// 4. The main thread sends a message to the isolated worker, which is received by the isolated worker.
+// 5. The isolated worker prints the message it received from the main thread.
+
+// The isolated worker runs in a separate thread, which allows it to perform tasks without blocking the main thread.
+// The main thread and the isolated worker communicate with each other using the send and receive methods.
+```
+
+<-- END_MAIN -->

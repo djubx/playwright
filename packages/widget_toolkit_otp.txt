@@ -1,0 +1,228 @@
+<-- START_DESCRIPTION -->
+
+**Widget Toolkit OTP Flutter Package**
+=====================================
+
+The `widget_toolkit_otp` Flutter package provides a simple and efficient way to implement One-Time Password (OTP) functionality in your Flutter applications. This package is ideal for developers who want to add an extra layer of security to their apps by verifying user phone numbers or emails via OTP.
+
+**When to Use**
+---------------
+
+You can use this package in the following scenarios:
+
+*   User phone number verification
+*   User email verification
+*   Two-factor authentication (2FA)
+*   Password reset via OTP
+
+**Features**
+------------
+
+*   Customizable OTP field
+*   Automatic OTP detection (Android only)
+*   Manual OTP entry
+*   OTP validation
+*   Error handling
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setup and Usage**
+-------------------
+
+### Step 1: Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  widget_toolkit_otp: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:widget_toolkit_otp/widget_toolkit_otp.dart';
+```
+
+### Step 3: Create an OTP Field
+
+Create an OTP field using the `OtpField` widget:
+
+```dart
+OtpField(
+  controller: _otpController,
+  maxLength: 6,
+  keyboardType: TextInputType.number,
+  autoFocus: true,
+)
+```
+
+### Step 4: Handle OTP Submission
+
+Handle OTP submission using the `onSubmitted` callback:
+
+```dart
+OtpField(
+  // ...
+  onSubmitted: (otp) {
+    // Verify the OTP here
+  },
+)
+```
+
+### Platform-Specific Details
+
+#### Android
+
+To enable automatic OTP detection on Android, add the following code to your `AndroidManifest.xml` file:
+
+```xml
+<receiver
+  android:name=".OtpReceiver"
+  android:enabled="true"
+  android:exported="true">
+  <intent-filter>
+    <action android:name="com.google.android.gms.auth.api.phone.SMS_RETRIEVED" />
+  </intent-filter>
+</receiver>
+```
+
+Then, create a new Java class `OtpReceiver` to handle the OTP detection:
+
+```java
+public class OtpReceiver extends BroadcastReceiver {
+  @Override
+  public void onReceive(Context context, Intent intent) {
+    if (SmsRetriever.SMS_RETRIEVED_ACTION.equals(intent.getAction())) {
+      Bundle extras = intent.getExtras();
+      Status status = (Status) extras.get(SmsRetriever.EXTRA_STATUS);
+      if (status.getStatusCode() == CommonStatusCodes.SUCCESS) {
+        String otp = (String) extras.get(SmsRetriever.EXTRA_SMS_MESSAGE);
+        // Send the OTP to your server for verification
+      }
+    }
+  }
+}
+```
+
+#### iOS
+
+On iOS, you need to add the following code to your `Info.plist` file to enable OTP detection:
+
+```xml
+<key>NSUserActivityTypes</key>
+<array>
+  <string>INStartOtp</string>
+</array>
+```
+
+Then, in your Swift code, handle the OTP detection using the `INStartOtp` user activity:
+
+```swift
+import Intents
+
+class ViewController: UIViewController {
+  // ...
+
+  override func userActivityWillResume(_ userActivity: NSUserActivity) {
+    if let otp = userActivity.userInfo?[INStartOtp.otpKey] as? String {
+      // Send the OTP to your server for verification
+    }
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:widget_toolkit_otp/widget_toolkit_otp.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Widget Toolkit OTP Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _otpController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Widget Toolkit OTP Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              OtpField(
+                controller: _otpController,
+                maxLength: 6,
+                keyboardType: TextInputType.number,
+                autoFocus: true,
+                onSubmitted: (otp) {
+                  // Verify the OTP here
+                  print('OTP submitted: $otp');
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // Send the OTP to your server for verification
+                    print('OTP sent: ${_otpController.text}');
+                  }
+                },
+                child: Text('Verify OTP'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The app starts by running the `main` function, which creates a new instance of the `MyApp` widget.
+// The `MyApp` widget is a stateless widget that returns a `MaterialApp` widget with a title and a theme.
+// The `MaterialApp` widget is the root widget of the app, and it contains a `MyHomePage` widget as its home page.
+// The `MyHomePage` widget is a stateful widget that returns a `Scaffold` widget with an app bar and a body.
+// The body of the `Scaffold` widget contains a `Padding` widget with a `Form` widget as its child.
+// The `Form` widget contains a `Column` widget with an `OtpField` widget and an `ElevatedButton` widget as its children.
+// The `OtpField` widget is used to input the OTP, and it has a maximum length of 6 characters and a keyboard type of number.
+// The `ElevatedButton` widget is used to verify the OTP, and it is only enabled when the form is valid.
+// When the `ElevatedButton` widget is pressed, it sends the OTP to the server for verification.
+
+<-- END_MAIN -->

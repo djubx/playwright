@@ -1,0 +1,198 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Flutter ESP BLE Provisioning Package: flutter_esp_ble_prov
+
+The `flutter_esp_ble_prov` package is a Flutter plugin designed to facilitate Bluetooth Low Energy (BLE) provisioning for ESP32 devices. This package is particularly useful for developers looking to connect their Flutter applications to ESP32-based IoT devices seamlessly. 
+
+## When to Use This Package
+You should consider using the `flutter_esp_ble_prov` package when:
+- You are developing a Flutter application that needs to connect to ESP32 devices over BLE.
+- You want to implement a provisioning process that allows users to configure their IoT devices easily.
+- You need a reliable and efficient way to manage BLE connections and data transfer.
+
+## Key Features
+- **Easy BLE Provisioning**: Simplifies the process of connecting and configuring ESP32 devices.
+- **Cross-Platform Support**: Works on both Android and iOS, making it versatile for mobile app development.
+- **Real-time Data Transfer**: Enables real-time communication between the Flutter app and ESP32 devices.
+- **Customizable**: Offers various configuration options to tailor the provisioning process to your needs.
+
+With these features, `flutter_esp_ble_prov` is an excellent choice for developers looking to integrate BLE capabilities into their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using flutter_esp_ble_prov
+
+In this tutorial, we will walk through the setup process for the `flutter_esp_ble_prov` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+To get started, add the `flutter_esp_ble_prov` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_esp_ble_prov: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH"/>
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+3. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS Configuration
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following keys to request permission for Bluetooth usage:
+
+```xml
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>This app requires Bluetooth access to connect to devices.</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app requires location access to discover Bluetooth devices.</string>
+```
+
+## Step 3: Using the Package
+Now that we have set up the package, we can start using it in our Flutter application. Below is a simple example of how to initialize the BLE provisioning and connect to an ESP32 device.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_esp_ble_prov/flutter_esp_ble_prov.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Initialize the ESP BLE Provisioning
+  final EspBleProv espBleProv = EspBleProv();
+
+  @override
+  void initState() {
+    super.initState();
+    // Start the BLE provisioning process
+    startProvisioning();
+  }
+
+  void startProvisioning() async {
+    // Start scanning for devices
+    await espBleProv.startScan();
+    // Listen for discovered devices
+    espBleProv.deviceDiscovered.listen((device) {
+      // Handle discovered device
+      print('Discovered device: ${device.name}');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('ESP BLE Provisioning')),
+      body: Center(child: Text('Scanning for devices...')),
+    );
+  }
+}
+```
+
+In this example, we initialize the `EspBleProv` class and start scanning for devices in the `initState` method. We also listen for discovered devices and print their names.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of flutter_esp_ble_prov
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_esp_ble_prov/flutter_esp_ble_prov.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Create an instance of the ESP BLE Provisioning class
+  final EspBleProv espBleProv = EspBleProv();
+  List<String> discoveredDevices = []; // List to hold discovered device names
+
+  @override
+  void initState() {
+    super.initState();
+    // Start the BLE provisioning process
+    startProvisioning();
+  }
+
+  void startProvisioning() async {
+    // Start scanning for devices
+    await espBleProv.startScan();
+    // Listen for discovered devices
+    espBleProv.deviceDiscovered.listen((device) {
+      // Add discovered device to the list
+      setState(() {
+        discoveredDevices.add(device.name);
+      });
+      // Print the name of the discovered device
+      print('Discovered device: ${device.name}');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('ESP BLE Provisioning')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Scanning for devices...'),
+            // Display the list of discovered devices
+            Expanded(
+              child: ListView.builder(
+                itemCount: discoveredDevices.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(discoveredDevices[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and the RealFlutter widget is created.
+// 2. In the initState method, the startProvisioning function is called.
+// 3. The startProvisioning function initiates a scan for BLE devices.
+// 4. When a device is discovered, its name is added to the discoveredDevices list.
+// 5. The UI updates to display the list of discovered devices in real-time.
+// 6. Users can see the names of the devices as they are found during the scanning process.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog provides a comprehensive overview of the `flutter_esp_ble_prov` package, including its description, setup tutorial, and a complete example with detailed comments explaining the application flow.

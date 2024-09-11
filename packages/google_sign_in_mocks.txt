@@ -1,0 +1,177 @@
+Here's a detailed technical blog on the `google_sign_in_mocks` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Google Sign In Mocks Flutter Package
+
+The `google_sign_in_mocks` package is a powerful tool for Flutter developers looking to implement Google Sign-In functionality in their applications while facilitating testing and development. This package allows developers to mock the Google Sign-In process, making it easier to test authentication flows without needing to rely on actual Google accounts or network calls.
+
+## When to Use This Package
+
+- **Testing**: When writing unit tests or widget tests for your Flutter application, you can use this package to simulate Google Sign-In without requiring real user credentials.
+- **Development**: During the development phase, you can quickly test the sign-in flow without needing to set up a Google Cloud project or manage OAuth credentials.
+
+## Features
+
+- **Mocking Google Sign-In**: Easily simulate successful or failed sign-in attempts.
+- **Customizable Responses**: You can define what the mock should return, allowing for comprehensive testing of various scenarios.
+- **Integration with Flutter's Testing Framework**: Works seamlessly with Flutter's built-in testing tools.
+
+By using `google_sign_in_mocks`, developers can ensure that their applications handle authentication correctly, even in edge cases, without the overhead of managing real authentication flows during testing.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Google Sign In Mocks
+
+In this tutorial, we will walk through the setup process for the `google_sign_in_mocks` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the `google_sign_in_mocks` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  google_sign_in: ^5.2.1  # Ensure you have the google_sign_in package
+  google_sign_in_mocks: ^0.2.0  # Add the mocks package
+```
+
+Run `flutter pub get` to install the new dependencies.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+1. Open `android/app/build.gradle`.
+2. Ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+### iOS
+
+1. Open `ios/Runner/Info.plist`.
+2. Add the following configuration to enable Google Sign-In:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string> <!-- Replace with your actual client ID -->
+        </array>
+    </dict>
+</array>
+```
+
+## Step 3: Using the Package
+
+Now, let's implement the mock Google Sign-In in our Flutter application. Below is an example of how to set up the `RealFlutter` class to use the `google_sign_in_mocks` package.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: RealFlutter Class Implementation
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_mocks/google_sign_in_mocks.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Google Sign In Mocks Example',
+      home: SignInPage(),
+    );
+  }
+}
+
+class SignInPage extends StatefulWidget {
+  @override
+  _SignInPageState createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  // Create a GoogleSignIn instance using the mock
+  final GoogleSignIn _googleSignIn = MockGoogleSignIn();
+  String _message = '';
+
+  // Method to handle sign-in
+  Future<void> _handleSignIn() async {
+    try {
+      // Simulate a successful sign-in
+      final GoogleSignInAccount? user = await _googleSignIn.signIn();
+      setState(() {
+        _message = 'Signed in as: ${user?.displayName}';
+      });
+    } catch (error) {
+      // Handle sign-in error
+      setState(() {
+        _message = 'Sign in failed: $error';
+      });
+    }
+  }
+
+  // Method to handle sign-out
+  Future<void> _handleSignOut() async {
+    await _googleSignIn.signOut();
+    setState(() {
+      _message = 'Signed out';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Google Sign In Mocks Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_message),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _handleSignIn,
+              child: Text('Sign in with Google'),
+            ),
+            ElevatedButton(
+              onPressed: _handleSignOut,
+              child: Text('Sign out'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and a home page (SignInPage).
+// 3. SignInPage is a stateful widget that manages the sign-in state.
+// 4. The _handleSignIn method uses the MockGoogleSignIn to simulate a sign-in process.
+// 5. On successful sign-in, it updates the message to show the user's display name.
+// 6. The _handleSignOut method allows the user to sign out, updating the message accordingly.
+// 7. The UI consists of buttons to trigger sign-in and sign-out, and a text widget to display the current state.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the `google_sign_in_mocks` package, detailing its purpose, setup, and usage in a Flutter application. The provided example demonstrates how to implement mock Google Sign-In functionality, making it easier to test and develop your applications without relying on real authentication flows.

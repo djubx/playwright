@@ -1,0 +1,157 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# ARKit Plugin for Flutter: A Comprehensive Overview
+
+The `arkit_plugin` is a powerful Flutter package that enables developers to create augmented reality (AR) experiences using Apple's ARKit. This package is specifically designed for iOS devices, leveraging ARKit's capabilities to provide immersive AR experiences. 
+
+## When to Use ARKit Plugin
+
+The `arkit_plugin` is ideal for applications that require:
+- **Augmented Reality Experiences**: Enhance real-world environments with digital overlays.
+- **Interactive 3D Models**: Display and interact with 3D models in a real-world context.
+- **Spatial Tracking**: Utilize device motion and environmental understanding to create dynamic AR applications.
+
+## Key Features
+
+- **3D Object Rendering**: Render 3D models and animations in real-time.
+- **Plane Detection**: Detect horizontal and vertical planes in the environment.
+- **Image Recognition**: Recognize and track images in the real world.
+- **Light Estimation**: Adjust the lighting of virtual objects to match the real-world environment.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up ARKit Plugin in Flutter
+
+In this section, we'll walk through the setup process for integrating the `arkit_plugin` into a Flutter project, focusing on iOS-specific configurations.
+
+## Prerequisites
+
+- Flutter SDK installed
+- Xcode installed on macOS
+- An iOS device for testing (ARKit is not supported on the iOS simulator)
+
+## Step-by-Step Setup
+
+1. **Create a New Flutter Project**
+
+   Open your terminal and run:
+   ```bash
+   flutter create arkit_example
+   cd arkit_example
+   ```
+
+2. **Add the ARKit Plugin Dependency**
+
+   Open `pubspec.yaml` and add the `arkit_plugin`:
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     arkit_plugin: ^0.6.0
+   ```
+
+3. **Configure iOS Platform**
+
+   - Open the `ios/Runner.xcworkspace` in Xcode.
+   - Navigate to the `Info.plist` file and add the following keys:
+     ```xml
+     <key>NSCameraUsageDescription</key>
+     <string>We need to access your camera for AR experiences.</string>
+     <key>io.flutter.embedded_views_preview</key>
+     <true/>
+     ```
+
+4. **Enable ARKit Capabilities**
+
+   - In Xcode, select your project in the Project Navigator.
+   - Go to the `Signing & Capabilities` tab.
+   - Click on `+ Capability` and add `Augmented Reality`.
+
+5. **Run the Application**
+
+   Ensure your iOS device is connected and run:
+   ```bash
+   flutter run
+   ```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:arkit_plugin/arkit_plugin.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'ARKit Plugin Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ARHomePage(),
+    );
+  }
+}
+
+class ARHomePage extends StatefulWidget {
+  @override
+  _ARHomePageState createState() => _ARHomePageState();
+}
+
+class _ARHomePageState extends State<ARHomePage> {
+  late ARKitController arkitController;
+
+  @override
+  void dispose() {
+    arkitController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('ARKit Plugin Demo'),
+      ),
+      body: ARKitSceneView(
+        onARKitViewCreated: onARKitViewCreated,
+        planeDetection: ARPlaneDetection.horizontal,
+      ),
+    );
+  }
+
+  void onARKitViewCreated(ARKitController arkitController) {
+    this.arkitController = arkitController;
+    this.arkitController.onAddNodeForAnchor = _handleAddAnchor;
+  }
+
+  void _handleAddAnchor(ARKitAnchor anchor) {
+    final node = ARKitNode(
+      geometry: ARKitSphere(
+        materials: [ARKitMaterial(diffuse: ARKitMaterialProperty.color(Colors.red))],
+        radius: 0.1,
+      ),
+      position: vector.Vector3(0, 0, -0.5),
+    );
+    arkitController.add(node);
+  }
+}
+
+// The application starts by running the RealFlutter widget, which sets up the MaterialApp.
+// The ARHomePage widget is the main screen, displaying an ARKitSceneView.
+// When the ARKit view is created, the onARKitViewCreated callback is triggered.
+// This callback initializes the ARKitController and sets up a handler for adding nodes when anchors are detected.
+// The _handleAddAnchor function adds a red sphere to the AR scene at a fixed position relative to the detected anchor.
+```
+
+<-- END_MAIN -->
+```
+
+This blog post provides a comprehensive guide to using the `arkit_plugin` in Flutter, from setup to a complete example. By following these steps, developers can create engaging AR experiences on iOS devices.

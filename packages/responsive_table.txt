@@ -1,0 +1,225 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Responsive Table Flutter Package
+
+The `responsive_table` Flutter package is a powerful tool designed to create responsive data tables in Flutter applications. It is particularly useful when you need to display large datasets in a tabular format that adapts to different screen sizes and orientations. This package is ideal for applications that require dynamic data presentation, such as dashboards, data analysis tools, and administrative panels.
+
+## Features
+
+- **Responsive Design**: Automatically adjusts the table layout based on the screen size, ensuring optimal readability on both mobile and desktop devices.
+- **Customizable Columns**: Allows developers to define custom column widths, alignments, and styles.
+- **Sorting and Filtering**: Built-in support for sorting and filtering data, enhancing user interaction.
+- **Pagination**: Efficiently handles large datasets by providing pagination controls.
+- **Row Selection**: Supports single and multiple row selection, useful for batch operations.
+
+## When to Use
+
+- **Data-Intensive Applications**: When your application needs to display large amounts of data in a structured format.
+- **Cross-Platform Apps**: Ideal for apps that need to run on both mobile and desktop platforms with a consistent UI.
+- **Interactive Dashboards**: Perfect for creating dashboards that require user interaction with data tables.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Responsive Table Package
+
+In this tutorial, we will walk through the process of setting up the `responsive_table` package in a Flutter project and demonstrate how to use its features effectively.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the `responsive_table` package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     responsive_table: ^1.0.0
+   ```
+
+2. **Install Packages**: Run `flutter pub get` to install the new package.
+
+3. **Import the Package**: Import the package in your Dart file where you plan to use it.
+
+   ```dart
+   import 'package:responsive_table/responsive_table.dart';
+   ```
+
+## Platform-Specific Details
+
+### Android
+
+- Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21 to support all features of the package.
+
+  ```gradle
+  defaultConfig {
+      minSdkVersion 21
+  }
+  ```
+
+### iOS
+
+- No specific configurations are required for iOS, but ensure your deployment target is set to iOS 9.0 or higher in your `ios/Podfile`.
+
+  ```ruby
+  platform :ios, '9.0'
+  ```
+
+## Using the Package
+
+To use the `responsive_table` package, you need to create a `RealFlutter` widget that encapsulates the table logic. Here’s a basic setup:
+
+```dart
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ResponsiveDatatable(
+      title: Text("Example Table"),
+      headers: [
+        DatatableHeader(text: "ID", value: "id"),
+        DatatableHeader(text: "Name", value: "name"),
+        DatatableHeader(text: "Age", value: "age"),
+      ],
+      source: [
+        {"id": 1, "name": "John Doe", "age": 28},
+        {"id": 2, "name": "Jane Smith", "age": 34},
+      ],
+      autoHeight: true,
+    );
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:responsive_table/responsive_table.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Responsive Table Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  List<DatatableHeader> _headers = [];
+  List<Map<String, dynamic>> _source = [];
+  List<Map<String, dynamic>> _selecteds = [];
+  String _sortColumn;
+  bool _sortAscending = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTable();
+  }
+
+  void _initializeTable() {
+    // Define the headers for the table
+    _headers = [
+      DatatableHeader(
+          text: "ID",
+          value: "id",
+          show: true,
+          sortable: true,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: "Name",
+          value: "name",
+          show: true,
+          sortable: true,
+          textAlign: TextAlign.left),
+      DatatableHeader(
+          text: "Age",
+          value: "age",
+          show: true,
+          sortable: true,
+          textAlign: TextAlign.right),
+    ];
+
+    // Define the data source for the table
+    _source = [
+      {"id": 1, "name": "John Doe", "age": 28},
+      {"id": 2, "name": "Jane Smith", "age": 34},
+      {"id": 3, "name": "Alex Johnson", "age": 45},
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Responsive Table Example'),
+      ),
+      body: ResponsiveDatatable(
+        title: Text("User Data"),
+        headers: _headers,
+        source: _source,
+        selecteds: _selecteds,
+        showSelect: true,
+        autoHeight: true,
+        onSort: (value) {
+          setState(() {
+            _sortColumn = value;
+            _sortAscending = !_sortAscending;
+            if (_sortAscending) {
+              _source.sort((a, b) => a[_sortColumn].compareTo(b[_sortColumn]));
+            } else {
+              _source.sort((a, b) => b[_sortColumn].compareTo(a[_sortColumn]));
+            }
+          });
+        },
+        onSelect: (value, item) {
+          setState(() {
+            if (value) {
+              _selecteds.add(item);
+            } else {
+              _selecteds.removeAt(_selecteds.indexOf(item));
+            }
+          });
+        },
+        onSelectAll: (value) {
+          setState(() {
+            if (value) {
+              _selecteds = _source.map((entry) => entry).toList().cast();
+            } else {
+              _selecteds.clear();
+            }
+          });
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The `MyApp` widget is the root of the application, setting up the MaterialApp with a home of `RealFlutter`.
+// 2. `RealFlutter` is a stateful widget that manages the state of the responsive table.
+// 3. In `initState`, the table headers and data source are initialized.
+// 4. The `ResponsiveDatatable` widget is used to display the table with features like sorting and selection.
+// 5. Sorting is handled by toggling the `_sortAscending` flag and sorting the `_source` list accordingly.
+// 6. Row selection is managed by adding or removing items from the `_selecteds` list.
+// 7. The UI updates dynamically based on user interactions, such as sorting columns or selecting rows.
+
+<-- END_MAIN -->
+```

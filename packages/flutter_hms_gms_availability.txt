@@ -1,0 +1,203 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# flutter_hms_gms_availability Package
+
+The `flutter_hms_gms_availability` package is a Flutter plugin designed to help developers determine the availability of Huawei Mobile Services (HMS) and Google Mobile Services (GMS) on a device. This is particularly useful for applications that need to adapt their functionality based on the services available on the user's device, especially in regions where Huawei devices are prevalent.
+
+## When to Use This Package
+
+- **Cross-Platform Development**: If you are developing a Flutter application that targets both Huawei and non-Huawei devices, this package allows you to check which services are available and adjust your app's behavior accordingly.
+- **Service-Specific Features**: If your app relies on specific features provided by either HMS or GMS, you can use this package to ensure that users have access to the necessary services.
+- **User Experience Optimization**: By detecting the availability of these services, you can provide a tailored experience for users, such as offering alternative features or guiding them to install necessary services.
+
+## Features
+
+- **Availability Check**: Easily check if HMS or GMS is available on the device.
+- **Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Simple API**: Provides a straightforward API for checking service availability.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using flutter_hms_gms_availability
+
+In this tutorial, we will walk through the setup process for the `flutter_hms_gms_availability` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `flutter_hms_gms_availability` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_hms_gms_availability: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Open your `AndroidManifest.xml` file located in `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **Gradle Configuration**: Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+### iOS Configuration
+
+1. **Update Info.plist**: Open your `Info.plist` file located in `ios/Runner/Info.plist` and add the following:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Using the Package
+
+Now that we have set up the package, we can use it in our Flutter application. Below is an example of how to check for HMS and GMS availability.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_hms_gms_availability/flutter_hms_gms_availability.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('HMS and GMS Availability')),
+        body: Center(
+          child: FutureBuilder<String>(
+            future: checkServicesAvailability(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return Text('Availability: ${snapshot.data}');
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<String> checkServicesAvailability() async {
+    bool isHMSAvailable = await FlutterHmsGmsAvailability.isHMSAvailable;
+    bool isGMSAvailable = await FlutterHmsGmsAvailability.isGMSAvailable;
+
+    if (isHMSAvailable && isGMSAvailable) {
+      return 'Both HMS and GMS are available.';
+    } else if (isHMSAvailable) {
+      return 'Only HMS is available.';
+    } else if (isGMSAvailable) {
+      return 'Only GMS is available.';
+    } else {
+      return 'Neither HMS nor GMS is available.';
+    }
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of flutter_hms_gms_availability
+
+Below is a complete example of a Flutter application that demonstrates how to use the `flutter_hms_gms_availability` package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_hms_gms_availability/flutter_hms_gms_availability.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('HMS and GMS Availability')),
+        body: Center(
+          child: FutureBuilder<String>(
+            future: checkServicesAvailability(),
+            builder: (context, snapshot) {
+              // Check the connection state of the Future
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // While waiting for the result, show a loading indicator
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                // If there is an error, display it
+                return Text('Error: ${snapshot.error}');
+              } else {
+                // Display the availability result
+                return Text('Availability: ${snapshot.data}');
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<String> checkServicesAvailability() async {
+    // Check if HMS is available
+    bool isHMSAvailable = await FlutterHmsGmsAvailability.isHMSAvailable;
+    // Check if GMS is available
+    bool isGMSAvailable = await FlutterHmsGmsAvailability.isGMSAvailable;
+
+    // Determine the availability status and return the result
+    if (isHMSAvailable && isGMSAvailable) {
+      return 'Both HMS and GMS are available.';
+    } else if (isHMSAvailable) {
+      return 'Only HMS is available.';
+    } else if (isGMSAvailable) {
+      return 'Only GMS is available.';
+    } else {
+      return 'Neither HMS nor GMS is available.';
+    }
+  }
+}
+
+// The main function is the entry point of the application
+void main() {
+  runApp(RealFlutter());
+}
+
+/*
+Application Flow Explanation:
+1. The application starts with the main function, which calls runApp() to launch the RealFlutter widget.
+2. The RealFlutter widget builds a MaterialApp with a Scaffold containing an AppBar and a Center widget.
+3. Inside the Center widget, a FutureBuilder is used to handle the asynchronous check for HMS and GMS availability.
+4. The checkServicesAvailability() function is called, which checks the availability of HMS and GMS using the flutter_hms_gms_availability package.
+5. Depending on the results, the FutureBuilder updates the UI to show whether HMS, GMS, both, or neither are available.
+6. If the check is still in progress, a CircularProgressIndicator is displayed. If an error occurs, it is shown to the user.
+*/
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog provides a comprehensive overview of the `flutter_hms_gms_availability` package, guiding users through its setup, usage, and providing a complete example with detailed comments explaining the application flow.

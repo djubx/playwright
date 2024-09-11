@@ -1,0 +1,185 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `firebase_auth_mocks` Flutter Package
+
+The `firebase_auth_mocks` package is a powerful tool for Flutter developers who want to implement authentication features in their applications while ensuring that their tests are reliable and efficient. This package provides mock implementations of Firebase Authentication, allowing developers to simulate various authentication scenarios without needing a live Firebase backend. 
+
+## When to Use `firebase_auth_mocks`
+
+- **Unit Testing**: When writing unit tests for your Flutter applications, you can use this package to mock Firebase authentication behavior, making it easier to test your authentication logic without relying on a real Firebase project.
+- **Development**: During the development phase, you can use the mocks to quickly prototype authentication flows without needing to set up Firebase services.
+- **CI/CD Pipelines**: In continuous integration and deployment pipelines, using mocks can help ensure that tests run quickly and reliably without external dependencies.
+
+## Features
+
+- **Mock Authentication**: Simulate user sign-in, sign-out, and account management without a real Firebase backend.
+- **Customizable Behavior**: You can customize the behavior of the mock authentication to fit your testing needs.
+- **Easy Integration**: The package integrates seamlessly with the existing Firebase Authentication API, making it easy to switch between real and mock implementations.
+
+Overall, `firebase_auth_mocks` is an essential package for Flutter developers looking to streamline their testing and development processes related to Firebase Authentication.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `firebase_auth_mocks`
+
+In this tutorial, we will walk through the setup process for the `firebase_auth_mocks` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `firebase_auth_mocks` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_auth: ^3.3.0 # Ensure you have the correct version of firebase_auth
+  firebase_auth_mocks: ^0.2.0 # Add this line
+```
+
+Run `flutter pub get` to install the new dependency.
+
+## Step 2: Configure Firebase for Android and iOS
+
+### Android Configuration
+
+1. Open your `android/app/build.gradle` file and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Make sure you have the Google services JSON file (`google-services.json`) in your `android/app` directory.
+
+### iOS Configuration
+
+1. Open your `ios/Runner/Info.plist` file and add the following configurations:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>YOUR_REVERSED_CLIENT_ID</string>
+        </array>
+    </dict>
+</array>
+```
+
+2. Ensure you have the `GoogleService-Info.plist` file in your `ios/Runner` directory.
+
+## Step 3: Using `firebase_auth_mocks`
+
+Now that we have set up the package, let's see how to use it in our application. Below is a simple example demonstrating how to mock Firebase authentication.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Firebase Auth Mocks Example',
+      home: AuthHome(),
+    );
+  }
+}
+
+class AuthHome extends StatefulWidget {
+  @override
+  _AuthHomeState createState() => _AuthHomeState();
+}
+
+class _AuthHomeState extends State<AuthHome> {
+  // Create a mock FirebaseAuth instance
+  final FirebaseAuth _auth = MockFirebaseAuth();
+
+  // Variable to hold the current user
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if a user is already signed in
+    _user = _auth.currentUser;
+  }
+
+  // Method to sign in a user
+  Future<void> _signIn() async {
+    // Simulate a sign-in with email and password
+    _user = await _auth.signInWithEmailAndPassword(
+      email: 'test@example.com',
+      password: 'password123',
+    );
+    setState(() {}); // Update the UI
+  }
+
+  // Method to sign out the user
+  Future<void> _signOut() async {
+    await _auth.signOut();
+    _user = null; // Clear the user
+    setState(() {}); // Update the UI
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Firebase Auth Mocks Example'),
+      ),
+      body: Center(
+        child: _user == null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('You are not signed in.'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _signIn,
+                    child: Text('Sign In'),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Welcome, ${_user!.email}!'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _signOut,
+                    child: Text('Sign Out'),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The AuthHome widget is created, which manages the authentication state.
+// 3. In initState, we check if a user is already signed in using the mock auth instance.
+// 4. The _signIn method simulates signing in a user with predefined credentials.
+// 5. The _signOut method allows the user to sign out, clearing the user state.
+// 6. The UI updates based on whether a user is signed in or not, displaying appropriate buttons and messages.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog provides a comprehensive overview of the `firebase_auth_mocks` package, guiding readers through its features, setup, and practical usage in a Flutter application.

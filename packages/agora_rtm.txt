@@ -1,0 +1,237 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Agora RTM Flutter Package: An Overview
+
+The `agora_rtm` Flutter package is a powerful tool for developers looking to integrate real-time messaging capabilities into their Flutter applications. This package is part of the Agora Real-Time Messaging (RTM) SDK, which provides a robust platform for implementing features such as instant messaging, presence, and signaling in mobile and web applications.
+
+## When to Use Agora RTM
+
+The `agora_rtm` package is ideal for applications that require real-time communication features. Here are some scenarios where this package can be particularly useful:
+
+- **Chat Applications**: Implement one-on-one or group chat functionalities with real-time message delivery.
+- **Collaboration Tools**: Enable real-time collaboration features such as document editing or whiteboarding.
+- **Gaming**: Facilitate in-game chat and notifications.
+- **Customer Support**: Provide instant messaging capabilities for customer service applications.
+
+## Key Features
+
+- **Real-Time Messaging**: Send and receive messages instantly between users or within channels.
+- **Presence**: Track the online/offline status of users.
+- **Channel Management**: Create and manage communication channels for group messaging.
+- **Event Handling**: Listen to various events such as message received, user joined/left, etc.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Agora RTM in Flutter
+
+In this section, we will walk through the process of setting up the `agora_rtm` package in a Flutter project, including platform-specific configurations for Android and iOS.
+
+## Step 1: Add Dependency
+
+First, add the `agora_rtm` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  agora_rtm: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Setup
+
+### Android
+
+1. **Permissions**: Open `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **ProGuard**: If you are using ProGuard, add the following rules to `proguard-rules.pro`:
+
+   ```pro
+   -keep class io.agora.** { *; }
+   -dontwarn io.agora.**
+   ```
+
+### iOS
+
+1. **Permissions**: Open `ios/Runner/Info.plist` and add the following keys:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **Podfile**: Ensure your `ios/Podfile` has platform set to 11.0 or higher:
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+## Step 3: Initialize the SDK
+
+To use the Agora RTM SDK, you need to initialize it with your Agora App ID. You can obtain this ID from the Agora Console.
+
+```dart
+import 'package:agora_rtm/agora_rtm.dart';
+
+class RealFlutter {
+  final AgoraRtmClient _client;
+
+  RealFlutter(String appId) : _client = AgoraRtmClient.createInstance(appId);
+
+  Future<void> initialize() async {
+    await _client.login(null, 'user_id');
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:agora_rtm/agora_rtm.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Agora RTM Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ChatScreen(),
+    );
+  }
+}
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  late AgoraRtmClient _client;
+  late AgoraRtmChannel _channel;
+  final _messages = <String>[];
+  final _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeRtm();
+  }
+
+  Future<void> _initializeRtm() async {
+    // Initialize the Agora RTM client with your App ID
+    _client = await AgoraRtmClient.createInstance('YOUR_APP_ID');
+    _client.onMessageReceived = (AgoraRtmMessage message, String peerId) {
+      // Handle incoming messages
+      setState(() {
+        _messages.add("From $peerId: ${message.text}");
+      });
+    };
+
+    // Log in to the Agora RTM service
+    await _client.login(null, 'user_id');
+
+    // Create a channel and join it
+    _channel = await _client.createChannel('test_channel');
+    _channel.onMessageReceived = (AgoraRtmMessage message, AgoraRtmMember member) {
+      // Handle channel messages
+      setState(() {
+        _messages.add("From ${member.userId}: ${message.text}");
+      });
+    };
+    await _channel.join();
+  }
+
+  void _sendMessage() async {
+    // Send a message to the channel
+    if (_controller.text.isNotEmpty) {
+      await _channel.sendMessage(AgoraRtmMessage.fromText(_controller.text));
+      setState(() {
+        _messages.add("Me: ${_controller.text}");
+        _controller.clear();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Clean up resources
+    _channel.leave();
+    _client.logout();
+    _client.release();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Agora RTM Chat'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_messages[index]),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      labelText: 'Enter message',
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes the Agora RTM client with the provided App ID.
+// 2. It logs in the user to the Agora RTM service using a unique user ID.
+// 3. A channel is created and the user joins it to start receiving messages.
+// 4. The app listens for incoming messages both from individual peers and the channel.
+// 5. Users can send messages to the channel, which are displayed in the chat interface.
+// 6. The app cleans up resources by leaving the channel and logging out when disposed.
+```
+
+<-- END_MAIN -->
+```

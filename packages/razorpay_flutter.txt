@@ -1,0 +1,248 @@
+Here's a detailed technical blog on the "razorpay_flutter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Razorpay Flutter Package
+
+The **razorpay_flutter** package is a powerful tool for integrating Razorpay's payment gateway into Flutter applications. Razorpay is a popular payment processing platform in India, allowing businesses to accept payments via various methods, including credit/debit cards, net banking, UPI, and wallets. This package simplifies the integration process, enabling developers to implement payment solutions quickly and efficiently.
+
+## When to Use This Package
+You should consider using the **razorpay_flutter** package when:
+- You are developing a Flutter application that requires payment processing.
+- You want to provide users with multiple payment options.
+- You need a reliable and secure payment gateway that complies with Indian regulations.
+
+## Features
+- **Multiple Payment Options**: Supports various payment methods, including cards, UPI, and wallets.
+- **Easy Integration**: Simple setup process with clear documentation.
+- **Customizable UI**: Allows customization of the payment interface to match your app's design.
+- **Webhooks Support**: Enables handling of payment events through webhooks.
+- **Error Handling**: Built-in error handling to manage payment failures gracefully.
+
+With these features, the **razorpay_flutter** package is an excellent choice for developers looking to implement payment solutions in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Razorpay in Flutter
+
+In this tutorial, we will walk through the setup process for the **razorpay_flutter** package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+To get started, add the **razorpay_flutter** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  razorpay_flutter: ^1.2.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Configure Android
+For Android, you need to make some configurations:
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21  // Minimum SDK version required
+    }
+}
+```
+
+2. Add the following permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+## Step 3: Configure iOS
+For iOS, follow these steps:
+
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+2. Ensure your iOS deployment target is set to at least 10.0 in `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 4: Initialize Razorpay
+In your Flutter application, you need to initialize Razorpay and set up the payment options. Here’s how to do it:
+
+```dart
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+
+class RealFlutter {
+  Razorpay _razorpay;
+
+  void init() {
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  void openCheckout() {
+    var options = {
+      'key': 'YOUR_RAZORPAY_KEY', // Your Razorpay key
+      'amount': 100, // Amount in paise
+      'name': 'Test Payment',
+      'description': 'Payment for testing',
+      'prefill': {
+        'contact': '9999999999',
+        'email': 'test@example.com'
+      }
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    print("Payment Success: ${response.paymentId}");
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    print("Payment Error: ${response.code} - ${response.message}");
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    print("External Wallet: ${response.walletName}");
+  }
+}
+```
+
+## Step 5: Testing
+You can test the integration by running your application on a physical device or emulator. Make sure to use test credentials provided by Razorpay.
+
+With these steps, you should have a fully functional Razorpay integration in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Razorpay Integration in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Razorpay Flutter Demo',
+      home: PaymentScreen(),
+    );
+  }
+}
+
+class PaymentScreen extends StatefulWidget {
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  Razorpay _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Razorpay
+    _razorpay = Razorpay();
+    // Set up event listeners for payment events
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  void openCheckout() {
+    // Define payment options
+    var options = {
+      'key': 'YOUR_RAZORPAY_KEY', // Replace with your Razorpay key
+      'amount': 100, // Amount in paise (100 paise = 1 INR)
+      'name': 'Test Payment',
+      'description': 'Payment for testing',
+      'prefill': {
+        'contact': '9999999999', // User's contact number
+        'email': 'test@example.com' // User's email
+      }
+    };
+
+    try {
+      // Open Razorpay checkout
+      _razorpay.open(options);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    // Handle successful payment
+    print("Payment Success: ${response.paymentId}");
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment Successful!")));
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    // Handle payment error
+    print("Payment Error: ${response.code} - ${response.message}");
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Payment Failed!")));
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    // Handle external wallet payment
+    print("External Wallet: ${response.walletName}");
+  }
+
+  @override
+  void dispose() {
+    // Dispose Razorpay instance
+    super.dispose();
+    _razorpay.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Razorpay Payment')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: openCheckout,
+          child: Text('Pay Now'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The PaymentScreen widget is displayed, containing a button to initiate payment.
+// 3. When the button is pressed, the openCheckout method is called.
+// 4. This method defines the payment options and opens the Razorpay checkout.
+// 5. Depending on the payment outcome, the appropriate callback is triggered:
+//    - _handlePaymentSuccess for successful payments
+//    - _handlePaymentError for failed payments
+//    - _handleExternalWallet for payments made through external wallets
+// 6. The app displays a SnackBar message to inform the user of the payment status.
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the **razorpay_flutter** package, including its features, setup instructions, and a complete example of how to implement it in a Flutter application.

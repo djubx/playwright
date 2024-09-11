@@ -1,0 +1,242 @@
+Here's a detailed technical blog on the "signalr_core" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# SignalR Core Flutter Package
+
+The `signalr_core` Flutter package is a powerful library that allows Flutter applications to communicate with SignalR servers. SignalR is a library for ASP.NET that simplifies the process of adding real-time web functionality to applications. This package enables developers to build applications that require real-time updates, such as chat applications, live notifications, and collaborative tools.
+
+## When to Use This Package
+
+You should consider using the `signalr_core` package when:
+- You need real-time communication in your Flutter app.
+- Your application requires instant updates from a server, such as in chat applications or live dashboards.
+- You want to implement features like notifications, live data feeds, or collaborative editing.
+
+## Features
+
+- **Real-time Communication**: Establishes a persistent connection to a SignalR server for real-time data exchange.
+- **Automatic Reconnection**: Automatically attempts to reconnect if the connection is lost.
+- **Support for Multiple Platforms**: Works on both Android and iOS, making it versatile for cross-platform applications.
+- **Strongly Typed Hub Methods**: Allows for calling server methods and receiving responses in a type-safe manner.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the SignalR Core Package
+
+## Step 1: Add Dependency
+
+To get started, add the `signalr_core` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  signalr_core: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+```
+
+2. Ensure that your `minSdkVersion` is set to at least 21:
+
+```groovy
+defaultConfig {
+    ...
+    minSdkVersion 21
+}
+```
+
+### iOS
+
+1. Open `ios/Runner/Info.plist` and add the following permissions if you are using WebSockets:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Basic Setup
+
+Now, you can set up a basic SignalR connection in your Flutter application. Here’s how to do it:
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:signalr_core/signalr_core.dart';
+```
+
+2. Create a class to manage the SignalR connection:
+
+```dart
+class RealFlutter {
+  late HubConnection _hubConnection;
+
+  RealFlutter() {
+    _hubConnection = HubConnectionBuilder()
+        .withUrl('https://your-signalr-server-url/hub')
+        .build();
+
+    _hubConnection.on('ReceiveMessage', (message) {
+      print('Message received: $message');
+    });
+
+    _hubConnection.start().catchError((error) {
+      print('Error starting connection: $error');
+    });
+  }
+
+  void sendMessage(String message) {
+    _hubConnection.invoke('SendMessage', args: [message]);
+  }
+}
+```
+
+3. Use the `RealFlutter` class in your Flutter app to send and receive messages.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using SignalR Core in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:signalr_core/signalr_core.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SignalR Core Example',
+      home: SignalRHome(),
+    );
+  }
+}
+
+class SignalRHome extends StatefulWidget {
+  @override
+  _SignalRHomeState createState() => _SignalRHomeState();
+}
+
+class _SignalRHomeState extends State<SignalRHome> {
+  late RealFlutter _realFlutter;
+  final TextEditingController _controller = TextEditingController();
+  List<String> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _realFlutter = RealFlutter();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SignalR Chat Example'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_messages[index]),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(labelText: 'Send a message'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () {
+                    // Send the message using the RealFlutter instance
+                    _realFlutter.sendMessage(_controller.text);
+                    _controller.clear();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class RealFlutter {
+  late HubConnection _hubConnection;
+
+  RealFlutter() {
+    // Initialize the HubConnection
+    _hubConnection = HubConnectionBuilder()
+        .withUrl('https://your-signalr-server-url/hub')
+        .build();
+
+    // Listen for incoming messages
+    _hubConnection.on('ReceiveMessage', (message) {
+      // Update the UI with the received message
+      _messages.add(message);
+      setState(() {}); // Refresh the UI
+    });
+
+    // Start the connection
+    _hubConnection.start().catchError((error) {
+      print('Error starting connection: $error');
+    });
+  }
+
+  void sendMessage(String message) {
+    // Invoke the SendMessage method on the server
+    _hubConnection.invoke('SendMessage', args: [message]);
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and initializes the SignalR connection in the RealFlutter class.
+// 2. When the user sends a message, it invokes the SendMessage method on the server.
+// 3. The server processes the message and broadcasts it to all connected clients.
+// 4. The client receives the message through the ReceiveMessage event and updates the UI.
+// 5. The message list is displayed in a ListView, allowing users to see the chat history.
+```
+
+<!-- END_MAIN -->
+
+### Summary of Application Flow
+
+- The application initializes a SignalR connection when the `RealFlutter` class is instantiated.
+- Users can send messages through a text field, which invokes the `sendMessage` method.
+- The server processes the message and sends it back to all connected clients.
+- The client listens for incoming messages and updates the UI accordingly, displaying the chat history in a list format.
+
+This blog provides a comprehensive overview of the `signalr_core` Flutter package, guiding you through its setup and usage with a complete example. By following these steps, you can easily integrate real-time communication into your Flutter applications.

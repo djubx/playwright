@@ -1,100 +1,99 @@
+```markdown
 <-- START_DESCRIPTION -->
 
-# Fast Image Resizer Package
-The `fast_image_resizer` package is a powerful Flutter library that enables efficient image resizing and compression. It's ideal for applications that require image processing, such as social media, e-commerce, and photo editing apps.
+# Fast Image Resizer Flutter Package
 
-## Key Features
-
-*   Fast and efficient image resizing
-*   Support for various image formats (JPEG, PNG, GIF, etc.)
-*   Compression options for reducing file size
-*   Easy integration with Flutter widgets
+The `fast_image_resizer` Flutter package is a powerful tool designed to efficiently resize images within your Flutter applications. This package is particularly useful when dealing with large images that need to be scaled down for performance optimization or to meet specific design requirements. 
 
 ## When to Use
 
-*   When you need to resize images before uploading them to a server
-*   When you want to compress images to reduce storage space or improve loading times
-*   When you need to display images in different sizes or aspect ratios
+- **Performance Optimization**: Resize images to reduce memory usage and improve app performance.
+- **Network Efficiency**: Scale down images before uploading to save bandwidth.
+- **UI Consistency**: Ensure images fit within designated UI components without distortion.
+
+## Features
+
+- **High Performance**: Utilizes native code for fast image processing.
+- **Cross-Platform**: Supports both Android and iOS platforms.
+- **Easy Integration**: Simple API for quick setup and usage.
+- **Customizable**: Allows specification of target dimensions and quality.
 
 <-- END_DESCRIPTION -->
 
 <-- START_TUTORIAL -->
 
-# Setting Up the Package
+# Tutorial: Setting Up and Using Fast Image Resizer
 
-To use the `fast_image_resizer` package, follow these steps:
+In this tutorial, we will walk through the process of setting up and using the `fast_image_resizer` package in a Flutter project. We will cover platform-specific configurations for both Android and iOS.
 
-1.  Add the package to your `pubspec.yaml` file:
+## Setup Process
 
-    ```yml
+### Step 1: Add Dependency
+
+Add the `fast_image_resizer` package to your `pubspec.yaml` file:
+
+```yaml
 dependencies:
   flutter:
     sdk: flutter
   fast_image_resizer: ^1.0.0
 ```
 
-2.  Run `flutter pub get` to install the package.
+Run `flutter pub get` to install the package.
 
-## Platform-Specific Configurations
+### Step 2: Android Configuration
 
-### Android
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
 
-*   Add the following lines to your `android/app/build.gradle` file:
-
-    ```groovy
+```gradle
 android {
-    ...
     defaultConfig {
-        ...
-        multiDexEnabled true
+        minSdkVersion 21
     }
 }
 ```
 
-### iOS
+### Step 3: iOS Configuration
 
-*   Add the following lines to your `ios/Podfile` file:
+For iOS, ensure that your `Podfile` is using a platform version of at least 11.0:
 
-    ```ruby
-target 'Runner' do
-  use_frameworks!
-  use_modular_headers!
-  pod 'FastImageResizer'
-end
+```ruby
+platform :ios, '11.0'
 ```
+
+Run `pod install` in the `ios` directory to update the CocoaPods dependencies.
 
 ## Using the Package
 
-To resize an image, use the `FastImageResizer.resize` method:
+To use the `fast_image_resizer`, import it in your Dart file:
 
 ```dart
 import 'package:fast_image_resizer/fast_image_resizer.dart';
-
-void main() async {
-  // Load the image
-  final image = await ImagePicker().getImage(source: ImageSource.gallery);
-
-  // Resize the image
-  final resizedImage = await FastImageResizer.resize(
-    image.path,
-    width: 800,
-    height: 600,
-    quality: 80,
-  );
-
-  // Use the resized image
-  print(resizedImage.path);
-}
 ```
+
+### Basic Usage
+
+Here's a simple example of how to resize an image:
+
+```dart
+final resizedImage = await RealFlutter.resizeImage(
+  imagePath: 'path/to/image.jpg',
+  targetWidth: 100,
+  targetHeight: 100,
+  quality: 80,
+);
+```
+
+- `imagePath`: Path to the image file.
+- `targetWidth` and `targetHeight`: Desired dimensions.
+- `quality`: Compression quality (0-100).
 
 <-- END_TUTORIAL -->
 
 <-- START_MAIN -->
 
 ```dart
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:fast_image_resizer/fast_image_resizer.dart';
 
 void main() {
@@ -109,38 +108,34 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: ImageResizerScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class ImageResizerScreen extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ImageResizerScreenState createState() => _ImageResizerScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  File _image;
-  File _resizedImage;
+class _ImageResizerScreenState extends State<ImageResizerScreen> {
+  String _resizedImagePath = '';
 
-  // Step 1: Load the image using the ImagePicker package
-  Future<void> _loadImage() async {
-    final image = await ImagePicker().getImage(source: ImageSource.gallery);
-    setState(() {
-      _image = File(image.path);
-    });
-  }
-
-  // Step 2: Resize the image using the FastImageResizer package
   Future<void> _resizeImage() async {
-    final resizedImage = await FastImageResizer.resize(
-      _image.path,
-      width: 800,
-      height: 600,
-      quality: 80,
+    // Step 1: Specify the path to the original image
+    final originalImagePath = 'assets/sample.jpg';
+
+    // Step 2: Use the RealFlutter class to resize the image
+    final resizedImage = await RealFlutter.resizeImage(
+      imagePath: originalImagePath,
+      targetWidth: 200,
+      targetHeight: 200,
+      quality: 90,
     );
+
+    // Step 3: Update the state with the path to the resized image
     setState(() {
-      _resizedImage = resizedImage;
+      _resizedImagePath = resizedImage;
     });
   }
 
@@ -148,31 +143,16 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Fast Image Resizer Demo'),
+        title: Text('Image Resizer'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // Display the original image
-            if (_image != null)
-              Image.file(_image)
-            else
-              Text('No image loaded'),
+            _resizedImagePath.isNotEmpty
+                ? Image.file(File(_resizedImagePath))
+                : Text('No image resized yet.'),
             SizedBox(height: 20),
-            // Display the resized image
-            if (_resizedImage != null)
-              Image.file(_resizedImage)
-            else
-              Text('No image resized'),
-            SizedBox(height: 20),
-            // Load image button
-            ElevatedButton(
-              onPressed: _loadImage,
-              child: Text('Load Image'),
-            ),
-            SizedBox(height: 10),
-            // Resize image button
             ElevatedButton(
               onPressed: _resizeImage,
               child: Text('Resize Image'),
@@ -184,13 +164,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// The application flow is as follows:
-// 1. The user loads an image using the ImagePicker package.
-// 2. The image is displayed on the screen.
-// 3. The user clicks the "Resize Image" button.
-// 4. The FastImageResizer package resizes the image to the specified width, height, and quality.
-// 5. The resized image is displayed on the screen.
-
+// Application Flow:
+// 1. The app starts with the `MyApp` widget, which sets up the MaterialApp and theme.
+// 2. The `ImageResizerScreen` is the home screen, containing a button to trigger image resizing.
+// 3. When the button is pressed, `_resizeImage` is called, which uses the `RealFlutter` class to resize the image.
+// 4. The resized image path is stored in `_resizedImagePath` and displayed on the screen.
+// 5. The UI updates to show the resized image once the operation is complete.
 ```
 
 <-- END_MAIN -->
+```

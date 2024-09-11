@@ -1,0 +1,197 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Shopify Flutter Package: An Overview
+
+The `shopify_flutter` package is a powerful tool for developers looking to integrate Shopify's e-commerce capabilities into their Flutter applications. This package provides a seamless way to interact with Shopify's API, allowing developers to create rich, fully-featured shopping experiences on both Android and iOS platforms.
+
+## When to Use `shopify_flutter`
+
+- **E-commerce Applications**: If you're building an app that requires e-commerce functionalities, such as product listings, cart management, and order processing, `shopify_flutter` is an ideal choice.
+- **Shopify Store Integration**: For businesses that already have a Shopify store and want to extend their reach to mobile users, this package provides a direct way to integrate store data and functionalities.
+- **Custom Shopping Experiences**: Developers can use this package to create custom shopping experiences tailored to specific user needs, leveraging Shopify's robust backend.
+
+## Features
+
+- **Product Management**: Fetch and display product details, including images, prices, and descriptions.
+- **Cart and Checkout**: Manage shopping cart operations and facilitate the checkout process.
+- **Customer Management**: Handle customer accounts, including login, registration, and order history.
+- **Order Processing**: Create and manage orders directly from the app.
+- **Secure API Access**: Interact with Shopify's API securely using access tokens.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `shopify_flutter`
+
+In this tutorial, we'll walk through the setup process for the `shopify_flutter` package and demonstrate how to use it in a Flutter application.
+
+## Prerequisites
+
+- Flutter SDK installed on your machine.
+- A Shopify store with API access enabled.
+
+## Installation
+
+Add the `shopify_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  shopify_flutter: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Setup
+
+### Android
+
+1. **Permissions**: Ensure that your `AndroidManifest.xml` includes the necessary permissions for internet access.
+   
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **ProGuard**: If using ProGuard, ensure that your configuration allows for the package's classes to be retained.
+
+### iOS
+
+1. **Info.plist**: Update your `Info.plist` to allow network access.
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **Podfile**: Ensure your `Podfile` is set up to use the latest iOS platform.
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+## Basic Usage
+
+1. **Initialize the Package**: Create an instance of the `RealFlutter` class with your Shopify store credentials.
+
+   ```dart
+   final shopify = RealFlutter(
+     storeUrl: 'your-store.myshopify.com',
+     accessToken: 'your-access-token',
+   );
+   ```
+
+2. **Fetch Products**: Use the package to fetch and display products.
+
+   ```dart
+   Future<void> fetchProducts() async {
+     final products = await shopify.getProducts();
+     // Handle the list of products
+   }
+   ```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:shopify_flutter/shopify_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Shopify Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ProductListScreen(),
+    );
+  }
+}
+
+class ProductListScreen extends StatefulWidget {
+  @override
+  _ProductListScreenState createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  final RealFlutter shopify = RealFlutter(
+    storeUrl: 'your-store.myshopify.com',
+    accessToken: 'your-access-token',
+  );
+
+  List<Product> _products = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
+
+  Future<void> _fetchProducts() async {
+    try {
+      // Fetch products from Shopify
+      final products = await shopify.getProducts();
+      setState(() {
+        _products = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      // Handle errors
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Shopify Products'),
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                final product = _products[index];
+                return ListTile(
+                  title: Text(product.title),
+                  subtitle: Text('\$${product.price}'),
+                  onTap: () {
+                    // Navigate to product details
+                  },
+                );
+              },
+            ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `MyApp` widget, which sets up the MaterialApp and the home screen.
+// 2. The `ProductListScreen` is the main screen that displays a list of products.
+// 3. In the `initState` method, `_fetchProducts` is called to load products from Shopify.
+// 4. The `RealFlutter` instance is used to interact with the Shopify API.
+// 5. Products are fetched and stored in the `_products` list, and the loading state is updated.
+// 6. The UI displays a loading indicator while products are being fetched.
+// 7. Once products are loaded, a ListView displays each product with its title and price.
+// 8. Tapping on a product can be used to navigate to a detailed view (not implemented in this example).
+
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,204 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter BLE Peripheral Package: An Overview
+
+The `flutter_ble_peripheral` package is a powerful tool for Flutter developers looking to implement Bluetooth Low Energy (BLE) peripheral functionalities in their applications. This package allows your Flutter app to act as a BLE peripheral, broadcasting data to nearby BLE central devices. 
+
+## When to Use
+
+This package is particularly useful in scenarios where you need your app to communicate with other BLE-enabled devices without requiring an internet connection. For example:
+- **IoT Applications**: Communicate with smart home devices or wearables.
+- **Proximity Marketing**: Broadcast promotional content to nearby users.
+- **Data Sharing**: Share small amounts of data between devices in close proximity.
+
+## Features
+
+- **Broadcasting**: Advertise your device's presence and services to nearby BLE central devices.
+- **Custom Data**: Send custom data packets to connected devices.
+- **Cross-Platform**: Supports both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Flutter BLE Peripheral Package
+
+In this section, we'll walk through the setup process for the `flutter_ble_peripheral` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### 1. Add Dependency
+
+Add the `flutter_ble_peripheral` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_ble_peripheral: ^1.0.0
+```
+
+### 2. Platform-Specific Configuration
+
+#### Android
+
+- Ensure your `AndroidManifest.xml` includes the necessary permissions:
+
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+
+- Add the following to your `android/app/build.gradle` to ensure compatibility:
+
+```gradle
+android {
+    ...
+    compileSdkVersion 33
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        targetSdkVersion 33
+    }
+}
+```
+
+#### iOS
+
+- Update your `Info.plist` with the required permissions:
+
+```xml
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>We need to use Bluetooth to communicate with nearby devices.</string>
+```
+
+- Ensure your deployment target is set to at least iOS 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Using the Package
+
+To use the `flutter_ble_peripheral` package, you need to initialize the `RealFlutter` class and start advertising.
+
+```dart
+import 'package:flutter_ble_peripheral/flutter_ble_peripheral.dart';
+
+class RealFlutter {
+  final FlutterBlePeripheral blePeripheral = FlutterBlePeripheral();
+
+  void startAdvertising() {
+    blePeripheral.start(
+      name: "RealFlutterDevice",
+      uuid: "12345678-1234-1234-1234-123456789abc",
+      manufacturerId: 1234,
+      manufacturerData: [1, 2, 3, 4, 5],
+    );
+  }
+
+  void stopAdvertising() {
+    blePeripheral.stop();
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_ble_peripheral/flutter_ble_peripheral.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter BLE Peripheral Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final RealFlutter realFlutter = RealFlutter();
+  bool isAdvertising = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('BLE Peripheral Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              isAdvertising ? 'Advertising...' : 'Not Advertising',
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  if (isAdvertising) {
+                    realFlutter.stopAdvertising();
+                  } else {
+                    realFlutter.startAdvertising();
+                  }
+                  isAdvertising = !isAdvertising;
+                });
+              },
+              child: Text(isAdvertising ? 'Stop Advertising' : 'Start Advertising'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RealFlutter {
+  final FlutterBlePeripheral blePeripheral = FlutterBlePeripheral();
+
+  void startAdvertising() {
+    // Start advertising with a specific name, UUID, and manufacturer data
+    blePeripheral.start(
+      name: "RealFlutterDevice",
+      uuid: "12345678-1234-1234-1234-123456789abc",
+      manufacturerId: 1234,
+      manufacturerData: [1, 2, 3, 4, 5],
+    );
+  }
+
+  void stopAdvertising() {
+    // Stop advertising
+    blePeripheral.stop();
+  }
+}
+
+// Application Flow:
+// 1. The app initializes and displays a simple UI with a button.
+// 2. When the button is pressed, it toggles the advertising state.
+// 3. If advertising is started, the device broadcasts its presence with specified data.
+// 4. Pressing the button again stops the advertising.
+// 5. The UI updates to reflect the current advertising state.
+```
+
+<-- END_MAIN -->
+```

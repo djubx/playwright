@@ -1,75 +1,112 @@
+```markdown
 <-- START_DESCRIPTION -->
 
-# Crypto Keys Flutter Package
-================================
+# Overview of the `crypto_keys` Flutter Package
 
-The `crypto_keys` Flutter package provides a secure way to store and manage cryptographic keys within your Flutter application. It allows you to generate, store, and retrieve keys securely, making it an essential tool for any app that requires encryption or decryption.
+The `crypto_keys` Flutter package is a powerful tool designed for developers who need to handle cryptographic keys within their Flutter applications. This package provides a comprehensive API for generating, managing, and using cryptographic keys, making it an essential component for applications that require secure data handling, encryption, and decryption.
 
-## When to Use
---------------
+## When to Use `crypto_keys`
 
-You should use the `crypto_keys` package in the following scenarios:
-
-* When you need to store sensitive data, such as encryption keys or authentication tokens.
-* When you want to ensure that your app's data is protected against unauthorized access.
-* When you need to comply with security regulations, such as GDPR or HIPAA.
+- **Secure Data Storage**: When you need to store sensitive information securely on a device.
+- **Data Encryption and Decryption**: For applications that require encrypting data before sending it over the network or decrypting data received.
+- **Digital Signatures**: To ensure data integrity and authenticity by signing data and verifying signatures.
 
 ## Features
-------------
 
-The `crypto_keys` package offers the following features:
-
-* Secure key storage using the Android KeyStore or iOS Keychain.
-* Key generation and retrieval.
-* Support for various key types, including RSA, EC, and AES.
+- **Key Generation**: Generate cryptographic keys for various algorithms.
+- **Key Management**: Store and retrieve keys securely.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Integration with Existing Security Frameworks**: Easily integrates with platform-specific security features.
 
 <-- END_DESCRIPTION -->
 
 <-- START_TUTORIAL -->
 
-# Setting Up the Crypto Keys Package
---------------------------------------
+# Setting Up and Using the `crypto_keys` Package
 
-To use the `crypto_keys` package, follow these steps:
+In this tutorial, we will walk through the process of setting up the `crypto_keys` package in a Flutter project and demonstrate how to use its features effectively.
 
-### Step 1: Add the Package to Your Pubspec
+## Setup Process
 
-Add the following line to your `pubspec.yaml` file:
-```yml
+### Step 1: Add Dependency
+
+Add the `crypto_keys` package to your `pubspec.yaml` file:
+
+```yaml
 dependencies:
-  crypto_keys: ^1.0.0
+  flutter:
+    sdk: flutter
+  crypto_keys: ^0.1.0
 ```
-Then, run `flutter pub get` to install the package.
 
-### Step 2: Import the Package
+Run `flutter pub get` to install the package.
 
-Import the package in your Dart file:
-```dart
-import 'package:crypto_keys/crypto_keys.dart';
-```
-### Step 3: Initialize the Package
-
-Initialize the package by calling the `init` method:
-```dart
-await CryptoKeys.init();
-```
-This method initializes the package and sets up the secure key storage.
-
-### Platform-Specific Details
+### Step 2: Platform-Specific Configuration
 
 #### Android
 
-On Android, the `crypto_keys` package uses the Android KeyStore to store keys securely. To use the package on Android, you need to add the following line to your `AndroidManifest.xml` file:
-```xml
-<uses-permission android:name="android.permission.USE_CREDENTIALS" />
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
 ```
+
 #### iOS
 
-On iOS, the `crypto_keys` package uses the Keychain to store keys securely. To use the package on iOS, you need to add the following line to your `Info.plist` file:
-```xml
-<key>NSKeychainUsageDescription</key>
-<string>This app needs access to the Keychain to store sensitive data.</string>
+No additional configuration is required for iOS, but ensure your deployment target is set to iOS 10.0 or higher in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
 ```
+
+## Using the Package
+
+### Key Generation
+
+To generate a new cryptographic key, use the `RealFlutter` class provided by the package:
+
+```dart
+import 'package:crypto_keys/crypto_keys.dart';
+
+final keyPair = await RealFlutter.generateKeyPair(
+  type: KeyPairType.rsa,
+  bitLength: 2048,
+);
+```
+
+### Encrypting and Decrypting Data
+
+```dart
+final encryptedData = await RealFlutter.encrypt(
+  data: 'Sensitive Data',
+  key: keyPair.publicKey,
+);
+
+final decryptedData = await RealFlutter.decrypt(
+  data: encryptedData,
+  key: keyPair.privateKey,
+);
+```
+
+### Signing and Verifying Data
+
+```dart
+final signature = await RealFlutter.sign(
+  data: 'Data to Sign',
+  key: keyPair.privateKey,
+);
+
+final isVerified = await RealFlutter.verify(
+  data: 'Data to Sign',
+  signature: signature,
+  key: keyPair.publicKey,
+);
+```
+
 <-- END_TUTORIAL -->
 
 <-- START_MAIN -->
@@ -78,10 +115,7 @@ On iOS, the `crypto_keys` package uses the Keychain to store keys securely. To u
 import 'package:flutter/material.dart';
 import 'package:crypto_keys/crypto_keys.dart';
 
-void main() async {
-  // Initialize the package
-  await CryptoKeys.init();
-
+void main() {
   runApp(MyApp());
 }
 
@@ -90,36 +124,69 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Crypto Keys Demo',
-      home: MyHomePage(),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: CryptoDemoPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class CryptoDemoPage extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _CryptoDemoPageState createState() => _CryptoDemoPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  String _key;
+class _CryptoDemoPageState extends State<CryptoDemoPage> {
+  String _encryptedData = '';
+  String _decryptedData = '';
+  String _signature = '';
+  bool _isVerified = false;
 
-  // Generate a new key
-  Future<void> _generateKey() async {
-    // Generate a new RSA key
-    final key = await CryptoKeys.generateKey(
-      type: KeyType.RSA,
-      bits: 2048,
+  @override
+  void initState() {
+    super.initState();
+    _performCryptoOperations();
+  }
+
+  Future<void> _performCryptoOperations() async {
+    // Generate a key pair
+    final keyPair = await RealFlutter.generateKeyPair(
+      type: KeyPairType.rsa,
+      bitLength: 2048,
     );
 
-    // Store the key securely
-    await CryptoKeys.storeKey(key);
+    // Encrypt data
+    final encryptedData = await RealFlutter.encrypt(
+      data: 'Sensitive Data',
+      key: keyPair.publicKey,
+    );
 
-    // Retrieve the stored key
-    final storedKey = await CryptoKeys.getKey();
+    // Decrypt data
+    final decryptedData = await RealFlutter.decrypt(
+      data: encryptedData,
+      key: keyPair.privateKey,
+    );
 
-    // Display the stored key
+    // Sign data
+    final signature = await RealFlutter.sign(
+      data: 'Data to Sign',
+      key: keyPair.privateKey,
+    );
+
+    // Verify signature
+    final isVerified = await RealFlutter.verify(
+      data: 'Data to Sign',
+      signature: signature,
+      key: keyPair.publicKey,
+    );
+
+    // Update the state with results
     setState(() {
-      _key = storedKey;
+      _encryptedData = encryptedData;
+      _decryptedData = decryptedData;
+      _signature = signature;
+      _isVerified = isVerified;
     });
   }
 
@@ -129,21 +196,18 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text('Crypto Keys Demo'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              _key != null
-                  ? _key
-                  : 'No key generated yet',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _generateKey,
-              child: Text('Generate Key'),
-            ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Encrypted Data: $_encryptedData'),
+            SizedBox(height: 8),
+            Text('Decrypted Data: $_decryptedData'),
+            SizedBox(height: 8),
+            Text('Signature: $_signature'),
+            SizedBox(height: 8),
+            Text('Is Verified: $_isVerified'),
           ],
         ),
       ),
@@ -152,31 +216,12 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 ```
 
-// This is the main entry point of the app.
-// The app initializes the `crypto_keys` package and sets up the secure key storage.
-// The app then displays a button to generate a new key.
-// When the button is pressed, the app generates a new RSA key and stores it securely.
-// The app then retrieves the stored key and displays it on the screen.
-
-// The app uses the `CryptoKeys` class to interact with the `crypto_keys` package.
-// The `CryptoKeys` class provides methods to generate, store, and retrieve keys securely.
-
-// The app uses the `KeyType` enum to specify the type of key to generate.
-// The `KeyType` enum provides values for RSA, EC, and AES keys.
-
-// The app uses the `bits` parameter to specify the number of bits for the key.
-// The number of bits determines the strength of the key.
-
-// The app uses the `storeKey` method to store the generated key securely.
-// The `storeKey` method stores the key in the secure key storage.
-
-// The app uses the `getKey` method to retrieve the stored key.
-// The `getKey` method retrieves the key from the secure key storage.
-
-// The app displays the stored key on the screen.
-// The app uses the `Text` widget to display the key.
-
-// The app uses the `ElevatedButton` widget to display the button to generate a new key.
-// The `ElevatedButton` widget provides a button with a elevated appearance.
+// The application starts by running the `main` function, which initializes the Flutter app.
+// The `MyApp` class sets up the MaterialApp with a home page of `CryptoDemoPage`.
+// In `CryptoDemoPage`, the `_performCryptoOperations` method is called during initialization.
+// This method generates a key pair, encrypts and decrypts data, signs data, and verifies the signature.
+// The results of these operations are stored in the state variables and displayed in the UI.
+// The UI consists of a simple column layout displaying the encrypted data, decrypted data, signature, and verification status.
 
 <-- END_MAIN -->
+```

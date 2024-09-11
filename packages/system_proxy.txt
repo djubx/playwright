@@ -1,0 +1,237 @@
+Here's a detailed technical blog on the "system_proxy" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# System Proxy Flutter Package
+
+The `system_proxy` Flutter package is a powerful tool that allows developers to manage and configure system-wide proxy settings in their Flutter applications. This package is particularly useful for applications that require internet access through a proxy server, such as corporate applications or those that need to route traffic through specific networks for security or performance reasons.
+
+## When to Use This Package
+
+You should consider using the `system_proxy` package in scenarios such as:
+- **Corporate Environments**: When your application needs to connect to the internet through a corporate proxy.
+- **Testing and Development**: If you need to simulate different network conditions or test how your application behaves under various proxy settings.
+- **Security Applications**: For applications that require secure connections through a proxy to protect sensitive data.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Dynamic Proxy Configuration**: Allows you to set and change proxy settings at runtime.
+- **Easy Integration**: Simple API that integrates seamlessly with existing Flutter applications.
+
+By leveraging the `system_proxy` package, developers can ensure that their applications can adapt to various network configurations, enhancing usability and functionality.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the System Proxy Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `system_proxy` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  system_proxy: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+1. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+```
+
+2. **Network Security Configuration**: If your app targets Android 9 (API level 28) or higher, you may need to configure network security to allow cleartext traffic if your proxy does not support HTTPS. Add the following to your `AndroidManifest.xml`:
+
+```xml
+<application
+    android:networkSecurityConfig="@xml/network_security_config"
+    ... >
+</application>
+```
+
+Create a file named `network_security_config.xml` in the `res/xml` directory:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">your.proxy.domain</domain>
+    </domain-config>
+</network-security-config>
+```
+
+### iOS
+
+1. **Permissions**: Open your `Info.plist` file and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+2. **Proxy Settings**: iOS handles proxy settings automatically based on the device's network configuration, so no additional setup is required.
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can use it in your Flutter application. Here’s a simple example of how to configure and use the proxy settings.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:system_proxy/system_proxy.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'System Proxy Example',
+      home: ProxyHomePage(),
+    );
+  }
+}
+
+class ProxyHomePage extends StatefulWidget {
+  @override
+  _ProxyHomePageState createState() => _ProxyHomePageState();
+}
+
+class _ProxyHomePageState extends State<ProxyHomePage> {
+  String _proxyStatus = 'No proxy set';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkProxy();
+  }
+
+  // Check current proxy settings
+  Future<void> _checkProxy() async {
+    final proxy = await SystemProxy.getProxy();
+    setState(() {
+      _proxyStatus = proxy ?? 'No proxy set';
+    });
+  }
+
+  // Set a new proxy
+  Future<void> _setProxy(String proxy) async {
+    await SystemProxy.setProxy(proxy);
+    _checkProxy(); // Refresh the proxy status
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('System Proxy Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Current Proxy: $_proxyStatus'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _setProxy('http://your.proxy.server:8080'),
+              child: Text('Set Proxy'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: RealFlutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:system_proxy/system_proxy.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'System Proxy Example',
+      home: ProxyHomePage(),
+    );
+  }
+}
+
+class ProxyHomePage extends StatefulWidget {
+  @override
+  _ProxyHomePageState createState() => _ProxyHomePageState();
+}
+
+class _ProxyHomePageState extends State<ProxyHomePage> {
+  String _proxyStatus = 'No proxy set'; // Variable to hold the current proxy status
+
+  @override
+  void initState() {
+    super.initState();
+    _checkProxy(); // Check the current proxy settings when the app starts
+  }
+
+  // Function to check current proxy settings
+  Future<void> _checkProxy() async {
+    final proxy = await SystemProxy.getProxy(); // Get the current proxy
+    setState(() {
+      _proxyStatus = proxy ?? 'No proxy set'; // Update the UI with the current proxy status
+    });
+  }
+
+  // Function to set a new proxy
+  Future<void> _setProxy(String proxy) async {
+    await SystemProxy.setProxy(proxy); // Set the new proxy
+    _checkProxy(); // Refresh the proxy status
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('System Proxy Example'), // App title
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Current Proxy: $_proxyStatus'), // Display the current proxy status
+            SizedBox(height: 20), // Add some space
+            ElevatedButton(
+              onPressed: () => _setProxy('http://your.proxy.server:8080'), // Set a new proxy when button is pressed
+              child: Text('Set Proxy'), // Button text
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application starts with the RealFlutter class, which sets up the MaterialApp.
+// The ProxyHomePage is displayed, which checks the current proxy settings on initialization.
+// The user can set a new proxy by pressing the button, which updates the proxy status displayed on the screen.
+// The app dynamically updates the UI to reflect the current proxy settings, providing a seamless user experience.
+```
+<!-- END_MAIN -->
+
+In this example, the `RealFlutter` application initializes a simple UI that allows users to view and set proxy settings. The application checks the current proxy status on startup and updates the UI accordingly. When the user presses the "Set Proxy" button, it sets a new proxy and refreshes the displayed status.
+
+### Summary of Application Flow
+- The application starts with the `RealFlutter` class, which sets up the `MaterialApp`.
+- The `ProxyHomePage` is displayed, which checks the current proxy settings on initialization.
+- The user can set a new proxy by pressing the button, which updates the proxy status displayed on the screen.
+- The app dynamically updates the UI to reflect the current proxy settings, providing a seamless user experience.

@@ -1,1 +1,261 @@
-don't show loader
+```markdown
+<-- START_DESCRIPTION -->
+# Overview of the `syncfusion_flutter_datagrid_export` Package
+
+The `syncfusion_flutter_datagrid_export` package is a powerful tool for Flutter developers who need to export data from a DataGrid to various formats such as Excel and PDF. This package is part of the Syncfusion suite, which is known for its comprehensive set of UI components for building rich, interactive applications.
+
+## When to Use
+
+This package is particularly useful in applications where data presentation and reporting are crucial. For instance, if you are developing a business application that displays large datasets in a tabular format, you might want to provide users with the ability to export this data for offline analysis or reporting purposes.
+
+## Features
+
+- **Excel Export**: Convert DataGrid data into Excel format, allowing for further manipulation and analysis in spreadsheet applications.
+- **PDF Export**: Export DataGrid data to PDF for easy sharing and printing.
+- **Customization**: Offers various customization options for the exported documents, such as styling and formatting.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up and Using `syncfusion_flutter_datagrid_export`
+
+In this tutorial, we will walk through the process of setting up and using the `syncfusion_flutter_datagrid_export` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup
+
+1. **Add Dependency**
+
+   Add the following dependency to your `pubspec.yaml` file:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     syncfusion_flutter_datagrid_export: ^xx.x.x
+   ```
+
+2. **Platform-Specific Configurations**
+
+   - **Android**: Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+     ```gradle
+     defaultConfig {
+         minSdkVersion 21
+     }
+     ```
+
+   - **iOS**: No specific configurations are required for iOS, but ensure that your deployment target is set to iOS 9.0 or higher in your `ios/Podfile`:
+
+     ```ruby
+     platform :ios, '9.0'
+     ```
+
+3. **Import the Package**
+
+   Import the package in your Dart file where you plan to use it:
+
+   ```dart
+   import 'package:syncfusion_flutter_datagrid_export/datagrid_export.dart';
+   ```
+
+## Using the Package
+
+To use the package, you need to have a `SfDataGrid` widget in your application. The following steps outline how to export data from this grid:
+
+1. **Create a DataGrid**
+
+   First, create a `SfDataGrid` with some sample data.
+
+2. **Export to Excel or PDF**
+
+   Use the `DataGridToExcelConverter` or `DataGridToPdfConverter` to export the data.
+
+3. **Customization**
+
+   Customize the export settings as needed, such as specifying the file name or applying styles.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:syncfusion_flutter_datagrid_export/datagrid_export.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' hide Column;
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'DataGrid Export Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: DataGridExportPage(),
+    );
+  }
+}
+
+class DataGridExportPage extends StatefulWidget {
+  @override
+  _DataGridExportPageState createState() => _DataGridExportPageState();
+}
+
+class _DataGridExportPageState extends State<DataGridExportPage> {
+  List<Employee> _employees = [];
+  late EmployeeDataSource _employeeDataSource;
+
+  @override
+  void initState() {
+    super.initState();
+    _employees = getEmployeeData();
+    _employeeDataSource = EmployeeDataSource(employees: _employees);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('DataGrid Export Example'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.file_download),
+            onPressed: _exportDataGridToExcel,
+          ),
+          IconButton(
+            icon: Icon(Icons.picture_as_pdf),
+            onPressed: _exportDataGridToPdf,
+          ),
+        ],
+      ),
+      body: SfDataGrid(
+        source: _employeeDataSource,
+        columns: <GridColumn>[
+          GridColumn(
+              columnName: 'id',
+              label: Container(
+                  padding: EdgeInsets.all(8.0),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'ID',
+                  ))),
+          GridColumn(
+              columnName: 'name',
+              label: Container(
+                  padding: EdgeInsets.all(8.0),
+                  alignment: Alignment.center,
+                  child: Text('Name'))),
+          GridColumn(
+              columnName: 'designation',
+              label: Container(
+                  padding: EdgeInsets.all(8.0),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Designation',
+                  ))),
+        ],
+      ),
+    );
+  }
+
+  // Function to export DataGrid to Excel
+  void _exportDataGridToExcel() async {
+    final Workbook workbook = Workbook();
+    final Worksheet sheet = workbook.worksheets[0];
+    // Convert DataGrid to Excel
+    sheet.importDataGrid(_employeeDataSource);
+    final List<int> bytes = workbook.saveAsStream();
+    workbook.dispose();
+    // Save the file (implementation not shown)
+  }
+
+  // Function to export DataGrid to PDF
+  void _exportDataGridToPdf() async {
+    final PdfDocument document = PdfDocument();
+    final PdfGrid grid = PdfGrid();
+    // Convert DataGrid to PDF
+    grid.importDataGrid(_employeeDataSource);
+    grid.draw(page: document.pages.add());
+    final List<int> bytes = document.save();
+    document.dispose();
+    // Save the file (implementation not shown)
+  }
+
+  // Sample data for the DataGrid
+  List<Employee> getEmployeeData() {
+    return [
+      Employee(10001, 'John', 'Manager'),
+      Employee(10002, 'Doe', 'Developer'),
+      Employee(10003, 'Alex', 'Designer'),
+    ];
+  }
+}
+
+class Employee {
+  Employee(this.id, this.name, this.designation);
+  final int id;
+  final String name;
+  final String designation;
+}
+
+class EmployeeDataSource extends DataGridSource {
+  EmployeeDataSource({required List<Employee> employees}) {
+    _employees = employees
+        .map<DataGridRow>((e) => DataGridRow(cells: [
+              DataGridCell<int>(columnName: 'id', value: e.id),
+              DataGridCell<String>(columnName: 'name', value: e.name),
+              DataGridCell<String>(columnName: 'designation', value: e.designation),
+            ]))
+        .toList();
+  }
+
+  List<DataGridRow> _employees = [];
+
+  @override
+  List<DataGridRow> get rows => _employees;
+
+  @override
+  DataGridRowAdapter buildRow(DataGridRow row) {
+    return DataGridRowAdapter(cells: [
+      Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(8.0),
+        child: Text(row.getCells()[0].value.toString()),
+      ),
+      Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(8.0),
+        child: Text(row.getCells()[1].value),
+      ),
+      Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(8.0),
+        child: Text(row.getCells()[2].value),
+      ),
+    ]);
+  }
+}
+```
+
+```dart
+// Application Flow Explanation
+
+// The application starts with the main function, which runs the RealFlutter app.
+// RealFlutter is a StatelessWidget that sets up the MaterialApp with a home page of DataGridExportPage.
+// DataGridExportPage is a StatefulWidget that initializes a list of Employee objects and an EmployeeDataSource.
+// The build method of DataGridExportPage returns a Scaffold containing an AppBar and a SfDataGrid.
+// The AppBar has two IconButton widgets for exporting the DataGrid to Excel and PDF.
+// The SfDataGrid is populated with data from EmployeeDataSource, displaying employee ID, name, and designation.
+// The _exportDataGridToExcel method creates a Workbook, imports the DataGrid data, and saves it as an Excel file.
+// The _exportDataGridToPdf method creates a PdfDocument, imports the DataGrid data, and saves it as a PDF file.
+// The getEmployeeData method provides sample data for the DataGrid.
+// EmployeeDataSource extends DataGridSource to provide data and build rows for the SfDataGrid.
+```
+<-- END_MAIN -->
+```

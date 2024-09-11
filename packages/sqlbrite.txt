@@ -1,0 +1,181 @@
+```markdown
+<-- START_DESCRIPTION -->
+# SQLBrite Flutter Package: An Overview
+
+The `sqlbrite` package is a reactive wrapper around SQLite databases, designed to simplify database operations in Flutter applications. It is inspired by the SQLBrite library for Android, which is built on top of SQLite and RxJava. This package is particularly useful for applications that require real-time data updates and efficient database management.
+
+## When to Use SQLBrite
+
+- **Real-time Data Updates**: If your application needs to reflect changes in the database immediately, `sqlbrite` is an excellent choice. It allows you to observe database queries and automatically updates the UI when data changes.
+- **Complex Queries**: For applications that perform complex queries and need to manage multiple database operations efficiently, `sqlbrite` provides a streamlined approach.
+- **Reactive Programming**: If your application architecture is based on reactive programming principles, `sqlbrite` integrates seamlessly with streams in Dart, providing a reactive interface to your database.
+
+## Features
+
+- **Reactive Queries**: Automatically update the UI when the underlying data changes.
+- **Transaction Management**: Simplifies the process of managing database transactions.
+- **Thread Safety**: Ensures that database operations are performed safely across different threads.
+- **Lightweight**: Adds minimal overhead to your application, focusing on performance and efficiency.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up SQLBrite in Flutter
+
+In this tutorial, we will walk through the process of setting up and using the `sqlbrite` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Step 1: Add Dependencies
+
+First, add the `sqlbrite` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sqlbrite: ^0.1.0
+  sqflite: ^2.0.0+3
+```
+
+## Step 2: Platform-Specific Setup
+
+### Android
+
+Ensure that your `android/app/build.gradle` file includes the following configuration:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, ensure that your `ios/Podfile` has the platform set to at least iOS 10:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Initialize SQLBrite
+
+In your Flutter application, initialize the `sqlbrite` package. This typically involves setting up a singleton instance of your database and configuring the reactive streams.
+
+```dart
+import 'package:sqlbrite/sqlbrite.dart';
+import 'package:sqflite/sqflite.dart';
+
+class RealFlutter {
+  static final RealFlutter _instance = RealFlutter._internal();
+  BriteDatabase? _briteDatabase;
+
+  factory RealFlutter() {
+    return _instance;
+  }
+
+  RealFlutter._internal();
+
+  Future<void> init() async {
+    final database = await openDatabase('my_database.db');
+    _briteDatabase = BriteDatabase(database);
+  }
+
+  BriteDatabase? get database => _briteDatabase;
+}
+```
+
+## Step 4: Using SQLBrite
+
+With the database initialized, you can now perform reactive queries and manage transactions. Use the `BriteDatabase` instance to execute SQL commands and observe changes.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:sqlbrite/sqlbrite.dart';
+import 'package:sqflite/sqflite.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await RealFlutter().init();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SQLBrite Demo',
+      home: HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late BriteDatabase _database;
+  late Stream<List<Map<String, dynamic>>> _itemsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _database = RealFlutter().database!;
+    _createTable();
+    _itemsStream = _database.createQuery('items').mapToList((row) => row);
+  }
+
+  Future<void> _createTable() async {
+    await _database.execute('CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY, name TEXT)');
+  }
+
+  Future<void> _addItem(String name) async {
+    await _database.insert('items', {'name': name});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SQLBrite Demo'),
+      ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: _itemsStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return CircularProgressIndicator();
+          final items = snapshot.data!;
+          return ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(items[index]['name']),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _addItem('Item ${DateTime.now()}'),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application initializes by setting up the SQLBrite database in the `main` function.
+// 2. The `MyApp` widget is the root of the application, which sets up the `HomePage`.
+// 3. In `HomePage`, the database is accessed, and a table is created if it doesn't exist.
+// 4. A stream of items from the 'items' table is created and observed.
+// 5. The UI consists of a list that displays items from the database and a button to add new items.
+// 6. When the button is pressed, a new item is inserted into the database, triggering the stream to update the UI automatically.
+```
+<-- END_MAIN -->
+```

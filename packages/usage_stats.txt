@@ -1,0 +1,205 @@
+Here's a detailed technical blog on the "usage_stats" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Usage Stats Flutter Package
+
+The `usage_stats` Flutter package is a powerful tool designed to help developers track and analyze app usage statistics on Android and iOS devices. This package provides insights into how users interact with your application, allowing you to make data-driven decisions to enhance user experience and engagement.
+
+## When to Use This Package
+
+You might consider using the `usage_stats` package in scenarios such as:
+- **User Engagement Analysis**: Understanding how often users open your app and for how long.
+- **Feature Usage Tracking**: Identifying which features are most frequently used, helping prioritize future development.
+- **Performance Monitoring**: Keeping track of app performance over time to identify potential issues.
+
+## Features
+
+- **Usage Statistics**: Retrieve data on app usage, including the number of launches and total time spent.
+- **Platform Support**: Works on both Android and iOS, with specific configurations for each platform.
+- **Real-time Data**: Access up-to-date statistics to monitor user behavior continuously.
+
+The `usage_stats` package is an essential tool for any Flutter developer looking to gain insights into their application's performance and user engagement.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Usage Stats Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `usage_stats` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  usage_stats: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/usage_stats).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Permissions**: Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions"/>
+   ```
+
+2. **Request Permission**: Since `PACKAGE_USAGE_STATS` is a special permission, you need to guide users to enable it in the device settings. You can use the following code snippet to check and request permission:
+
+   ```dart
+   import 'package:usage_stats/usage_stats.dart';
+
+   Future<void> requestUsageStatsPermission() async {
+     final isGranted = await UsageStats.hasUsageStatsPermission();
+     if (!isGranted) {
+       // Redirect user to settings
+       UsageStats.openUsageAccessSettings();
+     }
+   }
+   ```
+
+### iOS Configuration
+
+For iOS, the `usage_stats` package does not require any special permissions, but you should ensure that your app complies with Apple's privacy guidelines.
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Here’s a simple example of how to retrieve and display app usage statistics.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:usage_stats/usage_stats.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: UsageStatsScreen(),
+    );
+  }
+}
+
+class UsageStatsScreen extends StatefulWidget {
+  @override
+  _UsageStatsScreenState createState() => _UsageStatsScreenState();
+}
+
+class _UsageStatsScreenState extends State<UsageStatsScreen> {
+  List<UsageInfo> _usageStats = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsageStats();
+  }
+
+  Future<void> _fetchUsageStats() async {
+    await requestUsageStatsPermission(); // Ensure permission is granted
+    final usageStats = await UsageStats.queryUsageStats(
+      DateTime.now().subtract(Duration(days: 7)).millisecondsSinceEpoch,
+      DateTime.now().millisecondsSinceEpoch,
+    );
+    setState(() {
+      _usageStats = usageStats;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Usage Stats')),
+      body: ListView.builder(
+        itemCount: _usageStats.length,
+        itemBuilder: (context, index) {
+          final usageInfo = _usageStats[index];
+          return ListTile(
+            title: Text(usageInfo.packageName),
+            subtitle: Text('Time Used: ${usageInfo.totalTimeInForeground} ms'),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Usage Stats in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:usage_stats/usage_stats.dart';
+
+// Main class of the application
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: UsageStatsScreen(), // Entry point of the app
+    );
+  }
+}
+
+// Screen to display usage statistics
+class UsageStatsScreen extends StatefulWidget {
+  @override
+  _UsageStatsScreenState createState() => _UsageStatsScreenState();
+}
+
+class _UsageStatsScreenState extends State<UsageStatsScreen> {
+  List<UsageInfo> _usageStats = []; // List to hold usage statistics
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsageStats(); // Fetch usage stats when the screen initializes
+  }
+
+  // Function to fetch usage statistics
+  Future<void> _fetchUsageStats() async {
+    await requestUsageStatsPermission(); // Ensure permission is granted
+    final usageStats = await UsageStats.queryUsageStats(
+      DateTime.now().subtract(Duration(days: 7)).millisecondsSinceEpoch,
+      DateTime.now().millisecondsSinceEpoch,
+    );
+    setState(() {
+      _usageStats = usageStats; // Update the state with fetched stats
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Usage Stats')), // App bar title
+      body: ListView.builder(
+        itemCount: _usageStats.length, // Number of items in the list
+        itemBuilder: (context, index) {
+          final usageInfo = _usageStats[index]; // Get usage info for the current index
+          return ListTile(
+            title: Text(usageInfo.packageName), // Display package name
+            subtitle: Text('Time Used: ${usageInfo.totalTimeInForeground} ms'), // Display time used
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which initializes the MaterialApp.
+// 2. The UsageStatsScreen is set as the home screen, where usage statistics will be displayed.
+// 3. In the UsageStatsScreen, the _fetchUsageStats method is called during initialization to retrieve usage data.
+// 4. The app checks for the necessary permissions and requests them if not granted.
+// 5. Once permissions are confirmed, the app queries usage statistics for the past week.
+// 6. The retrieved statistics are stored in the _usageStats list and displayed in a ListView.
+// 7. Each ListTile shows the package name and the total time the app was in the foreground.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provides a comprehensive overview of the `usage_stats` Flutter package, guiding you through its setup, usage, and a complete example. By following the steps outlined, you can effectively integrate usage statistics into your Flutter applications, enabling you to gain valuable insights into user behavior and app performance.

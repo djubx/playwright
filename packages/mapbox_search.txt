@@ -1,0 +1,201 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Mapbox Search Flutter Package
+
+The `mapbox_search` Flutter package is a powerful tool that allows developers to integrate Mapbox's geocoding and search functionalities into their Flutter applications. This package provides a seamless way to search for locations, addresses, and points of interest using Mapbox's robust API.
+
+## When to Use This Package
+
+You should consider using the `mapbox_search` package in scenarios such as:
+- Building location-based applications that require users to search for places.
+- Implementing features like autocomplete for address fields in forms.
+- Creating travel or navigation apps that need to display search results on a map.
+
+## Key Features
+- **Geocoding**: Convert addresses into geographic coordinates.
+- **Reverse Geocoding**: Get address information from geographic coordinates.
+- **Autocomplete**: Provide suggestions as users type in search fields.
+- **Customizable**: Easily customize the appearance and behavior of search results.
+
+With these features, the `mapbox_search` package enhances user experience by making location searches intuitive and efficient.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the Mapbox Search Package
+
+In this tutorial, we will walk through the setup process for the `mapbox_search` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `mapbox_search` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  mapbox_search: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/mapbox_search).
+
+## Step 2: Obtain Mapbox Access Token
+
+You need a Mapbox access token to use the geocoding services. Sign up at [Mapbox](https://www.mapbox.com/) and create a new access token in your account dashboard.
+
+## Step 3: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+3. Ensure you have the following inside the `<application>` tag:
+
+```xml
+<meta-data
+    android:name="com.mapbox.mapboxsdk.token"
+    android:value="YOUR_MAPBOX_ACCESS_TOKEN"/>
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist`.
+2. Add the following keys for location permissions:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to show nearby places.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to show nearby places.</string>
+```
+
+3. Add your Mapbox access token:
+
+```xml
+<key>MBXAccessToken</key>
+<string>YOUR_MAPBOX_ACCESS_TOKEN</string>
+```
+
+## Step 4: Using the Package
+
+Now that we have set up the package, we can start using it in our Flutter application. Below, we will create a simple app that allows users to search for locations.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using Mapbox Search
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:mapbox_search/mapbox_search.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mapbox Search Example',
+      home: SearchPage(),
+    );
+  }
+}
+
+class SearchPage extends StatefulWidget {
+  @override
+  _SearchPageState createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  // Controller for the search field
+  final TextEditingController _controller = TextEditingController();
+  // List to hold search results
+  List<Feature> _searchResults = [];
+
+  // Function to perform search
+  void _performSearch(String query) async {
+    // Create a MapBoxSearch instance with your access token
+    final MapBoxSearch mapBoxSearch = MapBoxSearch(
+      accessToken: 'YOUR_MAPBOX_ACCESS_TOKEN',
+    );
+
+    // Perform the search and update the state with results
+    var results = await mapBoxSearch.getPlaces(query);
+    setState(() {
+      _searchResults = results;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Mapbox Search Example'),
+      ),
+      body: Column(
+        children: [
+          // Search field
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Search for a place',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    // Call the search function when the button is pressed
+                    _performSearch(_controller.text);
+                  },
+                ),
+              ),
+            ),
+          ),
+          // Display search results
+          Expanded(
+            child: ListView.builder(
+              itemCount: _searchResults.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_searchResults[index].text ?? ''),
+                  subtitle: Text(_searchResults[index].placeName ?? ''),
+                  onTap: () {
+                    // Handle tap on search result
+                    print('Selected: ${_searchResults[index].text}');
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+```dart
+// The above code creates a simple Flutter application that allows users to search for places using the Mapbox Search package.
+// 
+// 1. The `main` function initializes the app and sets `RealFlutter` as the home widget.
+// 2. The `SearchPage` widget contains a text field for user input and a button to trigger the search.
+// 3. When the user types a query and presses the search button, the `_performSearch` function is called.
+// 4. This function creates an instance of `MapBoxSearch` with the provided access token and fetches the search results.
+// 5. The results are displayed in a list below the search field, and tapping on a result prints the selected place to the console.
+// 
+// This application flow demonstrates how to integrate the `mapbox_search` package into a Flutter app, allowing users to search for locations efficiently.
+```
+<!-- END_MAIN -->
+```

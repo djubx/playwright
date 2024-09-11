@@ -1,0 +1,181 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `plaid_flutter` Package
+
+The `plaid_flutter` package is a powerful tool for integrating Plaid's financial services into your Flutter applications. Plaid provides a suite of APIs that allow developers to connect their applications to users' bank accounts, enabling functionalities such as account verification, transaction history retrieval, and more. This package acts as a bridge between your Flutter app and Plaid's services, making it easier to implement financial features without delving into complex backend integrations.
+
+## When to Use `plaid_flutter`
+
+- **Financial Applications**: If you're building an app that requires access to users' financial data, such as budgeting apps, investment platforms, or payment services.
+- **Account Verification**: For applications that need to verify bank account ownership or retrieve account balances.
+- **Transaction Analysis**: To provide users with insights into their spending habits by accessing their transaction history.
+
+## Key Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Secure Authentication**: Utilizes Plaid's secure authentication flow to ensure user data is protected.
+- **Comprehensive API Access**: Provides access to a wide range of Plaid's API endpoints, including transactions, balance, and identity.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `plaid_flutter` in Your Flutter Project
+
+Integrating `plaid_flutter` into your Flutter project involves several steps, including package installation, platform-specific configurations, and initializing the Plaid Link flow.
+
+## Step 1: Install the Package
+
+Add `plaid_flutter` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  plaid_flutter: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+1. **Update `android/app/build.gradle`:**
+
+   Ensure that your `minSdkVersion` is set to at least 21:
+
+   ```gradle
+   android {
+       defaultConfig {
+           minSdkVersion 21
+       }
+   }
+   ```
+
+2. **Add Internet Permission:**
+
+   Add the following permission to your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+### iOS
+
+1. **Update `ios/Podfile`:**
+
+   Ensure the platform is set to at least iOS 11:
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+2. **Modify `Info.plist`:**
+
+   Add the following entries to your `Info.plist` to handle Plaid's URL schemes:
+
+   ```xml
+   <key>LSApplicationQueriesSchemes</key>
+   <array>
+       <string>plaid</string>
+   </array>
+   ```
+
+## Step 3: Initialize Plaid Link
+
+To use Plaid, you need to initialize the Plaid Link flow in your application. This involves creating a `LinkToken` and using it to open the Plaid Link interface.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:plaid_flutter/plaid_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Plaid Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late PlaidLink _plaidLink;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePlaidLink();
+  }
+
+  void _initializePlaidLink() {
+    // Initialize PlaidLink with a configuration
+    _plaidLink = PlaidLink(
+      configuration: LinkConfiguration(
+        clientName: 'Your App Name',
+        linkToken: 'your-link-token', // Replace with your generated link token
+      ),
+      onSuccess: _onSuccess,
+      onExit: _onExit,
+    );
+  }
+
+  void _onSuccess(String publicToken, LinkSuccessMetadata metadata) {
+    // Handle success, e.g., exchange the public token for an access token
+    print('Success: $publicToken');
+  }
+
+  void _onExit(LinkExitMetadata metadata) {
+    // Handle exit without success
+    print('User exited the Plaid Link flow');
+  }
+
+  void _openPlaidLink() {
+    // Open the Plaid Link interface
+    _plaidLink.open();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Plaid Flutter Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _openPlaidLink,
+          child: Text('Connect Bank Account'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application using the `plaid_flutter` package.
+// The application initializes Plaid Link with a configuration that includes a client name and a link token.
+// The `RealFlutter` widget is the main interface, providing a button to open the Plaid Link flow.
+// When the button is pressed, the `_openPlaidLink` method is called, which opens the Plaid Link interface.
+// The `_onSuccess` callback handles successful connections, printing the public token.
+// The `_onExit` callback handles cases where the user exits the Plaid Link flow without completing the process.
+
+<-- END_MAIN -->
+```

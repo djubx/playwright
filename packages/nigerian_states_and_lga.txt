@@ -1,0 +1,216 @@
+Here's a detailed technical blog on the `nigerian_states_and_lga` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Nigerian States and LGA Flutter Package
+
+The `nigerian_states_and_lga` Flutter package is a powerful tool designed for developers who need to integrate Nigerian states and local government areas (LGAs) into their Flutter applications. This package provides a comprehensive list of all 36 states and their corresponding LGAs, making it easier to build location-based features in apps targeting users in Nigeria.
+
+## When to Use This Package
+
+You might consider using the `nigerian_states_and_lga` package in scenarios such as:
+- **Form Inputs**: When creating forms that require users to select their state and LGA.
+- **Location-Based Services**: For applications that provide services based on the user's location.
+- **Data Filtering**: When filtering data based on geographical locations in Nigeria.
+
+## Features
+
+- **Comprehensive Data**: Access to all 36 states and their LGAs.
+- **Easy Integration**: Simple API for fetching states and LGAs.
+- **Lightweight**: Minimal overhead, ensuring fast performance in your Flutter app.
+
+With these features, the `nigerian_states_and_lga` package is an essential tool for any Flutter developer working on applications that require geographical data from Nigeria.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Nigerian States and LGA Package
+
+## Step 1: Adding the Dependency
+
+To get started, you need to add the `nigerian_states_and_lga` package to your `pubspec.yaml` file. Open the file and add the following line under dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  nigerian_states_and_lga: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command in your terminal to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Importing the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:nigerian_states_and_lga/nigerian_states_and_lga.dart';
+```
+
+## Step 3: Using the Package
+
+### Android Configuration
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS Configuration
+
+For iOS, you may need to add permissions in your `Info.plist` if your app requires location services. However, for basic usage of the package, no additional configuration is necessary.
+
+## Step 4: Fetching States and LGAs
+
+You can now use the package to fetch states and their corresponding LGAs. Here’s a simple example of how to do this:
+
+```dart
+void main() {
+  // Fetch all states
+  List<StateModel> states = NigerianStates.getAllStates();
+
+  // Fetch LGAs for a specific state
+  List<LGA> lgas = NigerianStates.getLGAs('Lagos');
+}
+```
+
+This code snippet demonstrates how to retrieve all states and the LGAs for a specific state (in this case, Lagos).
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Flutter Application Using Nigerian States and LGA Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:nigerian_states_and_lga/nigerian_states_and_lga.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Nigerian States and LGA Demo',
+      home: StateSelectionScreen(),
+    );
+  }
+}
+
+class StateSelectionScreen extends StatefulWidget {
+  @override
+  _StateSelectionScreenState createState() => _StateSelectionScreenState();
+}
+
+class _StateSelectionScreenState extends State<StateSelectionScreen> {
+  List<StateModel> states = [];
+  List<LGA> lgas = [];
+  String? selectedState;
+  String? selectedLGA;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch all states when the widget is initialized
+    states = NigerianStates.getAllStates();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Select State and LGA'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            DropdownButton<String>(
+              hint: Text('Select State'),
+              value: selectedState,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedState = newValue;
+                  // Fetch LGAs for the selected state
+                  lgas = NigerianStates.getLGAs(selectedState!);
+                  selectedLGA = null; // Reset selected LGA
+                });
+              },
+              items: states.map((StateModel state) {
+                return DropdownMenuItem<String>(
+                  value: state.name,
+                  child: Text(state.name),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 20),
+            DropdownButton<String>(
+              hint: Text('Select LGA'),
+              value: selectedLGA,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedLGA = newValue;
+                });
+              },
+              items: lgas.map((LGA lga) {
+                return DropdownMenuItem<String>(
+                  value: lga.name,
+                  child: Text(lga.name),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Display selected state and LGA
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text('Selected Location'),
+                      content: Text('State: $selectedState\nLGA: $selectedLGA'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which sets up the MaterialApp.
+// 2. The StateSelectionScreen is displayed, where users can select a state and LGA.
+// 3. On initialization, all states are fetched and displayed in a dropdown.
+// 4. When a state is selected, the corresponding LGAs are fetched and displayed in another dropdown.
+// 5. The user can select an LGA and click the Submit button to see their selection in a dialog.
+```
+
+<!-- END_MAIN -->
+
+In this example, the application allows users to select a state and its corresponding LGA from dropdown menus. The flow of the application is straightforward: it initializes by fetching all states, updates the LGAs based on the selected state, and displays the selected options in a dialog when the user submits their choice. This demonstrates the core functionality of the `nigerian_states_and_lga` package effectively.

@@ -1,0 +1,185 @@
+Here's a detailed technical blog on the "environment_config" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Environment Config Flutter Package
+
+The `environment_config` Flutter package is a powerful tool designed to manage different configurations for various environments in your Flutter applications. This package allows developers to define environment-specific variables, making it easier to switch between development, staging, and production settings without changing the codebase.
+
+## When to Use This Package
+
+You should consider using the `environment_config` package when:
+- You have multiple environments (development, staging, production) and need to manage different configurations for each.
+- You want to avoid hardcoding sensitive information (like API keys) directly in your code.
+- You need a clean and organized way to manage environment variables.
+
+## Features
+
+- **Environment Management**: Easily switch between different configurations based on the environment.
+- **Type Safety**: Provides type-safe access to environment variables.
+- **Custom Configuration**: Allows you to define custom configurations for your application.
+- **Easy Integration**: Simple setup and integration into existing Flutter projects.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the Environment Config Package
+
+## Step 1: Add Dependency
+
+To get started, add the `environment_config` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  environment_config: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Create Configuration Files
+
+Create a directory named `config` in the root of your Flutter project. Inside this directory, create separate configuration files for each environment. For example:
+
+- `config/development.dart`
+- `config/staging.dart`
+- `config/production.dart`
+
+Each file should export a class that contains the environment-specific variables. Here’s an example for `development.dart`:
+
+```dart
+// config/development.dart
+class DevelopmentConfig {
+  static const String apiUrl = "https://dev.api.example.com";
+  static const String apiKey = "dev-api-key";
+}
+```
+
+Repeat this for `staging.dart` and `production.dart`, changing the values accordingly.
+
+## Step 3: Create the Main Configuration File
+
+Create a file named `environment.dart` in the `config` directory to manage the environment selection:
+
+```dart
+// config/environment.dart
+import 'development.dart' as dev;
+import 'staging.dart' as stag;
+import 'production.dart' as prod;
+
+class EnvironmentConfig {
+  static String get apiUrl {
+    switch (const String.fromEnvironment('ENV')) {
+      case 'production':
+        return prod.ProductionConfig.apiUrl;
+      case 'staging':
+        return stag.StagingConfig.apiUrl;
+      default:
+        return dev.DevelopmentConfig.apiUrl;
+    }
+  }
+
+  static String get apiKey {
+    switch (const String.fromEnvironment('ENV')) {
+      case 'production':
+        return prod.ProductionConfig.apiKey;
+      case 'staging':
+        return stag.StagingConfig.apiKey;
+      default:
+        return dev.DevelopmentConfig.apiKey;
+    }
+  }
+}
+```
+
+## Step 4: Update the Main File
+
+In your `main.dart`, import the `environment.dart` file and use the configuration values:
+
+```dart
+// main.dart
+import 'package:flutter/material.dart';
+import 'config/environment.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Environment Config Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Environment Config Example'),
+        ),
+        body: Center(
+          child: Text('API URL: ${EnvironmentConfig.apiUrl}'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Step 5: Run the Application
+
+To run the application with a specific environment, use the following command:
+
+```bash
+flutter run --dart-define=ENV=development
+```
+
+Replace `development` with `staging` or `production` as needed.
+
+### Platform-Specific Details
+
+- **Android**: Ensure that your `build.gradle` file is set up to support the `--dart-define` option.
+- **iOS**: No additional configuration is needed, but ensure you have the correct scheme selected in Xcode.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Environment Config
+
+```dart
+// main.dart
+import 'package:flutter/material.dart';
+import 'config/environment.dart';
+
+void main() {
+  // Start the application
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Environment Config Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Environment Config Example'),
+        ),
+        body: Center(
+          // Display the API URL based on the current environment
+          child: Text('API URL: ${EnvironmentConfig.apiUrl}'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function is the entry point of the application.
+// 2. The runApp function initializes the MyApp widget.
+// 3. MyApp builds a MaterialApp widget with a title and a home scaffold.
+// 4. The AppBar displays the title of the application.
+// 5. The body of the scaffold contains a Center widget that displays the API URL.
+// 6. The API URL is fetched from the EnvironmentConfig class, which determines the current environment based on the `ENV` variable.
+// 7. When running the app, you can specify the environment using the --dart-define flag, allowing for dynamic configuration based on the environment.
+```
+<!-- END_MAIN -->
+
+In summary, the `environment_config` package provides a structured way to manage different configurations for your Flutter applications. By following the steps outlined in this blog, you can easily set up and utilize environment-specific variables, enhancing the maintainability and security of your code.

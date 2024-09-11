@@ -1,0 +1,201 @@
+Here's a detailed technical blog on the `sms_otp_auto_verify` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# SMS OTP Auto Verify Flutter Package
+
+The `sms_otp_auto_verify` package is a powerful tool for Flutter developers looking to implement SMS-based one-time password (OTP) verification in their applications. This package simplifies the process of receiving and verifying OTPs sent via SMS, making it easier to enhance user authentication and security.
+
+## When to Use This Package
+
+You should consider using the `sms_otp_auto_verify` package in scenarios such as:
+- **User Registration**: When new users sign up, you can send them an OTP to verify their phone number.
+- **Password Recovery**: If users forget their passwords, you can send an OTP to their registered phone number for verification.
+- **Two-Factor Authentication**: Enhance security by requiring an OTP in addition to a password during login.
+
+## Features
+
+- **Automatic OTP Detection**: The package can automatically read the OTP from incoming SMS messages, reducing user input errors.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Easy Integration**: Simple setup and usage, allowing developers to focus on building their applications rather than dealing with complex authentication flows.
+
+Overall, the `sms_otp_auto_verify` package is an excellent choice for developers looking to implement secure and user-friendly OTP verification in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using SMS OTP Auto Verify
+
+In this tutorial, we will walk through the setup process for the `sms_otp_auto_verify` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `sms_otp_auto_verify` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sms_otp_auto_verify: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Configure Android
+
+For Android, you need to add the following permissions in your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.RECEIVE_SMS"/>
+<uses-permission android:name="android.permission.READ_SMS"/>
+```
+
+Additionally, ensure that your app has the correct `minSdkVersion` in `android/app/build.gradle`:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21  // Minimum SDK version should be 21 or higher
+    }
+}
+```
+
+## Step 3: Configure iOS
+
+For iOS, you need to add the following permissions in your `Info.plist` file located at `ios/Runner/Info.plist`:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to send OTP.</string>
+<key>NSContactsUsageDescription</key>
+<string>We need access to your contacts to send OTP.</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need access to your location to send OTP.</string>
+```
+
+## Step 4: Implementing the Package
+
+Now that we have configured the package, we can implement it in our Flutter application. Below is a simple example of how to use the `sms_otp_auto_verify` package to send and verify an OTP.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:sms_otp_auto_verify/sms_otp_auto_verify.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SMS OTP Auto Verify Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: OTPVerificationScreen(),
+    );
+  }
+}
+
+class OTPVerificationScreen extends StatefulWidget {
+  @override
+  _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
+}
+
+class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
+  String _phoneNumber = ''; // Variable to hold the phone number
+  String _otpCode = ''; // Variable to hold the OTP code
+  String _verificationId = ''; // Variable to hold the verification ID
+
+  @override
+  void initState() {
+    super.initState();
+    // Start listening for incoming SMS messages
+    SmsAutoVerify.startListening();
+  }
+
+  // Function to send OTP
+  void _sendOTP() async {
+    // Send OTP to the provided phone number
+    _verificationId = await SmsAutoVerify.sendOTP(_phoneNumber);
+    print('OTP sent to $_phoneNumber');
+  }
+
+  // Function to verify OTP
+  void _verifyOTP() async {
+    // Verify the OTP entered by the user
+    bool isVerified = await SmsAutoVerify.verifyOTP(_verificationId, _otpCode);
+    if (isVerified) {
+      print('OTP verified successfully!');
+      // Navigate to the next screen or show success message
+    } else {
+      print('OTP verification failed. Please try again.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('OTP Verification'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(labelText: 'Phone Number'),
+              onChanged: (value) {
+                _phoneNumber = value; // Update phone number
+              },
+            ),
+            TextField(
+              decoration: InputDecoration(labelText: 'OTP Code'),
+              onChanged: (value) {
+                _otpCode = value; // Update OTP code
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _sendOTP, // Send OTP when button is pressed
+              child: Text('Send OTP'),
+            ),
+            ElevatedButton(
+              onPressed: _verifyOTP, // Verify OTP when button is pressed
+              child: Text('Verify OTP'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    // Stop listening for incoming SMS messages
+    SmsAutoVerify.stopListening();
+    super.dispose();
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application for OTP verification using the sms_otp_auto_verify package. 
+// Here's a step-by-step explanation of the application flow:
+
+// 1. **Main Application**: The `main` function initializes the app and sets `MyApp` as the home widget.
+// 2. **OTPVerificationScreen**: This is the main screen where users can enter their phone number and OTP code.
+// 3. **State Management**: The `_OTPVerificationScreenState` class manages the state of the phone number and OTP code.
+// 4. **initState**: When the widget is initialized, it starts listening for incoming SMS messages.
+// 5. **Sending OTP**: The `_sendOTP` function sends an OTP to the provided phone number using the `SmsAutoVerify.sendOTP` method.
+// 6. **Verifying OTP**: The `_verifyOTP` function verifies the entered OTP using the `SmsAutoVerify.verifyOTP` method and provides feedback based on the verification result.
+// 7. **UI Elements**: The UI consists of text fields for entering the phone number and OTP, along with buttons to send and verify the OTP.
+// 8. **dispose**: When the widget is disposed, it stops listening for incoming SMS messages to free up resources.
+
+// This application flow provides a straightforward user experience for OTP verification, enhancing security in user authentication.
+
+<!-- END_MAIN -->
+
+In summary, the `sms_otp_auto_verify` package provides a seamless way to implement SMS OTP verification in Flutter applications. By following the setup and implementation steps outlined in this blog, developers can enhance their applications' security and user experience.

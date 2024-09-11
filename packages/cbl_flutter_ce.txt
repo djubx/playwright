@@ -1,0 +1,157 @@
+<-- START_DESCRIPTION -->
+
+# cbl_flutter_ce Package Overview
+=====================================
+
+The `cbl_flutter_ce` package is a Flutter wrapper for Couchbase Lite, a lightweight, embedded NoSQL database. It provides a simple and efficient way to store and manage data locally on mobile devices.
+
+### Key Features
+
+*   **Offline-first architecture**: Store data locally and sync with the server when online.
+*   **Flexible data modeling**: Store data as JSON documents, and use familiar Couchbase concepts like documents, properties, and views.
+*   **Query and indexing**: Use SQL-like queries to retrieve data, and create indexes for efficient querying.
+*   **Data synchronization**: Synchronize data between devices and the server using Couchbase Sync Gateway.
+
+### When to Use
+
+*   **Offline-capable apps**: Use `cbl_flutter_ce` to store data locally and provide a seamless offline experience.
+*   **Data-intensive apps**: Use `cbl_flutter_ce` to store and manage large amounts of data efficiently.
+*   **Real-time data sync**: Use `cbl_flutter_ce` to synchronize data between devices and the server in real-time.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Configuration
+==========================
+
+### Step 1: Add the Package
+
+Add the `cbl_flutter_ce` package to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  cbl_flutter_ce: ^1.0.0
+```
+
+### Step 2: Import the Package
+
+Import the `cbl_flutter_ce` package in your Dart file:
+
+```dart
+import 'package:cbl_flutter_ce/cbl_flutter_ce.dart';
+```
+
+### Step 3: Initialize the Database
+
+Initialize the Couchbase Lite database:
+
+```dart
+await Database.init();
+```
+
+### Step 4: Create a Database
+
+Create a new Couchbase Lite database:
+
+```dart
+final database = await Database.create('mydatabase');
+```
+
+### Platform-Specific Details
+
+*   **Android**: No additional configuration is required.
+*   **iOS**: Add the following lines to your `Info.plist` file:
+
+```xml
+<key>NSPersistentContainerName</key>
+<string>mydatabase</string>
+```
+
+### Required Configurations
+
+*   **Database encryption**: To enable database encryption, set the `encryptionKey` property when creating the database:
+
+```dart
+final database = await Database.create('mydatabase',
+  encryptionKey: 'myencryptionkey',
+);
+```
+
+### Optimizations
+
+*   **Database compaction**: To compact the database and reduce its size, use the `compact()` method:
+
+```dart
+await database.compact();
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cbl_flutter_ce/cbl_flutter_ce.dart';
+
+void main() async {
+  // Initialize the Couchbase Lite database
+  await Database.init();
+
+  // Create a new Couchbase Lite database
+  final database = await Database.create('mydatabase');
+
+  // Create a new document
+  final document = MutableDocument({
+    'type': 'task',
+    'title': 'Buy milk',
+    'completed': false,
+  });
+
+  // Save the document to the database
+  await database.save(document);
+
+  // Retrieve the document from the database
+  final retrievedDocument = await database.getDocument(document.id);
+
+  // Print the document's properties
+  print(retrievedDocument!.properties);
+
+  // Update the document's properties
+  retrievedDocument.mutate((mutableDocument) {
+    mutableDocument['completed'] = true;
+  });
+
+  // Save the updated document to the database
+  await database.save(retrievedDocument);
+
+  // Query the database for documents of type 'task'
+  final query = QueryBuilder.select([SelectResult.all()])
+    .from(DataSource.database(database))
+    .where(Expression.property('type').equalTo(Expression.string('task')));
+
+  // Execute the query and print the results
+  final results = await query.execute();
+  for (final result in results) {
+    print(result.properties);
+  }
+
+  // Compact the database to reduce its size
+  await database.compact();
+
+  // Close the database
+  await database.close();
+}
+
+// The application flow is as follows:
+// 1. Initialize the Couchbase Lite database.
+// 2. Create a new Couchbase Lite database.
+// 3. Create a new document and save it to the database.
+// 4. Retrieve the document from the database and print its properties.
+// 5. Update the document's properties and save the updated document to the database.
+// 6. Query the database for documents of type 'task' and print the results.
+// 7. Compact the database to reduce its size.
+// 8. Close the database.
+```
+
+<-- END_MAIN -->

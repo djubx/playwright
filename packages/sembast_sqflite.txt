@@ -1,0 +1,211 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `sembast_sqflite` Flutter Package
+
+The `sembast_sqflite` package is a powerful combination of two popular Flutter database solutions: Sembast and Sqflite. This package provides a unified API that allows developers to leverage the simplicity and flexibility of Sembast with the performance and native capabilities of Sqflite. 
+
+## When to Use `sembast_sqflite`
+
+- **Hybrid Database Needs**: If your application requires both NoSQL-like flexibility and SQL-like performance, `sembast_sqflite` is an ideal choice.
+- **Cross-Platform Consistency**: It ensures consistent behavior across Android and iOS platforms, making it suitable for cross-platform applications.
+- **Ease of Use**: For developers who want to quickly set up a database without delving into complex SQL queries, this package offers a straightforward API.
+
+## Features
+
+- **Unified API**: Combines the best of Sembast and Sqflite, allowing for flexible data storage and retrieval.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Performance Optimization**: Leverages Sqflite's native performance for complex queries while maintaining Sembast's ease of use for simple data operations.
+- **Transaction Support**: Provides robust transaction support to ensure data integrity.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `sembast_sqflite`
+
+In this tutorial, we will walk through the setup process for the `sembast_sqflite` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `sembast_sqflite` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sembast_sqflite: ^1.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+#### iOS
+
+No specific configuration is required for iOS, but ensure your project is set up to use Swift by checking your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+### Step 3: Initialize the Database
+
+Create a service class to manage your database operations. Here, we will use a class named `RealFlutter`.
+
+```dart
+import 'package:sembast_sqflite/sembast_sqflite.dart';
+
+class RealFlutter {
+  // Singleton instance
+  static final RealFlutter _instance = RealFlutter._internal();
+
+  // Private constructor
+  RealFlutter._internal();
+
+  // Factory constructor
+  factory RealFlutter() => _instance;
+
+  // Database instance
+  Database? _database;
+
+  // Initialize the database
+  Future<void> init() async {
+    final factory = getDatabaseFactorySqflite();
+    _database = await factory.openDatabase('app.db');
+  }
+
+  // Example method to insert data
+  Future<void> insertData(String key, Map<String, dynamic> value) async {
+    final store = intMapStoreFactory.store();
+    await store.record(key).put(_database!, value);
+  }
+
+  // Example method to retrieve data
+  Future<Map<String, dynamic>?> getData(String key) async {
+    final store = intMapStoreFactory.store();
+    return await store.record(key).get(_database!);
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sembast_sqflite/sembast_sqflite.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await RealFlutter().init(); // Initialize the database
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sembast Sqflite Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _keyController = TextEditingController();
+  final TextEditingController _valueController = TextEditingController();
+  String _retrievedValue = '';
+
+  // Method to insert data into the database
+  Future<void> _insertData() async {
+    final key = _keyController.text;
+    final value = {'value': _valueController.text};
+    await RealFlutter().insertData(key, value);
+    _keyController.clear();
+    _valueController.clear();
+  }
+
+  // Method to retrieve data from the database
+  Future<void> _retrieveData() async {
+    final key = _keyController.text;
+    final data = await RealFlutter().getData(key);
+    setState(() {
+      _retrievedValue = data?['value'] ?? 'No data found';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sembast Sqflite Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: _keyController,
+              decoration: InputDecoration(labelText: 'Key'),
+            ),
+            TextField(
+              controller: _valueController,
+              decoration: InputDecoration(labelText: 'Value'),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: _insertData,
+                  child: Text('Insert'),
+                ),
+                ElevatedButton(
+                  onPressed: _retrieveData,
+                  child: Text('Retrieve'),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Text('Retrieved Value: $_retrievedValue'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts by initializing the database using the RealFlutter class.
+// 2. The main widget, MyApp, sets up the MaterialApp and directs to MyHomePage.
+// 3. MyHomePage contains two text fields for key and value input, and two buttons for inserting and retrieving data.
+// 4. When the 'Insert' button is pressed, the _insertData method is called, which stores the key-value pair in the database.
+// 5. When the 'Retrieve' button is pressed, the _retrieveData method fetches the value associated with the entered key and displays it.
+// 6. The UI updates to show the retrieved value or a message if no data is found.
+
+<-- END_MAIN -->
+```
+
+This blog post provides a comprehensive guide to using the `sembast_sqflite` package in Flutter, from setup to a complete example. The example demonstrates how to perform basic database operations, making it a valuable resource for developers looking to integrate this package into their applications.

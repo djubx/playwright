@@ -1,0 +1,210 @@
+Here's a detailed technical blog on the "aad_oauth" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# AAD OAuth Flutter Package
+
+The `aad_oauth` Flutter package is a powerful tool designed to facilitate authentication with Azure Active Directory (AAD) using OAuth 2.0. This package is particularly useful for developers building applications that require secure access to Microsoft services, such as Microsoft Graph, or any other APIs secured by Azure AD.
+
+## When to Use This Package
+
+You should consider using the `aad_oauth` package when:
+- You need to authenticate users via Azure Active Directory.
+- Your application requires access to Microsoft services or APIs that are secured with Azure AD.
+- You want to implement Single Sign-On (SSO) capabilities in your Flutter application.
+
+## Features
+
+- **OAuth 2.0 Authentication**: Supports the OAuth 2.0 protocol for secure authentication.
+- **Token Management**: Automatically handles access and refresh tokens.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Customizable**: Allows customization of the authentication flow to fit your app's needs.
+
+With these features, the `aad_oauth` package simplifies the process of integrating Azure AD authentication into your Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up aad_oauth in Your Flutter Project
+
+In this tutorial, we will walk through the setup process for the `aad_oauth` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the `aad_oauth` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  aad_oauth: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package.
+
+## Step 2: Configure for Android
+
+1. **Update AndroidManifest.xml**: Open `android/app/src/main/AndroidManifest.xml` and add the following permissions and activity:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<application>
+    ...
+    <activity android:name="com.microsoft.identity.client.BrowserTabActivity" />
+</application>
+```
+
+2. **Add Redirect URI**: In the same file, add the redirect URI in the intent filter:
+
+```xml
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="your_app_scheme" android:host="your_app_host" />
+</intent-filter>
+```
+
+Replace `your_app_scheme` and `your_app_host` with your actual values.
+
+## Step 3: Configure for iOS
+
+1. **Update Info.plist**: Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>your_app_scheme</string>
+        </array>
+    </dict>
+</array>
+```
+
+Replace `your_app_scheme` with your actual scheme.
+
+2. **Enable App Transport Security**: Ensure that your app can make network requests by adding the following to your `Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 4: Initialize and Use the Package
+
+Now that we have configured the package, we can initialize and use it in our Flutter application. Below is a complete example demonstrating how to authenticate users and access secured resources.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Using aad_oauth in a Flutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:aad_oauth/aad_oauth.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'AAD OAuth Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Create an instance of the AAD OAuth class
+  final AADOAuth _aadOAuth = AADOAuth(
+    clientId: 'your_client_id', // Replace with your client ID
+    tenant: 'your_tenant_id', // Replace with your tenant ID
+    redirectUri: 'your_app_scheme://auth', // Replace with your redirect URI
+    scopes: ['openid', 'profile', 'email'], // Define the scopes you need
+  );
+
+  String _accessToken = '';
+
+  // Function to initiate the login process
+  void _login() async {
+    try {
+      // Start the authentication process
+      final result = await _aadOAuth.login();
+      setState(() {
+        _accessToken = result['accessToken']; // Store the access token
+      });
+    } catch (e) {
+      // Handle any errors during login
+      print('Login failed: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('AAD OAuth Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Access Token:',
+            ),
+            Text(
+              _accessToken.isNotEmpty ? _accessToken : 'Not logged in',
+              style: Theme.of(context).textTheme.headline6,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login, // Trigger the login function
+              child: Text('Login with AAD'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+```dart
+// The above code demonstrates a simple Flutter application that uses the aad_oauth package for Azure AD authentication.
+// 
+// 1. **Imports**: We import the necessary packages, including `flutter/material.dart` for UI components and `aad_oauth/aad_oauth.dart` for authentication.
+// 
+// 2. **Main Function**: The `main` function initializes the app by calling `runApp` with `MyApp`.
+// 
+// 3. **MyApp Class**: This is the root widget of the application. It sets up the MaterialApp with a title and theme, and specifies `RealFlutter` as the home widget.
+// 
+// 4. **RealFlutter Class**: This is a stateful widget that manages the authentication process.
+// 
+// 5. **AADOAuth Instance**: We create an instance of `AADOAuth` with the required parameters: client ID, tenant ID, redirect URI, and scopes.
+// 
+// 6. **Login Function**: The `_login` function initiates the login process. It calls the `login` method of the `AADOAuth` instance and retrieves the access token.
+// 
+// 7. **UI Layout**: The UI consists of a text display for the access token and a button to trigger the login process. When the button is pressed, the `_login` function is called.
+// 
+// 8. **State Management**: The access token is stored in the `_accessToken` variable, and the UI updates accordingly to reflect the login status.
+// 
+// This application flow allows users to authenticate with Azure AD and retrieve an access token, which can be used to access secured resources.
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the `aad_oauth` Flutter package, including its features, setup instructions, and a complete example application. By following the steps outlined, developers can easily integrate Azure AD authentication into their Flutter applications.

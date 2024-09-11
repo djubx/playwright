@@ -1,0 +1,166 @@
+<-- START_DESCRIPTION -->
+
+**Prometheus Client Shelf Flutter Package**
+=============================================
+
+The `prometheus_client_shelf` package is a Flutter library that provides a simple way to integrate Prometheus metrics into your Flutter application. Prometheus is a popular monitoring system that provides a powerful way to collect and query metrics from your application.
+
+**When to Use This Package**
+---------------------------
+
+You should use this package when you want to collect metrics from your Flutter application and monitor its performance. This package is particularly useful when you want to:
+
+* Monitor the performance of your application in production
+* Collect metrics on how users are interacting with your application
+* Identify bottlenecks and areas for optimization in your application
+
+**Features**
+------------
+
+This package provides the following features:
+
+* Support for collecting Prometheus metrics in your Flutter application
+* Integration with the Shelf framework for easy setup and configuration
+* Support for multiple metric types, including counters, gauges, and histograms
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setup and Configuration**
+---------------------------
+
+To use this package, you need to add it to your `pubspec.yaml` file:
+```yml
+dependencies:
+  prometheus_client_shelf: ^1.0.0
+```
+Then, you need to import the package in your Dart file:
+```dart
+import 'package:prometheus_client_shelf/prometheus_client_shelf.dart';
+```
+**Platform-Specific Details**
+---------------------------
+
+### Android
+
+On Android, you need to add the following configuration to your `AndroidManifest.xml` file:
+```xml
+<application>
+  <service
+    android:name="io.prometheus.client.shelf.PrometheusService"
+    android:enabled="true"
+    android:exported="true" />
+</application>
+```
+### iOS
+
+On iOS, you need to add the following configuration to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+**Using the Package**
+---------------------
+
+To use the package, you need to create a `PrometheusClient` instance and register it with the Shelf framework:
+```dart
+import 'package:shelf/shelf.dart';
+import 'package:prometheus_client_shelf/prometheus_client_shelf.dart';
+
+void main() {
+  final prometheusClient = PrometheusClient();
+  final server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
+  await server.forEach((request) async {
+    final response = await prometheusClient.handleRequest(request);
+    await request.response(response);
+  });
+}
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:prometheus_client_shelf/prometheus_client_shelf.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _prometheusClient = PrometheusClient();
+
+  @override
+  void initState() {
+    super.initState();
+    _prometheusClient.registerMetric(
+      Metric(
+        name: 'my_metric',
+        help: 'My metric',
+        type: MetricType.counter,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Prometheus Client Shelf Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Prometheus Client Shelf Demo'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'You have pushed the button this many times:',
+              ),
+              Text(
+                '${_prometheusClient.getMetric('my_metric').value}',
+                style: Theme.of(context).textTheme.display1,
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _prometheusClient.getMetric('my_metric').inc();
+            setState(() {});
+          },
+          tooltip: 'Increment',
+          child: Icon(Icons.add),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and the `RealFlutter` widget is created.
+// 2. The `RealFlutter` widget creates a `PrometheusClient` instance and registers a metric named 'my_metric' with the type 'counter'.
+// 3. The user clicks the floating action button, which increments the value of the 'my_metric' metric.
+// 4. The `RealFlutter` widget updates the display to show the new value of the 'my_metric' metric.
+// 5. The user can continue to click the floating action button to increment the value of the 'my_metric' metric.
+// 6. The Prometheus client collects the metric data and sends it to the Prometheus server.
+// 7. The Prometheus server stores the metric data and provides it to the user through the Prometheus dashboard.
+
+// Summary:
+// This code demonstrates how to use the `prometheus_client_shelf` package to collect metrics from a Flutter application.
+// The code creates a `PrometheusClient` instance and registers a metric named 'my_metric' with the type 'counter'.
+// The code then increments the value of the 'my_metric' metric when the user clicks the floating action button.
+// The Prometheus client collects the metric data and sends it to the Prometheus server.
+```
+
+<-- END_MAIN -->

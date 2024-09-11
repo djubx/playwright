@@ -1,0 +1,145 @@
+<-- START_DESCRIPTION -->
+
+# dio_cache_interceptor_db_store Package Overview
+=====================================================
+
+The `dio_cache_interceptor_db_store` package is a caching solution for Flutter applications that use the Dio HTTP client. It provides a simple and efficient way to cache HTTP responses, reducing the number of requests made to the server and improving app performance.
+
+### When to Use This Package
+
+This package is ideal for applications that:
+
+* Make frequent requests to the same API endpoints
+* Need to reduce the load on the server
+* Want to improve app performance by caching responses
+
+### Features
+
+* Caches HTTP responses using a SQLite database
+* Supports GET, POST, PUT, and DELETE requests
+* Allows for customizable cache expiration times
+* Provides a simple and easy-to-use API
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+==========================
+
+To use the `dio_cache_interceptor_db_store` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec.yaml File
+
+```yml
+dependencies:
+  dio_cache_interceptor_db_store: ^1.0.0
+```
+
+### Step 2: Import the Package
+
+```dart
+import 'package:dio_cache_interceptor_db_store/dio_cache_interceptor_db_store.dart';
+```
+
+### Step 3: Create a Dio Instance with the Cache Interceptor
+
+```dart
+Dio dio = Dio();
+dio.interceptors.add(CacheInterceptor(dbStore: DbStore()));
+```
+
+### Platform-Specific Details
+
+* Android: No additional configuration is required.
+* iOS: You need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+### Required Configurations
+
+* You can customize the cache expiration time by setting the `maxAge` property:
+
+```dart
+dio.interceptors.add(CacheInterceptor(
+  dbStore: DbStore(),
+  maxAge: Duration(days: 7),
+));
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor_db_store/dio_cache_interceptor_db_store.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dio Cache Interceptor Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final Dio _dio = Dio();
+
+  @override
+  void initState() {
+    super.initState();
+    _dio.interceptors.add(CacheInterceptor(dbStore: DbStore()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dio Cache Interceptor Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _makeRequest,
+          child: Text('Make Request'),
+        ),
+      ),
+    );
+  }
+
+  void _makeRequest() async {
+    final Response response = await _dio.get('https://jsonplaceholder.typicode.com/todos/1');
+    print(response.data);
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and clicks the "Make Request" button.
+// 2. The `_makeRequest` function is called, which makes a GET request to the specified URL using the Dio HTTP client.
+// 3. The CacheInterceptor checks if a cached response is available for the request.
+// 4. If a cached response is available, it is returned immediately.
+// 5. If no cached response is available, the request is made to the server and the response is cached.
+// 6. The response is then returned to the `_makeRequest` function, which prints the response data to the console.
+
+// In summary, the CacheInterceptor checks for cached responses and returns them if available, reducing the number of requests made to the server.
+```
+
+<-- END_MAIN -->

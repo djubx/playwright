@@ -1,0 +1,183 @@
+```markdown
+<-- START_DESCRIPTION -->
+# Overview of the `ussd_service` Flutter Package
+
+The `ussd_service` Flutter package is a powerful tool designed to facilitate the interaction with Unstructured Supplementary Service Data (USSD) codes directly from a Flutter application. USSD codes are widely used in mobile networks for various services such as balance checks, mobile money transactions, and more. This package provides a seamless way to integrate these functionalities into your Flutter app, making it an essential tool for developers targeting markets where USSD is prevalent.
+
+## When to Use `ussd_service`
+
+- **Mobile Banking Applications**: Integrate USSD-based banking services to allow users to perform transactions without leaving the app.
+- **Telecom Services**: Enable users to check their balance, recharge, or subscribe to services using USSD codes.
+- **Utility Payments**: Facilitate bill payments and other utility services that rely on USSD codes.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Simple API**: Easy-to-use methods to send USSD codes and handle responses.
+- **Asynchronous Operations**: Supports asynchronous calls to ensure smooth user experience without blocking the UI.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up and Using `ussd_service` in Flutter
+
+In this tutorial, we will walk through the process of setting up the `ussd_service` package in a Flutter project and demonstrate how to use it effectively.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `ussd_service` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  ussd_service: ^1.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Add the following permissions to your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.CALL_PHONE"/>
+   <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+   ```
+
+2. **Proguard Rules**: If you are using Proguard, add the following rules to your `proguard-rules.pro`:
+
+   ```proguard
+   -keep class com.example.ussd_service.** { *; }
+   ```
+
+#### iOS
+
+1. **Permissions**: Update your `Info.plist` with the following keys:
+
+   ```xml
+   <key>NSLocationWhenInUseUsageDescription</key>
+   <string>We need access to your location to provide USSD services.</string>
+   ```
+
+2. **Capabilities**: Ensure that your app has the necessary capabilities enabled in Xcode.
+
+### Step 3: Import the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:ussd_service/ussd_service.dart';
+```
+
+## Using the Package
+
+To send a USSD code, you can use the `sendUssd` method provided by the package. Here is a basic example:
+
+```dart
+Future<void> sendUssdCode(String code) async {
+  try {
+    String response = await UssdService.sendUssd(code);
+    print('USSD Response: $response');
+  } catch (e) {
+    print('Failed to send USSD code: $e');
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:ussd_service/ussd_service.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'USSD Service Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: UssdHomePage(),
+    );
+  }
+}
+
+class UssdHomePage extends StatefulWidget {
+  @override
+  _UssdHomePageState createState() => _UssdHomePageState();
+}
+
+class _UssdHomePageState extends State<UssdHomePage> {
+  final TextEditingController _ussdController = TextEditingController();
+  String _response = '';
+
+  // Function to send USSD code
+  Future<void> _sendUssd() async {
+    String code = _ussdController.text;
+    try {
+      // Sending the USSD code and awaiting the response
+      String response = await UssdService.sendUssd(code);
+      setState(() {
+        _response = response; // Updating the response state
+      });
+    } catch (e) {
+      setState(() {
+        _response = 'Error: $e'; // Handling errors
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('USSD Service Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: _ussdController,
+              decoration: InputDecoration(
+                labelText: 'Enter USSD Code',
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _sendUssd, // Triggering the USSD send function
+              child: Text('Send USSD'),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Response: $_response', // Displaying the USSD response
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts with the `main` function, which runs the `MyApp` widget.
+// `MyApp` is a stateless widget that sets up the MaterialApp with a home page of `UssdHomePage`.
+// `UssdHomePage` is a stateful widget that manages the state of the USSD code input and response.
+// The `_sendUssd` function is called when the "Send USSD" button is pressed. It sends the USSD code using the `UssdService.sendUssd` method and updates the response state.
+// The UI consists of a text field for inputting the USSD code, a button to send the code, and a text widget to display the response.
+
+<-- END_MAIN -->
+```
+
+This blog post provides a comprehensive guide to using the `ussd_service` package in Flutter, from setup to implementation, with a complete example to demonstrate its capabilities.

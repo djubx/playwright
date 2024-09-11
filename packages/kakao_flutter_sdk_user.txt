@@ -1,0 +1,198 @@
+Here's a detailed technical blog on the `kakao_flutter_sdk_user` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Kakao Flutter SDK User Package
+
+The `kakao_flutter_sdk_user` package is a Flutter plugin that provides a seamless way to integrate Kakao's user authentication and management features into your Flutter applications. This package is particularly useful for developers looking to leverage Kakao's extensive user base in South Korea and other regions where Kakao services are popular.
+
+## When to Use This Package
+
+You should consider using the `kakao_flutter_sdk_user` package when:
+- You are developing a Flutter application that targets users in South Korea or regions where KakaoTalk is widely used.
+- You want to implement user authentication via Kakao, allowing users to log in using their Kakao accounts.
+- You need to access user profile information and manage user sessions easily.
+
+## Features
+
+- **User Authentication**: Simplifies the process of logging in users with their Kakao accounts.
+- **User Profile Access**: Allows retrieval of user profile information such as nickname, profile image, and more.
+- **Session Management**: Handles user sessions, making it easy to manage logged-in states.
+- **Cross-Platform Support**: Works on both Android and iOS, providing a consistent API for both platforms.
+
+By using this package, developers can enhance user experience by providing a familiar login method and accessing user data efficiently.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Kakao Flutter SDK User
+
+In this tutorial, we will walk through the setup process for the `kakao_flutter_sdk_user` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `kakao_flutter_sdk_user` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  kakao_flutter_sdk_user: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/kakao_flutter_sdk_user).
+
+## Step 2: Configure Android
+
+1. **Update AndroidManifest.xml**: Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml` and add the following permissions and metadata:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <application>
+        ...
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="YOUR_KAKAO_APP_KEY" />
+    </application>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+```
+
+Replace `YOUR_KAKAO_APP_KEY` with your actual Kakao app key.
+
+2. **Enable Internet Permission**: Ensure that your app has internet permissions by including `<uses-permission android:name="android.permission.INTERNET"/>` in the manifest.
+
+## Step 3: Configure iOS
+
+1. **Update Info.plist**: Open your `Info.plist` file located at `ios/Runner/Info.plist` and add the following entries:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>kakaoYOUR_KAKAO_APP_KEY</string>
+        </array>
+    </dict>
+</array>
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+Replace `YOUR_KAKAO_APP_KEY` with your actual Kakao app key.
+
+## Step 4: Initialize the SDK
+
+In your main Dart file, initialize the Kakao SDK before using it:
+
+```dart
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await UserApi.instance.initialize();
+  runApp(MyApp());
+}
+```
+
+## Step 5: Using the Package
+
+You can now use the package to authenticate users and access their profiles. Here’s a simple example of how to log in a user and fetch their profile information.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
+void main() async {
+  // Ensure Flutter binding is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize the Kakao SDK
+  await UserApi.instance.initialize();
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Kakao SDK Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _userInfo = "User not logged in";
+
+  // Function to handle Kakao login
+  Future<void> _loginWithKakao() async {
+    try {
+      // Trigger the login process
+      final authCode = await AuthCodeClient.instance.requestWithTalk();
+      // Use the auth code to get the access token
+      final token = await AccessTokenApi.instance.issueAccessToken(authCode);
+      // Fetch user profile information
+      final user = await UserApi.instance.me();
+      setState(() {
+        _userInfo = "Logged in as: ${user.kakaoAccount?.profile?.nickname}";
+      });
+    } catch (e) {
+      setState(() {
+        _userInfo = "Login failed: $e";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Kakao SDK User Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_userInfo),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _loginWithKakao,
+              child: Text('Login with Kakao'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts by initializing the Kakao SDK in the main function.
+// 2. The HomeScreen widget is displayed, showing the current user status.
+// 3. When the user presses the "Login with Kakao" button, the _loginWithKakao function is called.
+// 4. This function requests an authentication code from KakaoTalk.
+// 5. Upon successful login, it retrieves the access token and fetches the user's profile information.
+// 6. The user's nickname is displayed on the screen, or an error message if the login fails.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the `kakao_flutter_sdk_user` package, detailing its features and providing a step-by-step tutorial on how to set it up in a Flutter application. We also presented a complete example demonstrating user authentication and profile retrieval. By following this guide, developers can easily integrate Kakao's user management features into their Flutter apps, enhancing user experience and engagement.

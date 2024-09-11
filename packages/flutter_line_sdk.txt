@@ -1,0 +1,210 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `flutter_line_sdk` Package
+
+The `flutter_line_sdk` package is a powerful tool for integrating LINE's social platform capabilities into your Flutter applications. LINE is a popular messaging app in Asia, and its SDK allows developers to leverage its authentication, social graph, and messaging features. This package is particularly useful for applications targeting markets where LINE is prevalent, providing seamless user authentication and social interactions.
+
+## When to Use `flutter_line_sdk`
+
+- **User Authentication**: Simplify the login process by allowing users to authenticate using their LINE accounts.
+- **Social Features**: Access LINE's social graph to enhance your app's social features, such as friend lists and group chats.
+- **Messaging**: Integrate LINE's messaging capabilities to allow users to send messages directly from your app.
+
+## Key Features
+
+- **LINE Login**: Easy integration of LINE login to authenticate users.
+- **Access to User Profile**: Retrieve user profile information such as display name and profile picture.
+- **Social Graph API**: Access friends and groups data.
+- **Messaging API**: Send messages to LINE users directly from your app.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `flutter_line_sdk` in Your Flutter Project
+
+Integrating the `flutter_line_sdk` package involves several steps, including setting up your project on the LINE Developers Console and configuring your Flutter app for both Android and iOS platforms.
+
+## Step 1: Add the Dependency
+
+Add `flutter_line_sdk` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_line_sdk: ^1.0.0
+```
+
+## Step 2: Configure LINE Developers Console
+
+1. **Create a LINE Login Channel**: Go to the [LINE Developers Console](https://developers.line.biz/console/) and create a new channel for LINE Login.
+2. **Set Callback URL**: Configure the callback URL to `lineauth://authorize` in the LINE Developers Console.
+
+## Step 3: Android Configuration
+
+1. **Modify `AndroidManifest.xml`**: Add the following inside the `<application>` tag:
+
+   ```xml
+   <activity
+       android:name="com.linecorp.linesdk.auth.internal.LineAuthenticationActivity"
+       android:launchMode="singleTask"
+       android:noHistory="true">
+       <intent-filter>
+           <action android:name="android.intent.action.VIEW" />
+           <category android:name="android.intent.category.DEFAULT" />
+           <category android:name="android.intent.category.BROWSABLE" />
+           <data android:scheme="lineauth" android:host="authorize" />
+       </intent-filter>
+   </activity>
+   ```
+
+2. **Add Internet Permission**: Ensure you have the following permission:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET" />
+   ```
+
+## Step 4: iOS Configuration
+
+1. **Modify `Info.plist`**: Add the following entries:
+
+   ```xml
+   <key>CFBundleURLTypes</key>
+   <array>
+       <dict>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>lineauth</string>
+           </array>
+       </dict>
+   </array>
+   <key>LSApplicationQueriesSchemes</key>
+   <array>
+       <string>line</string>
+   </array>
+   ```
+
+2. **Enable Keychain Sharing**: Ensure Keychain sharing is enabled in your Xcode project settings.
+
+## Step 5: Initialize the SDK
+
+Initialize the SDK in your Flutter app:
+
+```dart
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
+
+void main() {
+  LineSDK.instance.setup("YOUR_CHANNEL_ID").then((_) {
+    print("LineSDK is Prepared");
+  });
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
+
+void main() {
+  LineSDK.instance.setup("YOUR_CHANNEL_ID").then((_) {
+    print("LineSDK is Prepared");
+  });
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter LINE SDK Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  String _displayName = 'Not logged in';
+  String _statusMessage = '';
+
+  // Function to handle LINE login
+  void _login() async {
+    try {
+      final result = await LineSDK.instance.login();
+      setState(() {
+        _displayName = result.userProfile.displayName;
+        _statusMessage = 'Login successful!';
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Login failed: $e';
+      });
+    }
+  }
+
+  // Function to handle LINE logout
+  void _logout() async {
+    try {
+      await LineSDK.instance.logout();
+      setState(() {
+        _displayName = 'Not logged in';
+        _statusMessage = 'Logout successful!';
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Logout failed: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('LINE SDK Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Display Name: $_displayName'),
+            SizedBox(height: 20),
+            Text('Status: $_statusMessage'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              child: Text('Login with LINE'),
+            ),
+            ElevatedButton(
+              onPressed: _logout,
+              child: Text('Logout'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by initializing the LINE SDK with the provided channel ID.
+// The `RealFlutter` widget is the main screen of the app, displaying the user's LINE display name and status messages.
+// The `_login` function handles the LINE login process, updating the UI with the user's display name upon success.
+// The `_logout` function logs the user out of LINE and resets the display name.
+// The UI consists of a simple column layout with text displaying the current login status and buttons to trigger login and logout actions.
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,213 @@
+Here's a detailed technical blog on the "cancellation_token_http" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Cancellation Token HTTP Package in Flutter
+
+The `cancellation_token_http` package is a powerful tool for managing HTTP requests in Flutter applications. It allows developers to cancel ongoing HTTP requests, which is particularly useful in scenarios where a user navigates away from a screen or when a request takes too long to complete. This package enhances user experience by preventing unnecessary network calls and reducing resource consumption.
+
+## When to Use This Package
+
+- **User Navigation**: When a user navigates away from a page, you can cancel any ongoing HTTP requests to avoid processing results that are no longer relevant.
+- **Long-Running Requests**: If a request is taking too long, you can cancel it and provide feedback to the user, such as a timeout message.
+- **Resource Management**: Helps in managing network resources efficiently by ensuring that only necessary requests are processed.
+
+## Features
+
+- **Cancellation Tokens**: Create tokens that can be used to cancel requests.
+- **Easy Integration**: Simple API that integrates seamlessly with existing HTTP requests.
+- **Error Handling**: Provides mechanisms to handle errors gracefully when requests are canceled.
+
+By using the `cancellation_token_http` package, developers can create more responsive and efficient Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Cancellation Token HTTP Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `cancellation_token_http` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cancellation_token_http: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, you may need to configure your `Info.plist` to allow network requests. Ensure you have the following entry:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+
+Here’s how to use the `cancellation_token_http` package in your Flutter application:
+
+1. Import the package:
+
+```dart
+import 'package:cancellation_token_http/cancellation_token_http.dart';
+```
+
+2. Create a cancellation token and use it in your HTTP request:
+
+```dart
+final cancellationToken = CancellationToken();
+```
+
+3. Make an HTTP request with the cancellation token:
+
+```dart
+final response = await cancellationTokenHttp.get(
+  Uri.parse('https://example.com/api/data'),
+  cancellationToken: cancellationToken,
+);
+```
+
+4. To cancel the request, call:
+
+```dart
+cancellationToken.cancel();
+```
+
+This setup allows you to manage your HTTP requests effectively, ensuring that you can cancel them when necessary.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Cancellation Token HTTP Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cancellation_token_http/cancellation_token_http.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  String _data = 'No data yet';
+  bool _isLoading = false;
+  CancellationToken? _cancellationToken;
+
+  // Function to fetch data from the API
+  Future<void> _fetchData() async {
+    // Create a new cancellation token
+    _cancellationToken = CancellationToken();
+
+    setState(() {
+      _isLoading = true; // Set loading state to true
+    });
+
+    try {
+      // Make the HTTP GET request with the cancellation token
+      final response = await cancellationTokenHttp.get(
+        Uri.parse('https://jsonplaceholder.typicode.com/posts/1'),
+        cancellationToken: _cancellationToken,
+      );
+
+      // Update the data state with the response
+      setState(() {
+        _data = response.body; // Store the response body
+      });
+    } catch (e) {
+      // Handle cancellation or other errors
+      if (e is CancellationException) {
+        setState(() {
+          _data = 'Request was cancelled'; // Update data on cancellation
+        });
+      } else {
+        setState(() {
+          _data = 'Error: $e'; // Update data on error
+        });
+      }
+    } finally {
+      setState(() {
+        _isLoading = false; // Reset loading state
+      });
+    }
+  }
+
+  // Function to cancel the ongoing request
+  void _cancelRequest() {
+    _cancellationToken?.cancel(); // Cancel the request
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Cancellation Token HTTP Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(_data), // Display the fetched data
+              SizedBox(height: 20),
+              if (_isLoading) CircularProgressIndicator(), // Show loading indicator
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _fetchData, // Fetch data on button press
+                child: Text('Fetch Data'),
+              ),
+              ElevatedButton(
+                onPressed: _cancelRequest, // Cancel request on button press
+                child: Text('Cancel Request'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Application Flow Explanation
+
+// The application starts by running the `RealFlutter` widget.
+// The main widget is a stateful widget that manages the state of the application.
+// When the user presses the "Fetch Data" button, the `_fetchData` method is called.
+// A new cancellation token is created, and a loading state is set to true.
+// An HTTP GET request is made to fetch data from a placeholder API.
+// If the request is successful, the response data is displayed on the screen.
+// If the request is cancelled or fails, an appropriate message is shown.
+// The "Cancel Request" button allows the user to cancel the ongoing request.
+// The loading indicator is displayed while the request is in progress.
+// The application effectively demonstrates how to manage HTTP requests with cancellation tokens.
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the `cancellation_token_http` package, including its features, setup instructions, and a complete example to help developers integrate it into their Flutter applications.

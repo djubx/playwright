@@ -1,0 +1,229 @@
+Here's a detailed technical blog on the `flutter_supabase_chat_core` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# flutter_supabase_chat_core: A Comprehensive Overview
+
+The `flutter_supabase_chat_core` package is a powerful tool for building real-time chat applications in Flutter using Supabase as the backend. Supabase provides a robust backend-as-a-service (BaaS) solution that simplifies the development of applications by offering features like authentication, database management, and real-time subscriptions.
+
+## When to Use This Package
+
+This package is ideal for developers looking to implement chat functionality in their Flutter applications without the hassle of managing a backend server. It is particularly useful in scenarios such as:
+
+- **Social Media Applications**: Where users can communicate in real-time.
+- **Customer Support Systems**: Allowing customers to chat with support representatives.
+- **Collaborative Tools**: Enabling team members to communicate effectively.
+
+## Key Features
+
+- **Real-time Messaging**: Leverage Supabase's real-time capabilities to send and receive messages instantly.
+- **User Authentication**: Integrate user authentication seamlessly with Supabase.
+- **Message Storage**: Store messages in a PostgreSQL database managed by Supabase.
+- **Easy Integration**: Simple setup and integration with existing Flutter applications.
+
+With these features, `flutter_supabase_chat_core` provides a solid foundation for building chat applications quickly and efficiently.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up flutter_supabase_chat_core
+
+In this tutorial, we will walk through the setup process for the `flutter_supabase_chat_core` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependencies
+
+First, add the `flutter_supabase_chat_core` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_supabase_chat_core: ^latest_version
+  supabase_flutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the packages.
+
+## Step 2: Configure Supabase
+
+### Create a Supabase Project
+
+1. Go to the [Supabase website](https://supabase.io/) and create an account.
+2. Create a new project and note down the API URL and the public API key.
+
+### Initialize Supabase in Your App
+
+In your `main.dart` file, initialize Supabase:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'your_supabase_url',
+    anonKey: 'your_anon_key',
+  );
+  runApp(MyApp());
+}
+```
+
+### Platform-Specific Configuration
+
+#### Android
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // or higher
+    }
+}
+```
+
+2. Ensure you have internet permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+#### iOS
+
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+
+Now that we have set up the package, we can start using it to create a chat application. The package provides a `ChatService` class that handles message sending and receiving.
+
+### Example Usage
+
+You can create a simple chat interface using Flutter widgets. Here’s a basic example of how to implement the chat functionality.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of a Chat Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_supabase_chat_core/flutter_supabase_chat_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'your_supabase_url',
+    anonKey: 'your_anon_key',
+  );
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Chat App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: ChatScreen(),
+    );
+  }
+}
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final ChatService _chatService = ChatService();
+  List<Message> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Subscribe to real-time messages
+    _chatService.onMessageReceived((message) {
+      setState(() {
+        _messages.add(message);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _chatService.dispose();
+    super.dispose();
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      // Send message using ChatService
+      _chatService.sendMessage(_controller.text);
+      _controller.clear(); // Clear the input field
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Chat')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_messages[index].content),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(hintText: 'Type a message...'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app initializes Supabase with the provided URL and anon key.
+// 2. The RealFlutter widget is the main entry point, which sets up the MaterialApp.
+// 3. The ChatScreen widget manages the chat interface.
+// 4. On initialization, it subscribes to real-time messages using the ChatService.
+// 5. When a message is received, it updates the state to display the new message.
+// 6. Users can type messages in the TextField and send them using the send button.
+// 7. The sent messages are handled by the ChatService, which manages the backend communication.
+```
+
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the `flutter_supabase_chat_core` package, including its features, setup instructions, and a complete example of a chat application. The application flow was explained step-by-step, demonstrating how to leverage the package to build a functional chat interface in Flutter.

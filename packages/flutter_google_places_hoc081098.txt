@@ -1,0 +1,194 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `flutter_google_places_hoc081098` Package
+
+The `flutter_google_places_hoc081098` package is a powerful Flutter plugin that provides a simple and efficient way to integrate Google Places API into your Flutter applications. This package is particularly useful for applications that require location-based services, such as finding nearby places, searching for specific locations, or auto-completing place names as users type.
+
+## When to Use
+
+- **Location-Based Apps**: Ideal for apps that need to provide location suggestions or search functionalities.
+- **Travel and Navigation**: Useful in travel apps for finding hotels, restaurants, or tourist attractions.
+- **E-commerce**: Enhance user experience by allowing users to search for delivery addresses easily.
+
+## Features
+
+- **Autocomplete**: Provides real-time suggestions as users type.
+- **Place Details**: Fetch detailed information about a place.
+- **Customizable UI**: Offers flexibility to customize the appearance of the search widget.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `flutter_google_places_hoc081098`
+
+In this section, we will walk through the setup process for integrating the `flutter_google_places_hoc081098` package into a Flutter project. We will cover both Android and iOS configurations.
+
+## Installation
+
+1. **Add Dependency**: Add the package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     flutter_google_places_hoc081098: ^0.3.0
+   ```
+
+2. **Install Packages**: Run `flutter pub get` to install the new dependency.
+
+## Android Configuration
+
+1. **API Key**: Obtain a Google Places API key from the Google Cloud Console.
+
+2. **AndroidManifest.xml**: Add the API key to your `android/app/src/main/AndroidManifest.xml`.
+
+   ```xml
+   <manifest>
+     <application>
+       <meta-data
+         android:name="com.google.android.geo.API_KEY"
+         android:value="YOUR_API_KEY_HERE"/>
+     </application>
+   </manifest>
+   ```
+
+3. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml`.
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+## iOS Configuration
+
+1. **API Key**: Add the API key to your `ios/Runner/Info.plist`.
+
+   ```xml
+   <key>GMSPlacesAPIKey</key>
+   <string>YOUR_API_KEY_HERE</string>
+   ```
+
+2. **Podfile**: Ensure your `ios/Podfile` is using platform version 9.0 or above.
+
+   ```ruby
+   platform :ios, '9.0'
+   ```
+
+3. **Permissions**: Add location permissions to your `Info.plist`.
+
+   ```xml
+   <key>NSLocationWhenInUseUsageDescription</key>
+   <string>We need your location to show nearby places.</string>
+   ```
+
+## Usage
+
+To use the package, import it into your Dart file:
+
+```dart
+import 'package:flutter_google_places_hoc081098/flutter_google_places.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_google_places_hoc081098/flutter_google_places.dart';
+import 'package:google_maps_webservice/places.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Google Places Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _places = GoogleMapsPlaces(apiKey: "YOUR_API_KEY_HERE");
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Google Places Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _handlePressButton,
+          child: Text('Search Places'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handlePressButton() async {
+    // Opens the Google Places autocomplete search
+    Prediction? p = await PlacesAutocomplete.show(
+      context: context,
+      apiKey: "YOUR_API_KEY_HERE",
+      mode: Mode.overlay, // Mode.fullscreen to display full screen
+      language: "en",
+      components: [Component(Component.country, "us")],
+    );
+
+    // If a prediction is selected, fetch the place details
+    if (p != null) {
+      _displayPrediction(p);
+    }
+  }
+
+  Future<void> _displayPrediction(Prediction p) async {
+    // Fetches detailed information about the selected place
+    PlacesDetailsResponse detail =
+        await _places.getDetailsByPlaceId(p.placeId!);
+
+    // Extracts the place name and address
+    final placeName = detail.result.name;
+    final placeAddress = detail.result.formattedAddress;
+
+    // Displays the place name and address in a dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(placeName),
+        content: Text(placeAddress ?? "No address available"),
+        actions: <Widget>[
+          TextButton(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+// The application starts with the `MyApp` widget, which sets up the MaterialApp.
+// The home screen is set to the `RealFlutter` widget, which is a stateful widget.
+// The `RealFlutter` widget contains a button that, when pressed, triggers the Google Places autocomplete search.
+// The `_handlePressButton` method opens the autocomplete search interface.
+// If a user selects a place, `_displayPrediction` is called to fetch and display the place details.
+// The place details are shown in a dialog with the place name and address.
+
+<-- END_MAIN -->
+```

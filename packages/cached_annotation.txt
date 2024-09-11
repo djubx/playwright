@@ -1,0 +1,167 @@
+Here's a detailed technical blog on the "cached_annotation" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Cached Annotation Flutter Package
+
+The `cached_annotation` package is a powerful tool for Flutter developers looking to optimize their applications by caching data efficiently. This package allows developers to annotate their classes and methods, enabling automatic caching of results. It is particularly useful in scenarios where data retrieval is expensive, such as network calls or complex computations.
+
+## When to Use
+
+You should consider using the `cached_annotation` package in the following scenarios:
+
+- **Network Requests**: When fetching data from APIs, caching can significantly reduce load times and improve user experience.
+- **Expensive Computations**: If your application performs heavy calculations, caching the results can save processing time on subsequent calls.
+- **Static Data**: For data that doesn't change often, caching can help avoid unnecessary data fetching.
+
+## Features
+
+- **Automatic Caching**: Annotate your methods or classes, and the package handles caching automatically.
+- **Custom Cache Duration**: Specify how long the cached data should be valid.
+- **Easy Integration**: Simple setup and usage within your existing Flutter application.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+
+By leveraging the `cached_annotation` package, developers can enhance the performance of their Flutter applications while maintaining clean and manageable code.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Cached Annotation
+
+## Step 1: Add Dependency
+
+To get started, add the `cached_annotation` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cached_annotation: ^1.0.0
+```
+
+Make sure to run `flutter pub get` to install the package.
+
+## Step 2: Configure Build Runner
+
+The `cached_annotation` package uses code generation, so you need to add the `build_runner` and `cached_annotation_generator` packages to your `dev_dependencies`:
+
+```yaml
+dev_dependencies:
+  build_runner: ^2.0.0
+  cached_annotation_generator: ^1.0.0
+```
+
+Run `flutter pub get` again to install these packages.
+
+## Step 3: Annotate Your Classes
+
+You can now start using the package. Create a class and annotate the methods you want to cache. Here’s an example:
+
+```dart
+import 'package:cached_annotation/cached_annotation.dart';
+
+part 'my_class.g.dart';
+
+@Cached()
+class RealFlutter {
+  @Cache()
+  Future<String> fetchData() async {
+    // Simulate a network call
+    await Future.delayed(Duration(seconds: 2));
+    return "Fetched Data";
+  }
+}
+```
+
+## Step 4: Generate Code
+
+After annotating your classes, you need to run the build runner to generate the necessary code:
+
+```bash
+flutter pub run build_runner build
+```
+
+This command will create a file named `my_class.g.dart` with the caching logic.
+
+## Step 5: Use the Cached Method
+
+You can now use the cached method in your application:
+
+```dart
+void main() async {
+  final realFlutter = RealFlutter();
+  String data = await realFlutter.fetchData();
+  print(data); // This will take 2 seconds on the first call
+  data = await realFlutter.fetchData();
+  print(data); // This will return instantly from cache
+}
+```
+
+### Platform-Specific Details
+
+- **Android**: Ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file.
+- **iOS**: No additional configuration is required, but ensure you have the latest version of Xcode.
+
+By following these steps, you can easily integrate the `cached_annotation` package into your Flutter application and start benefiting from caching.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Cached Annotation
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cached_annotation/cached_annotation.dart';
+
+part 'real_flutter.g.dart'; // Import the generated file
+
+@Cached() // This annotation enables caching for the class
+class RealFlutter {
+  @Cache() // This annotation enables caching for the method
+  Future<String> fetchData() async {
+    // Simulate a network call with a delay
+    await Future.delayed(Duration(seconds: 2));
+    return "Fetched Data"; // Return the fetched data
+  }
+}
+
+void main() {
+  runApp(MyApp()); // Start the Flutter application
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Cached Annotation Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Cached Annotation Example'),
+        ),
+        body: Center(
+          child: FutureBuilder<String>(
+            future: RealFlutter().fetchData(), // Call the cached method
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Show loading indicator
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}'); // Show error message
+              } else {
+                return Text(snapshot.data ?? 'No Data'); // Display fetched data
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main() function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a Scaffold containing an AppBar and a Center widget.
+// 3. Inside the Center widget, a FutureBuilder is used to call the fetchData() method from the RealFlutter class.
+// 4. On the first call, fetchData() simulates a network request, taking 2 seconds to complete.
+// 5. Once the data is fetched, it is displayed in the Text widget.
+// 6. On subsequent calls to fetchData(), the cached data is returned instantly, improving performance.
+```
+<!-- END_MAIN -->
+
+In this blog, we explored the `cached_annotation` Flutter package, detailing its features, setup process, and providing a complete example. By implementing caching in your Flutter applications, you can significantly enhance performance and user experience.

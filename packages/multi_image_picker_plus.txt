@@ -1,0 +1,173 @@
+```markdown
+<-- START_DESCRIPTION -->
+# Multi Image Picker Plus Flutter Package
+
+The `multi_image_picker_plus` Flutter package is a powerful tool designed to simplify the process of selecting multiple images from a user's device gallery. This package is particularly useful in applications where users need to upload multiple images, such as social media apps, e-commerce platforms, or any app that requires image galleries.
+
+## Features
+- **Multiple Image Selection**: Allows users to select multiple images at once, enhancing user experience.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Customizable UI**: Provides options to customize the image picker interface to match the app's theme.
+- **High Performance**: Efficiently handles large image files and multiple selections without significant performance overhead.
+
+### When to Use
+- **Social Media Applications**: For users to upload multiple photos in a single post.
+- **E-commerce Platforms**: Allow sellers to upload multiple product images.
+- **Photo Galleries**: Enable users to create and manage photo albums.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Tutorial: Setting Up Multi Image Picker Plus
+
+In this tutorial, we will walk through the setup and usage of the `multi_image_picker_plus` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup
+
+### Step 1: Add Dependency
+Add the `multi_image_picker_plus` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  multi_image_picker_plus: ^4.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Android Configuration
+For Android, you need to update the `AndroidManifest.xml` file to request necessary permissions:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.app">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <application
+        android:requestLegacyExternalStorage="true"
+        ...>
+        ...
+    </application>
+</manifest>
+```
+
+### Step 3: iOS Configuration
+For iOS, update the `Info.plist` file to include the following permissions:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to select images.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to take pictures.</string>
+```
+
+### Step 4: Import the Package
+Import the package in your Dart file where you plan to use it:
+
+```dart
+import 'package:multi_image_picker_plus/multi_image_picker_plus.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:multi_image_picker_plus/multi_image_picker_plus.dart';
+
+void main() => runApp(RealFlutter());
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: ImagePickerExample(),
+    );
+  }
+}
+
+class ImagePickerExample extends StatefulWidget {
+  @override
+  _ImagePickerExampleState createState() => _ImagePickerExampleState();
+}
+
+class _ImagePickerExampleState extends State<ImagePickerExample> {
+  List<Asset> images = <Asset>[];
+
+  Future<void> loadAssets() async {
+    List<Asset> resultList = <Asset>[];
+    String error = 'No Error Detected';
+
+    try {
+      resultList = await MultiImagePicker.pickImages(
+        maxImages: 5, // Maximum number of images that can be selected
+        enableCamera: true, // Allow camera option
+        selectedAssets: images, // Pre-selected images
+        cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat"),
+        materialOptions: MaterialOptions(
+          actionBarColor: "#abcdef",
+          actionBarTitle: "Select Images",
+          allViewTitle: "All Photos",
+          useDetailsView: false,
+          selectCircleStrokeColor: "#000000",
+        ),
+      );
+    } on Exception catch (e) {
+      error = e.toString();
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      images = resultList;
+      // If there was an error, you can handle it here
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Multi Image Picker Plus Example'),
+      ),
+      body: Column(
+        children: <Widget>[
+          ElevatedButton(
+            onPressed: loadAssets,
+            child: Text("Pick images"),
+          ),
+          Expanded(
+            child: buildGridView(),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget buildGridView() {
+    return GridView.count(
+      crossAxisCount: 3,
+      children: List.generate(images.length, (index) {
+        Asset asset = images[index];
+        return AssetThumb(
+          asset: asset,
+          width: 300,
+          height: 300,
+        );
+      }),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutter` widget, which sets up a MaterialApp.
+// 2. The `ImagePickerExample` widget is the main screen, containing a button to pick images.
+// 3. When the button is pressed, `loadAssets` is called, opening the image picker.
+// 4. Users can select up to 5 images, with an option to use the camera.
+// 5. Selected images are displayed in a grid using `buildGridView`.
+// 6. The app handles errors gracefully, ensuring a smooth user experience.
+```
+<-- END_MAIN -->
+```

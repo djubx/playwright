@@ -1,0 +1,225 @@
+Here’s a detailed technical blog on the "oidc" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# OIDC Flutter Package
+
+The OIDC (OpenID Connect) Flutter package is a powerful tool for integrating authentication into Flutter applications. It allows developers to implement secure user authentication using the OpenID Connect protocol, which is built on top of OAuth 2.0. This package is particularly useful for applications that require user login via third-party identity providers like Google, Facebook, or custom OAuth servers.
+
+## When to Use OIDC Flutter Package
+
+You should consider using the OIDC Flutter package in scenarios such as:
+- **User Authentication**: When your application needs to authenticate users securely.
+- **Single Sign-On (SSO)**: If you want to allow users to log in using existing accounts from identity providers.
+- **Access Control**: When you need to manage user access to different parts of your application based on their roles.
+
+## Features
+
+- **Easy Integration**: Simplifies the process of integrating OIDC authentication into Flutter apps.
+- **Support for Multiple Providers**: Works with various identity providers, allowing flexibility in user authentication.
+- **Token Management**: Handles access and refresh tokens seamlessly.
+- **Secure Communication**: Ensures secure communication between the app and the identity provider.
+
+By leveraging the OIDC Flutter package, developers can enhance the security and user experience of their applications while minimizing the complexity of authentication processes.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the OIDC Flutter Package
+
+In this tutorial, we will walk through the setup process for the OIDC Flutter package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the OIDC package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  oidc: ^<latest_version>
+```
+
+Make sure to replace `<latest_version>` with the latest version of the package available on [pub.dev](https://pub.dev/packages/oidc).
+
+## Step 2: Configure Android
+
+For Android, you need to add the following permissions in your `AndroidManifest.xml` file:
+
+```xml
+<manifest>
+    <application>
+        ...
+        <activity android:name="com.yourpackage.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="your_scheme" android:host="your_host" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+```
+
+Replace `your_scheme` and `your_host` with the appropriate values for your application.
+
+## Step 3: Configure iOS
+
+For iOS, you need to update your `Info.plist` file to handle URL schemes:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>your_scheme</string>
+        </array>
+    </dict>
+</array>
+```
+
+Again, replace `your_scheme` with the appropriate value.
+
+## Step 4: Initialize the OIDC Client
+
+In your Flutter application, initialize the OIDC client with the necessary configuration:
+
+```dart
+import 'package:oidc/oidc.dart';
+
+final oidcClient = OidcClient(
+  clientId: 'your_client_id',
+  redirectUri: 'your_redirect_uri',
+  issuer: 'your_issuer',
+  scopes: ['openid', 'profile', 'email'],
+);
+```
+
+## Step 5: Implement Authentication
+
+You can now implement the authentication flow in your application. Use the `oidcClient` to initiate the login process and handle the response.
+
+```dart
+void login() async {
+  try {
+    final result = await oidcClient.login();
+    // Handle successful login
+  } catch (e) {
+    // Handle error
+  }
+}
+```
+
+## Step 6: Handle Logout
+
+To log out the user, you can call the `logout` method:
+
+```dart
+void logout() async {
+  await oidcClient.logout();
+}
+```
+
+With these steps, you have successfully set up the OIDC Flutter package in your application. You can now authenticate users securely using OpenID Connect.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of OIDC Flutter Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:oidc/oidc.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'OIDC Flutter Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Initialize the OIDC client with necessary configurations
+  final oidcClient = OidcClient(
+    clientId: 'your_client_id',
+    redirectUri: 'your_redirect_uri',
+    issuer: 'your_issuer',
+    scopes: ['openid', 'profile', 'email'],
+  );
+
+  String? _userInfo;
+
+  // Function to handle user login
+  void login() async {
+    try {
+      final result = await oidcClient.login();
+      setState(() {
+        _userInfo = result.idToken?.toJson().toString(); // Store user info
+      });
+    } catch (e) {
+      // Handle login error
+      print('Login error: $e');
+    }
+  }
+
+  // Function to handle user logout
+  void logout() async {
+    await oidcClient.logout();
+    setState(() {
+      _userInfo = null; // Clear user info on logout
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('OIDC Flutter Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (_userInfo != null) ...[
+              Text('User Info: $_userInfo'), // Display user info
+              ElevatedButton(
+                onPressed: logout, // Logout button
+                child: Text('Logout'),
+              ),
+            ] else ...[
+              ElevatedButton(
+                onPressed: login, // Login button
+                child: Text('Login'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The HomeScreen widget is displayed, which contains the OIDC client initialization.
+// 3. When the user clicks the "Login" button, the login() function is called.
+// 4. The login() function uses the oidcClient to authenticate the user and retrieves user info.
+// 5. If the login is successful, the user info is displayed, and a "Logout" button appears.
+// 6. Clicking the "Logout" button calls the logout() function, which logs the user out and clears the user info.
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the OIDC Flutter package, including its features, setup instructions, and a complete example demonstrating its usage. By following this guide, developers can easily integrate secure authentication into their Flutter applications.

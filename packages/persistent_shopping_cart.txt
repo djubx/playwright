@@ -1,0 +1,195 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Persistent Shopping Cart Flutter Package
+
+The `persistent_shopping_cart` Flutter package is a powerful tool designed to help developers maintain the state of a shopping cart across app sessions. This package is particularly useful in e-commerce applications where users expect their shopping cart to retain its contents even after closing and reopening the app. 
+
+## When to Use
+
+- **E-commerce Applications**: Ideal for apps where users frequently add items to a cart and expect them to persist.
+- **Multi-session User Experience**: Enhances user experience by maintaining cart state across multiple sessions.
+- **Offline Support**: Useful in scenarios where users might be offline and need their cart data to persist locally.
+
+## Features
+
+- **State Persistence**: Automatically saves and restores the cart state using local storage.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Easy Integration**: Simple API for adding, removing, and updating cart items.
+- **Customizable**: Allows customization of storage mechanisms and cart item structures.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the Persistent Shopping Cart Package
+
+In this tutorial, we will walk through the process of setting up and using the `persistent_shopping_cart` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `persistent_shopping_cart` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  persistent_shopping_cart: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Platform-Specific Configurations
+
+#### Android
+
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+#### iOS
+
+Make sure your iOS deployment target is set to 11.0 or higher in `ios/Podfile`:
+
+```ruby
+platform :ios, '11.0'
+```
+
+### Step 3: Initialize the Package
+
+In your `main.dart` file, initialize the `RealFlutter` class to manage the shopping cart state.
+
+```dart
+import 'package:persistent_shopping_cart/persistent_shopping_cart.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: ShoppingCartScreen(),
+    );
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:persistent_shopping_cart/persistent_shopping_cart.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Persistent Shopping Cart Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ShoppingCartScreen(),
+    );
+  }
+}
+
+class ShoppingCartScreen extends StatefulWidget {
+  @override
+  _ShoppingCartScreenState createState() => _ShoppingCartScreenState();
+}
+
+class _ShoppingCartScreenState extends State<ShoppingCartScreen> {
+  final RealFlutter _cart = RealFlutter();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
+  }
+
+  // Load the cart state from persistent storage
+  void _loadCart() async {
+    await _cart.loadCart();
+    setState(() {});
+  }
+
+  // Add an item to the cart
+  void _addItem(String item) {
+    setState(() {
+      _cart.addItem(item);
+    });
+  }
+
+  // Remove an item from the cart
+  void _removeItem(String item) {
+    setState(() {
+      _cart.removeItem(item);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Shopping Cart'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _cart.items.length,
+              itemBuilder: (context, index) {
+                final item = _cart.items[index];
+                return ListTile(
+                  title: Text(item),
+                  trailing: IconButton(
+                    icon: Icon(Icons.remove_circle),
+                    onPressed: () => _removeItem(item),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onSubmitted: _addItem,
+              decoration: InputDecoration(
+                labelText: 'Add Item',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes and loads the persistent cart state using the RealFlutter class.
+// 2. The ShoppingCartScreen displays the current items in the cart.
+// 3. Users can add items to the cart using the TextField at the bottom.
+// 4. Each item in the cart is displayed in a ListTile with a remove button.
+// 5. Pressing the remove button deletes the item from the cart and updates the UI.
+// 6. The cart state is automatically saved and restored across app sessions.
+```
+
+<-- END_MAIN -->
+```

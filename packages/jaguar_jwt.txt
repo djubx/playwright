@@ -1,0 +1,214 @@
+Here's a detailed technical blog on the "jaguar_jwt" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `jaguar_jwt` package is a powerful and flexible library for handling JSON Web Tokens (JWT) in Flutter applications. It provides a simple API for creating, signing, and verifying JWTs, making it an essential tool for developers who need to implement authentication and authorization in their apps.
+
+## When to Use `jaguar_jwt`
+
+You should consider using the `jaguar_jwt` package in scenarios such as:
+
+- **User Authentication**: When you need to authenticate users and manage sessions securely.
+- **API Security**: To protect your APIs by ensuring that only authorized users can access certain endpoints.
+- **Token-Based Authentication**: When implementing token-based authentication systems, such as OAuth2.
+
+## Features
+
+- **Token Creation**: Easily create JWTs with custom claims.
+- **Token Signing**: Supports various algorithms for signing tokens, including HMAC and RSA.
+- **Token Verification**: Validate tokens to ensure they are authentic and have not expired.
+- **Claims Management**: Add custom claims to your tokens for additional context.
+
+The `jaguar_jwt` package is designed to be easy to use while providing the flexibility needed for complex authentication scenarios.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+In this section, we will walk through the setup process for the `jaguar_jwt` package and explain how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `jaguar_jwt` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  jaguar_jwt: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS
+
+For iOS, you may need to enable the use of Swift in your project. Open your `ios/Runner.xcworkspace` in Xcode, and ensure that the project settings are configured to support Swift.
+
+## Step 3: Basic Usage
+
+Now that we have set up the package, let's see how to use it in your Flutter application.
+
+1. **Import the Package**:
+
+   ```dart
+   import 'package:jaguar_jwt/jaguar_jwt.dart';
+   ```
+
+2. **Create a JWT**:
+
+   You can create a JWT by defining a payload and signing it with a secret key:
+
+   ```dart
+   String secret = 'your-256-bit-secret';
+   Map<String, dynamic> payload = {
+     'sub': '1234567890',
+     'name': 'John Doe',
+     'iat': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+   };
+
+   String token = issueJwtHS256(SecretKey(secret), payload);
+   ```
+
+3. **Verify a JWT**:
+
+   To verify a JWT, use the following code:
+
+   ```dart
+   try {
+     final claims = verifyJwtHS256Signature(token, SecretKey(secret));
+     print('Token is valid. Claims: $claims');
+   } catch (e) {
+     print('Token is invalid: $e');
+   }
+   ```
+
+This basic setup allows you to create and verify JWTs in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+Here’s a complete example of a Flutter application that demonstrates the key features of the `jaguar_jwt` package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:jaguar_jwt/jaguar_jwt.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'JWT Example',
+      home: JwtHomePage(),
+    );
+  }
+}
+
+class JwtHomePage extends StatefulWidget {
+  @override
+  _JwtHomePageState createState() => _JwtHomePageState();
+}
+
+class _JwtHomePageState extends State<JwtHomePage> {
+  String _token = '';
+  String _message = '';
+
+  // Secret key for signing the JWT
+  final String _secret = 'your-256-bit-secret';
+
+  // Function to create a JWT
+  void _createToken() {
+    Map<String, dynamic> payload = {
+      'sub': '1234567890',
+      'name': 'John Doe',
+      'iat': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    };
+
+    // Issue a JWT
+    _token = issueJwtHS256(SecretKey(_secret), payload);
+    setState(() {
+      _message = 'Token created: $_token';
+    });
+  }
+
+  // Function to verify the JWT
+  void _verifyToken() {
+    try {
+      final claims = verifyJwtHS256Signature(_token, SecretKey(_secret));
+      setState(() {
+        _message = 'Token is valid. Claims: $claims';
+      });
+    } catch (e) {
+      setState(() {
+        _message = 'Token is invalid: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('JWT Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _createToken,
+              child: Text('Create JWT'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _verifyToken,
+              child: Text('Verify JWT'),
+            ),
+            SizedBox(height: 20),
+            Text(_message),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and a home page (JwtHomePage).
+// 3. JwtHomePage is a stateful widget that manages the JWT token and message state.
+// 4. The _createToken function creates a JWT when the "Create JWT" button is pressed.
+// 5. The _verifyToken function verifies the created JWT when the "Verify JWT" button is pressed.
+// 6. The results of the token creation and verification are displayed on the screen.
+```
+
+<!-- END_MAIN -->
+
+In this example, we created a simple Flutter application that allows users to create and verify JWTs. The application flow is straightforward: when the user presses the "Create JWT" button, a token is generated and displayed. When the "Verify JWT" button is pressed, the application checks the validity of the token and displays the result.
+
+This blog post provides a comprehensive overview of the `jaguar_jwt` package, including its features, setup instructions, and a complete example. By following this guide, you can easily implement JWT authentication in your Flutter applications.

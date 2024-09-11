@@ -1,0 +1,216 @@
+Here's a detailed technical blog on the "keycloak_wrapper" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Keycloak Wrapper Flutter Package
+
+The **keycloak_wrapper** Flutter package is a powerful tool designed to simplify the integration of Keycloak authentication into Flutter applications. Keycloak is an open-source identity and access management solution that provides features such as single sign-on (SSO), user federation, identity brokering, and social login. This package allows developers to easily implement these features in their Flutter apps, enhancing security and user experience.
+
+## When to Use This Package
+
+You should consider using the **keycloak_wrapper** package in scenarios such as:
+
+- **Enterprise Applications**: When building applications that require secure user authentication and authorization.
+- **Multi-Tenant Applications**: If your application needs to support multiple user bases with different authentication requirements.
+- **Social Login Integration**: When you want to allow users to log in using their social media accounts.
+
+## Features
+
+- **Easy Integration**: Simplifies the process of integrating Keycloak with Flutter applications.
+- **Support for Multiple Flows**: Supports various authentication flows, including authorization code flow and implicit flow.
+- **User Management**: Provides functionalities for user registration, login, and logout.
+- **Token Management**: Handles access and refresh tokens seamlessly.
+- **Customizable**: Allows customization of the authentication process to fit specific application needs.
+
+By leveraging the **keycloak_wrapper** package, developers can focus on building their applications while ensuring robust authentication mechanisms are in place.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Keycloak Wrapper in Flutter
+
+In this tutorial, we will walk through the setup process for the **keycloak_wrapper** package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the **keycloak_wrapper** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  keycloak_wrapper: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package.
+
+## Step 2: Configure Keycloak
+
+Before using the package, you need to set up a Keycloak server. Follow these steps:
+
+1. **Install Keycloak**: You can download and run Keycloak locally or use a hosted version.
+2. **Create a Realm**: In the Keycloak admin console, create a new realm for your application.
+3. **Create a Client**: Under the realm, create a new client. Set the client protocol to `openid-connect` and configure the redirect URIs to match your Flutter app.
+
+## Step 3: Platform-Specific Configuration
+
+### Android
+
+1. Open `android/app/build.gradle` and ensure you have the following permissions:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // or higher
+    }
+}
+```
+
+2. Add the following to your `AndroidManifest.xml`:
+
+```xml
+<manifest>
+    <application>
+        ...
+        <activity android:name="com.yourpackage.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="your_scheme" android:host="your_host"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+```
+
+### iOS
+
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>your_scheme</string>
+        </array>
+    </dict>
+</array>
+```
+
+2. Ensure you have the necessary permissions in your `Info.plist` for network access.
+
+## Step 4: Using the Package
+
+Now that you have configured your Flutter app, you can start using the **keycloak_wrapper** package. Here’s a simple example of how to implement authentication.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:keycloak_wrapper/keycloak_wrapper.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Keycloak Wrapper Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late KeycloakWrapper keycloakWrapper;
+  String? userInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize KeycloakWrapper with your Keycloak server details
+    keycloakWrapper = KeycloakWrapper(
+      url: 'https://your-keycloak-server/auth',
+      realm: 'your_realm',
+      clientId: 'your_client_id',
+    );
+  }
+
+  // Function to log in the user
+  Future<void> login() async {
+    try {
+      // Trigger the login process
+      await keycloakWrapper.login();
+      // Fetch user info after successful login
+      final user = await keycloakWrapper.getUserInfo();
+      setState(() {
+        userInfo = user.toString(); // Store user info for display
+      });
+    } catch (e) {
+      // Handle login error
+      print('Login failed: $e');
+    }
+  }
+
+  // Function to log out the user
+  Future<void> logout() async {
+    await keycloakWrapper.logout();
+    setState(() {
+      userInfo = null; // Clear user info on logout
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Keycloak Wrapper Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (userInfo != null) ...[
+              Text('User Info: $userInfo'), // Display user info
+              ElevatedButton(
+                onPressed: logout, // Log out button
+                child: Text('Logout'),
+              ),
+            ] else ...[
+              ElevatedButton(
+                onPressed: login, // Log in button
+                child: Text('Login'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and initializes the KeycloakWrapper with the Keycloak server details.
+// 2. The user is presented with a login button.
+// 3. Upon clicking the login button, the login function is called, which triggers the Keycloak login process.
+// 4. If the login is successful, user information is fetched and displayed on the screen.
+// 5. The user can log out, which clears the user information and presents the login button again.
+```
+<!-- END_MAIN -->
+
+In this blog, we explored the **keycloak_wrapper** Flutter package, detailing its features, setup process, and providing a complete example of its usage. The application flow demonstrates how to authenticate users seamlessly while managing their sessions effectively. By following this guide, developers can easily integrate Keycloak authentication into their Flutter applications, enhancing security and user experience.

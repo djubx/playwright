@@ -1,0 +1,193 @@
+<-- START_DESCRIPTION -->
+
+# Flutter FCM Package Overview
+================================
+
+The `flutter_fcm` package is a popular Flutter package used for Firebase Cloud Messaging (FCM) integration. It allows developers to send targeted and personalized messages to their users, enhancing the overall user experience.
+
+## When to Use
+--------------
+
+Use the `flutter_fcm` package when you need to:
+
+* Send notifications to your users
+* Handle incoming notifications in your Flutter app
+* Register for FCM tokens to identify individual devices
+
+## Features
+------------
+
+The `flutter_fcm` package offers the following features:
+
+* FCM token registration and management
+* Notification handling (foreground, background, and terminated states)
+* Customizable notification display
+* Support for both Android and iOS platforms
+
+<-- END_DESCRIPTION -->
+
+
+<-- START_TUTORIAL -->
+
+# Setting Up Flutter FCM
+==========================
+
+## Step 1: Add the Package
+-------------------------
+
+Add the `flutter_fcm` package to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_fcm: ^1.2.3
+```
+
+## Step 2: Configure Firebase
+-----------------------------
+
+Configure Firebase in your project by following these steps:
+
+* Create a Firebase project in the Firebase console
+* Add the Firebase SDK to your project
+* Configure the Firebase Cloud Messaging (FCM) service
+
+## Step 3: Platform-Specific Configuration
+-----------------------------------------
+
+### Android
+
+* Add the following code to your `AndroidManifest.xml` file:
+
+```xml
+<application>
+  ...
+  <service
+    android:name="com.example.RealFlutterFirebaseMessagingService"
+    android:enabled="true"
+    android:exported="true">
+    <intent-filter>
+      <action android:name="com.google.firebase.MESSAGING_EVENT" />
+    </intent-filter>
+  </service>
+</application>
+```
+
+### iOS
+
+* Add the following code to your `Info.plist` file:
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+  <string>remote-notification</string>
+</array>
+```
+
+## Step 4: Initialize FCM
+-------------------------
+
+Initialize FCM in your `main` function:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_fcm/flutter_fcm.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await FirebaseMessaging.instance.getToken();
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_fcm/flutter_fcm.dart';
+
+void main() async {
+  // Initialize Firebase and FCM
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await FirebaseMessaging.instance.getToken();
+
+  // Create a new instance of the RealFlutter class
+  RealFlutter realFlutter = RealFlutter();
+
+  // Run the app
+  runApp(realFlutter);
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Initialize FCM token
+  String _fcmToken = '';
+
+  // Initialize notification text
+  String _notificationText = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Request FCM token
+    FirebaseMessaging.instance.getToken().then((token) {
+      setState(() {
+        _fcmToken = token;
+      });
+    });
+
+    // Handle incoming notifications
+    FirebaseMessaging.onMessage.listen((event) {
+      setState(() {
+        _notificationText = event.notification.body;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('RealFlutter FCM Demo'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('FCM Token: $_fcmToken'),
+              Text('Notification Text: $_notificationText'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. Initialize Firebase and FCM in the main function.
+// 2. Create a new instance of the RealFlutter class.
+// 3. Run the app using the runApp function.
+// 4. In the RealFlutter class, initialize the FCM token and notification text.
+// 5. Request the FCM token using the FirebaseMessaging instance.
+// 6. Handle incoming notifications using the FirebaseMessaging.onMessage stream.
+// 7. Update the UI with the received notification text.
+// 8. Display the FCM token and notification text on the screen.
+
+// Summary:
+// The RealFlutter class initializes FCM and handles incoming notifications.
+// The FCM token is requested and displayed on the screen.
+// The notification text is updated and displayed on the screen when a new notification is received.
+```
+
+<-- END_MAIN -->

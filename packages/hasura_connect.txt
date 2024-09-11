@@ -1,0 +1,170 @@
+Here's a detailed technical blog on the "hasura_connect" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Hasura Connect Flutter Package
+
+The **hasura_connect** package is a powerful tool for Flutter developers looking to integrate their applications with Hasura, a GraphQL engine that provides instant APIs over new or existing Postgres databases. This package simplifies the process of connecting to a Hasura backend, allowing developers to focus on building their applications without worrying about the complexities of GraphQL queries and mutations.
+
+## When to Use Hasura Connect
+
+You should consider using the **hasura_connect** package when:
+- You are building a Flutter application that requires real-time data synchronization with a Hasura backend.
+- You want to leverage GraphQL for querying and mutating data, taking advantage of its flexibility and efficiency.
+- You need to manage subscriptions for real-time updates in your application.
+
+## Features
+
+- **GraphQL Queries and Mutations**: Easily perform queries and mutations using a simple API.
+- **Real-time Subscriptions**: Subscribe to changes in your data and receive updates in real-time.
+- **Error Handling**: Built-in error handling for GraphQL responses.
+- **Custom Headers**: Support for adding custom headers to requests, useful for authentication and other purposes.
+
+With these features, the **hasura_connect** package provides a robust solution for Flutter developers looking to integrate with Hasura.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Hasura Connect in Flutter
+
+In this tutorial, we will walk through the setup process for the **hasura_connect** package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the **hasura_connect** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  hasura_connect: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Configure Hasura
+
+Before using the package, ensure that you have a Hasura instance running. You can set up Hasura on your local machine or use a cloud service. Make sure to note the GraphQL endpoint URL.
+
+## Step 3: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that you have internet permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+
+For iOS, you may need to add the following to your `Info.plist` to allow HTTP requests (if you're not using HTTPS):
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 4: Using Hasura Connect
+
+Now, let's create a simple Flutter application that uses the **hasura_connect** package to fetch data from a Hasura backend.
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:hasura_connect/hasura_connect.dart';
+```
+
+2. Create an instance of `HasuraConnect` with your GraphQL endpoint:
+
+```dart
+final hasuraConnect = HasuraConnect('https://your-hasura-instance.herokuapp.com/v1/graphql');
+```
+
+3. Use the `query` and `mutation` methods to interact with your Hasura backend.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Flutter Application Using Hasura Connect
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:hasura_connect/hasura_connect.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  // Create a HasuraConnect instance with your GraphQL endpoint
+  final HasuraConnect hasuraConnect = HasuraConnect('https://your-hasura-instance.herokuapp.com/v1/graphql');
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Hasura Connect Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Hasura Connect Example'),
+        ),
+        body: FutureBuilder(
+          // Fetch data using a GraphQL query
+          future: fetchData(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+              // Display the fetched data
+              return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(snapshot.data[index]['name']),
+                  );
+                },
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  // Function to fetch data from Hasura
+  Future<List<dynamic>> fetchData() async {
+    // Define your GraphQL query
+    const String query = r'''
+      query {
+        users {
+          id
+          name
+        }
+      }
+    ''';
+
+    // Execute the query and return the result
+    final response = await hasuraConnect.query(query);
+    return response['data']['users'];
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. In the RealFlutter widget, a HasuraConnect instance is created with the GraphQL endpoint.
+// 3. The build method returns a MaterialApp with a FutureBuilder to fetch data.
+// 4. The fetchData function defines a GraphQL query to get user data from Hasura.
+// 5. The FutureBuilder waits for the data to be fetched and displays a loading indicator.
+// 6. Once the data is fetched, it displays the user names in a ListView.
+// 7. If there's an error, it shows an error message.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the **hasura_connect** Flutter package, detailing its features and use cases. We walked through the setup process, including platform-specific configurations for Android and iOS. Finally, we provided a complete example of a Flutter application that demonstrates how to fetch data from a Hasura backend using GraphQL. The application flow was explained step-by-step through comments in the code, making it easy to understand how to implement the package in your own projects.

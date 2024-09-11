@@ -1,0 +1,191 @@
+Here's a detailed technical blog on the "tmdb_api" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# tmdb_api Flutter Package
+
+The `tmdb_api` Flutter package is a powerful tool for developers looking to integrate The Movie Database (TMDb) API into their Flutter applications. This package simplifies the process of fetching movie, TV show, and actor data, allowing developers to create rich media applications with ease.
+
+## When to Use This Package
+
+You should consider using the `tmdb_api` package when:
+- You are building a movie or TV show discovery app.
+- You want to display detailed information about movies, including ratings, reviews, and trailers.
+- You need to search for movies or TV shows based on user input.
+
+## Features
+
+- **Easy Integration**: The package provides a straightforward way to connect to the TMDb API.
+- **Comprehensive Data**: Access to a wide range of data, including movie details, TV shows, popular movies, and more.
+- **Search Functionality**: Built-in methods to search for movies and TV shows.
+- **Pagination Support**: Handle large datasets with pagination.
+
+Overall, the `tmdb_api` package is an excellent choice for developers looking to enhance their Flutter applications with rich media content.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the tmdb_api Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `tmdb_api` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  tmdb_api: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Configuring API Key
+
+To use the TMDb API, you need to sign up at [TMDb](https://www.themoviedb.org/) and obtain an API key. Once you have your API key, you can store it in your application.
+
+### Android Configuration
+
+1. Open `android/app/build.gradle`.
+2. Add the following line in the `defaultConfig` section:
+
+```groovy
+buildConfigField "String", "TMDB_API_KEY", "\"YOUR_API_KEY\""
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist`.
+2. Add the following entry:
+
+```xml
+<key>TMDB_API_KEY</key>
+<string>YOUR_API_KEY</string>
+```
+
+## Step 3: Importing the Package
+
+In your Dart files, import the package:
+
+```dart
+import 'package:tmdb_api/tmdb_api.dart';
+```
+
+## Step 4: Initializing the API
+
+You can initialize the API in your main application file or wherever you need to use it:
+
+```dart
+final tmdb = TMDB(ApiKeys('YOUR_API_KEY', 'YOUR_READ_ACCESS_TOKEN'));
+```
+
+## Step 5: Making API Calls
+
+You can now make API calls to fetch movies, TV shows, and more. Here’s an example of how to fetch popular movies:
+
+```dart
+final popularMovies = await tmdb.v3.movies.getPopular();
+```
+
+This will return a list of popular movies that you can display in your application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: A Simple Movie App
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:tmdb_api/tmdb_api.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Movie App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: MovieHomePage(),
+    );
+  }
+}
+
+class MovieHomePage extends StatefulWidget {
+  @override
+  _MovieHomePageState createState() => _MovieHomePageState();
+}
+
+class _MovieHomePageState extends State<MovieHomePage> {
+  List<dynamic> popularMovies = [];
+  final String apiKey = 'YOUR_API_KEY'; // Replace with your TMDb API key
+  final String readAccessToken = 'YOUR_READ_ACCESS_TOKEN'; // Replace with your read access token
+  final TMDB tmdb;
+
+  _MovieHomePageState() : tmdb = TMDB(ApiKeys(apiKey, readAccessToken));
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPopularMovies(); // Fetch popular movies when the widget is initialized
+  }
+
+  // Function to fetch popular movies from TMDb
+  fetchPopularMovies() async {
+    // Fetching popular movies using the TMDB API
+    Map popularMoviesResult = await tmdb.v3.movies.getPopular();
+    setState(() {
+      popularMovies = popularMoviesResult['results']; // Storing the results in the state
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Popular Movies')),
+      body: popularMovies.isEmpty
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator while fetching data
+          : ListView.builder(
+              itemCount: popularMovies.length,
+              itemBuilder: (context, index) {
+                // Building a list of popular movies
+                return ListTile(
+                  title: Text(popularMovies[index]['title']), // Displaying movie title
+                  subtitle: Text('Rating: ${popularMovies[index]['vote_average']}'), // Displaying movie rating
+                  onTap: () {
+                    // Handle movie tap
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(popularMovies[index]['title']),
+                        content: Text(popularMovies[index]['overview']),
+                        actions: [
+                          TextButton(
+                            child: Text('Close'),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp class, which sets up the MaterialApp.
+// 2. The MovieHomePage widget is created, which is a stateful widget.
+// 3. In the initState method, fetchPopularMovies is called to load popular movies from TMDb.
+// 4. The fetchPopularMovies method makes an API call to get popular movies and updates the state.
+// 5. The build method checks if popularMovies is empty; if so, it shows a loading indicator.
+// 6. Once the data is fetched, it displays a list of movies using ListView.builder.
+// 7. Each movie title is clickable, showing a dialog with the movie's overview when tapped.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the `tmdb_api` Flutter package, detailing its features and providing a comprehensive tutorial on how to set it up and use it in a Flutter application. The complete example demonstrated how to fetch and display popular movies, including handling user interactions. This package is a valuable resource for developers looking to create engaging media applications with Flutter.

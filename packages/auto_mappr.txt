@@ -1,0 +1,227 @@
+Here's a detailed technical blog on the "auto_mappr" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Auto Mappr Flutter Package
+
+The **auto_mappr** package is a powerful tool for Flutter developers that simplifies the process of mapping data between different models. It automates the tedious task of converting data from one format to another, making it easier to work with APIs and databases. This package is particularly useful when dealing with complex data structures, as it reduces boilerplate code and enhances maintainability.
+
+## When to Use Auto Mappr
+
+You should consider using the **auto_mappr** package in scenarios such as:
+
+- **API Integration**: When fetching data from RESTful APIs, you often need to convert JSON responses into Dart objects. Auto Mappr can automate this mapping process.
+- **Database Operations**: If your application interacts with a local database, you can use Auto Mappr to map database records to your Dart models seamlessly.
+- **Complex Data Structures**: When working with nested or complex data structures, Auto Mappr simplifies the mapping process, allowing you to focus on business logic rather than data transformation.
+
+## Features
+
+- **Automatic Mapping**: Automatically maps properties between source and destination objects based on naming conventions.
+- **Custom Mapping**: Allows for custom mapping logic when default behavior does not meet your needs.
+- **Support for Nested Objects**: Handles nested objects and collections, making it suitable for complex data structures.
+- **Type Safety**: Ensures type safety during the mapping process, reducing runtime errors.
+
+With these features, the **auto_mappr** package significantly enhances productivity and code quality in Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Auto Mappr
+
+## Step 1: Adding the Dependency
+
+To get started with the **auto_mappr** package, you need to add it to your `pubspec.yaml` file. Open your Flutter project and add the following line under dependencies:
+
+```yaml
+dependencies:
+  auto_mappr: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Setting Up Models
+
+Create your data models. For example, let's create two models: `User` and `UserDTO`. The `UserDTO` will represent the data coming from an API, while `User` will be the model used in your application.
+
+```dart
+class User {
+  final String name;
+  final String email;
+
+  User({required this.name, required this.email});
+}
+
+class UserDTO {
+  final String fullName;
+  final String emailAddress;
+
+  UserDTO({required this.fullName, required this.emailAddress});
+}
+```
+
+## Step 3: Creating a Mapper
+
+Next, create a mapper class that will handle the mapping between `User` and `UserDTO`. You can use the `@AutoMappr` annotation to generate the mapping code automatically.
+
+```dart
+import 'package:auto_mappr/auto_mappr.dart';
+
+part 'user_mapper.g.dart';
+
+@AutoMappr()
+abstract class UserMapper {
+  UserDTO toDTO(User user);
+  User fromDTO(UserDTO userDTO);
+}
+```
+
+## Step 4: Generating the Mapper Code
+
+To generate the mapping code, run the following command in your terminal:
+
+```bash
+flutter pub run build_runner build
+```
+
+This command will create a file named `user_mapper.g.dart` containing the generated mapping logic.
+
+## Step 5: Using the Mapper
+
+Now that you have your mapper set up, you can use it in your application. Here’s how to map a `User` to `UserDTO` and vice versa:
+
+```dart
+void main() {
+  final user = User(name: 'John Doe', email: 'john.doe@example.com');
+  final userMapper = UserMapperImpl();
+
+  // Map User to UserDTO
+  final userDTO = userMapper.toDTO(user);
+  print('UserDTO: ${userDTO.fullName}, ${userDTO.emailAddress}');
+
+  // Map UserDTO back to User
+  final userFromDTO = userMapper.fromDTO(userDTO);
+  print('User: ${userFromDTO.name}, ${userFromDTO.email}');
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, make sure to set the deployment target in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Conclusion
+
+You have now set up the **auto_mappr** package in your Flutter project and learned how to use it for mapping data between models. This package can significantly reduce the amount of boilerplate code you need to write, making your code cleaner and more maintainable.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Auto Mappr
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:auto_mappr/auto_mappr.dart';
+
+// Define the User model
+class User {
+  final String name;
+  final String email;
+
+  User({required this.name, required this.email});
+}
+
+// Define the UserDTO model
+class UserDTO {
+  final String fullName;
+  final String emailAddress;
+
+  UserDTO({required this.fullName, required this.emailAddress});
+}
+
+// Create the mapper class
+part 'user_mapper.g.dart';
+
+@AutoMappr()
+abstract class UserMapper {
+  UserDTO toDTO(User user); // Maps User to UserDTO
+  User fromDTO(UserDTO userDTO); // Maps UserDTO to User
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Auto Mappr Example',
+      home: UserScreen(),
+    );
+  }
+}
+
+class UserScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Create an instance of User
+    final user = User(name: 'John Doe', email: 'john.doe@example.com');
+    final userMapper = UserMapperImpl(); // Create the mapper instance
+
+    // Map User to UserDTO
+    final userDTO = userMapper.toDTO(user);
+    // Display UserDTO information
+    print('UserDTO: ${userDTO.fullName}, ${userDTO.emailAddress}');
+
+    // Map UserDTO back to User
+    final userFromDTO = userMapper.fromDTO(userDTO);
+    // Display User information
+    print('User: ${userFromDTO.name}, ${userFromDTO.email}');
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Auto Mappr Example'),
+      ),
+      body: Center(
+        child: Text('Check the console for output!'),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main() function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and a home screen (UserScreen).
+// 3. In UserScreen, a User object is created with a name and email.
+// 4. An instance of UserMapperImpl is created to handle the mapping.
+// 5. The User object is mapped to a UserDTO object using the toDTO method.
+// 6. The UserDTO information is printed to the console.
+// 7. The UserDTO object is then mapped back to a User object using the fromDTO method.
+// 8. The User information is printed to the console.
+// 9. The UI displays a simple message indicating to check the console for output.
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the **auto_mappr** package, including its features, setup instructions, and a complete example demonstrating its usage in a Flutter application.

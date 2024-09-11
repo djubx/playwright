@@ -1,0 +1,172 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# LaunchDarkly Flutter Client SDK: An Overview
+
+The `launchdarkly_flutter_client_sdk` is a powerful package designed to integrate LaunchDarkly's feature management capabilities into Flutter applications. LaunchDarkly is a feature management platform that allows developers to control the release of features to users, enabling practices like feature flagging, A/B testing, and gradual rollouts. This package provides a seamless way to manage feature flags in Flutter apps, ensuring that developers can deliver new features safely and efficiently.
+
+## When to Use
+
+- **Feature Flagging**: Use this package to implement feature flags, allowing you to toggle features on or off without deploying new code.
+- **A/B Testing**: Conduct experiments by serving different variations of a feature to different user segments.
+- **Gradual Rollouts**: Roll out features to a small percentage of users initially, and gradually increase the rollout as confidence in the feature grows.
+- **User Targeting**: Deliver personalized experiences by targeting specific user segments with different feature configurations.
+
+## Features
+
+- **Real-time Updates**: Changes to feature flags are reflected in real-time without requiring app restarts.
+- **Cross-platform Support**: Works seamlessly on both Android and iOS platforms.
+- **User Context**: Allows setting user attributes to target specific users or groups.
+- **Offline Mode**: Provides the ability to define default values for feature flags when the app is offline.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up LaunchDarkly Flutter Client SDK
+
+In this tutorial, we will walk through the process of setting up the `launchdarkly_flutter_client_sdk` in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Step 1: Add Dependency
+
+Add the `launchdarkly_flutter_client_sdk` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  launchdarkly_flutter_client_sdk: ^1.0.0
+```
+
+## Step 2: Platform-specific Setup
+
+### Android
+
+1. **Permissions**: Ensure that your `AndroidManifest.xml` includes internet permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **ProGuard**: If you are using ProGuard, add the following rules to keep the SDK's classes:
+
+   ```pro
+   -keep class com.launchdarkly.** { *; }
+   ```
+
+### iOS
+
+1. **Platform Version**: Ensure your `ios/Podfile` specifies a platform version of at least 10.0:
+
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+2. **CocoaPods**: Run `pod install` in the `ios` directory to ensure all dependencies are correctly installed.
+
+## Step 3: Initialize the SDK
+
+Initialize the SDK in your Flutter app. This is typically done in the `main.dart` file.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:launchdarkly_flutter_client_sdk/launchdarkly_flutter_client_sdk.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final ldClient = RealFlutter();
+  await ldClient.start('YOUR_MOBILE_KEY');
+  runApp(MyApp(ldClient: ldClient));
+}
+```
+
+## Step 4: Use Feature Flags
+
+Once the SDK is initialized, you can use it to check feature flags and modify your app's behavior accordingly.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:launchdarkly_flutter_client_sdk/launchdarkly_flutter_client_sdk.dart';
+
+// Main entry point of the Flutter application
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensures that Flutter bindings are initialized
+  final ldClient = RealFlutter(); // Create an instance of the RealFlutter class
+  await ldClient.start('YOUR_MOBILE_KEY'); // Initialize the LaunchDarkly client with your mobile key
+  runApp(MyApp(ldClient: ldClient)); // Run the app with the initialized LaunchDarkly client
+}
+
+// MyApp is the root widget of the application
+class MyApp extends StatelessWidget {
+  final RealFlutter ldClient; // Instance of the LaunchDarkly client
+
+  MyApp({required this.ldClient});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'LaunchDarkly Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: FeatureFlagDemo(ldClient: ldClient), // Home screen of the app
+    );
+  }
+}
+
+// FeatureFlagDemo is a widget that demonstrates feature flag usage
+class FeatureFlagDemo extends StatefulWidget {
+  final RealFlutter ldClient;
+
+  FeatureFlagDemo({required this.ldClient});
+
+  @override
+  _FeatureFlagDemoState createState() => _FeatureFlagDemoState();
+}
+
+class _FeatureFlagDemoState extends State<FeatureFlagDemo> {
+  bool _isFeatureEnabled = false; // State variable to track feature flag status
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFeatureFlag(); // Check the feature flag status when the widget is initialized
+  }
+
+  // Method to check the feature flag status
+  void _checkFeatureFlag() async {
+    bool isEnabled = await widget.ldClient.boolVariation('your-feature-flag-key', false);
+    setState(() {
+      _isFeatureEnabled = isEnabled; // Update the state with the feature flag status
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Feature Flag Demo'),
+      ),
+      body: Center(
+        child: _isFeatureEnabled
+            ? Text('Feature is enabled!', style: TextStyle(fontSize: 24))
+            : Text('Feature is disabled.', style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by initializing the Flutter bindings and the LaunchDarkly client.
+// The `main` function initializes the LaunchDarkly client with a mobile key and runs the app.
+// `MyApp` is the root widget, which sets up the MaterialApp and specifies the home screen.
+// `FeatureFlagDemo` is a stateful widget that checks the status of a feature flag on initialization.
+// The `_checkFeatureFlag` method uses the LaunchDarkly client to determine if a feature is enabled.
+// The UI updates based on the feature flag status, displaying different text accordingly.
+
+<-- END_MAIN -->
+```

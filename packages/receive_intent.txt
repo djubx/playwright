@@ -1,0 +1,179 @@
+```markdown
+<-- START_DESCRIPTION -->
+# Overview of the `receive_intent` Flutter Package
+
+The `receive_intent` package is a powerful tool for Flutter developers who need to handle incoming intents from other applications. This package allows your Flutter app to receive data shared from other apps, such as text, images, or URLs, making it an essential component for apps that need to interact with other applications on the user's device.
+
+## When to Use `receive_intent`
+
+- **Sharing Data**: If your app needs to handle data shared from other apps, such as receiving a URL from a web browser or an image from a gallery app.
+- **Deep Linking**: To open specific pages within your app when a user clicks on a link or performs an action in another app.
+- **Inter-App Communication**: For apps that need to communicate with other apps on the device, such as receiving commands or data.
+
+## Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Easy Integration**: Simple API to handle incoming intents with minimal setup.
+- **Customizable**: Allows developers to define specific actions or data types to handle.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Setting Up and Using the `receive_intent` Package
+
+In this tutorial, we will walk through the process of setting up the `receive_intent` package in a Flutter project and demonstrate how to use it to handle incoming intents.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `receive_intent` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  receive_intent: ^0.1.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Modify AndroidManifest.xml**: Add the necessary intent filters to handle incoming data.
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.realflutter">
+
+    <application
+        android:label="realflutter"
+        android:icon="@mipmap/ic_launcher">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|density|layoutDirection|fontScale|uiMode|touchscreen|screenLayout|screenSize|smallestScreenSize"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+```
+
+2. **Update MainActivity**: Ensure your `MainActivity` extends `FlutterActivity`.
+
+#### iOS
+
+1. **Modify Info.plist**: Add the necessary configurations to handle incoming URLs.
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>com.example.realflutter</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>realflutter</string>
+        </array>
+    </dict>
+</array>
+```
+
+### Step 3: Implementing the Package
+
+Import the package in your Dart code and set up a listener for incoming intents.
+
+```dart
+import 'package:receive_intent/receive_intent.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:receive_intent/receive_intent.dart';
+
+void main() {
+  runApp(RealFlutterApp());
+}
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'RealFlutter Intent Receiver',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: IntentReceiverPage(),
+    );
+  }
+}
+
+class IntentReceiverPage extends StatefulWidget {
+  @override
+  _IntentReceiverPageState createState() => _IntentReceiverPageState();
+}
+
+class _IntentReceiverPageState extends State<IntentReceiverPage> {
+  String _receivedData = "No data received yet.";
+
+  @override
+  void initState() {
+    super.initState();
+    _initReceiveIntent();
+  }
+
+  // Initialize the intent receiver
+  void _initReceiveIntent() async {
+    // Listen for incoming intents
+    ReceiveIntent.getInitialIntent().then((Intent? intent) {
+      if (intent != null) {
+        setState(() {
+          _receivedData = intent.data.toString();
+        });
+      }
+    });
+
+    // Listen for new intents while the app is running
+    ReceiveIntent.receivedIntentStream.listen((Intent intent) {
+      setState(() {
+        _receivedData = intent.data.toString();
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Intent Receiver'),
+      ),
+      body: Center(
+        child: Text(
+          _receivedData,
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes and sets up a listener for incoming intents using the `receive_intent` package.
+// 2. When the app starts, it checks if there was an initial intent that launched the app and updates the UI accordingly.
+// 3. The app also listens for any new intents that are received while the app is running.
+// 4. When an intent is received, the app updates the displayed text to show the data from the intent.
+```
+<-- END_MAIN -->
+```

@@ -1,0 +1,260 @@
+Here's a detailed technical blog on the `datetime_picker_formfield_new` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `datetime_picker_formfield_new` package is a powerful and flexible Flutter package designed to simplify the process of selecting dates and times in your applications. It provides a customizable form field that integrates seamlessly with the Flutter framework, allowing developers to create user-friendly date and time pickers.
+
+## When to Use This Package
+
+This package is particularly useful in scenarios where you need to collect date and time inputs from users, such as:
+
+- Booking systems (e.g., hotel reservations, flight bookings)
+- Event scheduling applications
+- Forms requiring date of birth or appointment dates
+- Any application that requires user input for dates and times
+
+## Features
+
+- **Customizable UI**: The package allows for extensive customization of the date and time picker UI to match your app's design.
+- **Validation**: Built-in validation to ensure that the selected date and time meet your application's requirements.
+- **Localization**: Supports multiple languages and formats, making it suitable for international applications.
+- **Integration with Form Fields**: Works seamlessly with Flutter's form validation and state management.
+
+By leveraging this package, developers can enhance user experience and streamline the process of date and time selection in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `datetime_picker_formfield_new` package, follow these steps:
+
+1. **Add Dependency**: Open your `pubspec.yaml` file and add the package dependency:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     datetime_picker_formfield_new: ^1.0.0  # Check for the latest version on pub.dev
+   ```
+
+2. **Install the Package**: Run the following command in your terminal to install the package:
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Platform-Specific Configuration**:
+   - **Android**: Ensure that your `android/app/build.gradle` file has the correct configurations. You may need to set the minimum SDK version to at least 21:
+
+     ```groovy
+     android {
+         ...
+         defaultConfig {
+             ...
+             minSdkVersion 21
+         }
+     }
+     ```
+
+   - **iOS**: Open your `ios/Runner/Info.plist` file and add the following permissions if you plan to access the device's date and time settings:
+
+     ```xml
+     <key>NSCalendarsUsageDescription</key>
+     <string>This app requires access to your calendar.</string>
+     ```
+
+## Using the Package
+
+To use the `datetime_picker_formfield_new` package, you can create a simple form with a date and time picker. Here’s a basic example of how to implement it:
+
+1. **Import the Package**:
+
+   ```dart
+   import 'package:flutter/material.dart';
+   import 'package:datetime_picker_formfield_new/datetime_picker_formfield_new.dart';
+   import 'package:intl/intl.dart'; // For date formatting
+   ```
+
+2. **Create a Stateful Widget**: This widget will hold the form and manage the state.
+
+   ```dart
+   class RealFlutter extends StatefulWidget {
+     @override
+     _RealFlutterState createState() => _RealFlutterState();
+   }
+
+   class _RealFlutterState extends State<RealFlutter> {
+     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+     DateTime _selectedDate;
+
+     @override
+     Widget build(BuildContext context) {
+       return Scaffold(
+         appBar: AppBar(title: Text('DateTime Picker Example')),
+         body: Padding(
+           padding: const EdgeInsets.all(16.0),
+           child: Form(
+             key: _formKey,
+             child: Column(
+               children: <Widget>[
+                 DateTimeField(
+                   format: DateFormat("yyyy-MM-dd HH:mm"),
+                   decoration: InputDecoration(labelText: 'Select Date and Time'),
+                   onShowPicker: (context, currentValue) {
+                     return showDatePicker(
+                       context: context,
+                       firstDate: DateTime(2000),
+                       initialDate: currentValue ?? DateTime.now(),
+                       lastDate: DateTime(2100),
+                     ).then((date) {
+                       if (date != null) {
+                         return showTimePicker(
+                           context: context,
+                           initialTime: TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
+                         ).then((time) {
+                           if (time != null) {
+                             return DateTimeField.combine(date, time);
+                           }
+                           return currentValue;
+                         });
+                       }
+                       return currentValue;
+                     });
+                   },
+                 ),
+                 SizedBox(height: 20),
+                 ElevatedButton(
+                   onPressed: () {
+                     if (_formKey.currentState.validate()) {
+                       // Process the data
+                       print("Selected Date and Time: $_selectedDate");
+                     }
+                   },
+                   child: Text('Submit'),
+                 ),
+               ],
+             ),
+           ),
+         ),
+       );
+     }
+   }
+   ```
+
+3. **Run Your Application**: Use the command below to run your application:
+
+   ```bash
+   flutter run
+   ```
+
+This setup will create a simple form with a date and time picker, allowing users to select a date and time easily.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:datetime_picker_formfield_new/datetime_picker_formfield_new.dart';
+import 'package:intl/intl.dart'; // For date formatting
+
+// Main entry point of the application
+void main() {
+  runApp(MyApp());
+}
+
+// MyApp widget that sets up the MaterialApp
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'DateTime Picker Example',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: RealFlutter(), // Home screen is the RealFlutter widget
+    );
+  }
+}
+
+// RealFlutter widget that contains the form
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+// State class for RealFlutter
+class _RealFlutterState extends State<RealFlutter> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Key for form validation
+  DateTime _selectedDate; // Variable to hold the selected date and time
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('DateTime Picker Example')), // App bar title
+      body: Padding(
+        padding: const EdgeInsets.all(16.0), // Padding around the form
+        child: Form(
+          key: _formKey, // Assigning the form key
+          child: Column(
+            children: <Widget>[
+              DateTimeField(
+                format: DateFormat("yyyy-MM-dd HH:mm"), // Date format
+                decoration: InputDecoration(labelText: 'Select Date and Time'), // Input decoration
+                onShowPicker: (context, currentValue) {
+                  return showDatePicker(
+                    context: context,
+                    firstDate: DateTime(2000), // Earliest selectable date
+                    initialDate: currentValue ?? DateTime.now(), // Default to current date
+                    lastDate: DateTime(2100), // Latest selectable date
+                  ).then((date) {
+                    if (date != null) {
+                      return showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.fromDateTime(currentValue ?? DateTime.now()), // Default to current time
+                      ).then((time) {
+                        if (time != null) {
+                          return DateTimeField.combine(date, time); // Combine date and time
+                        }
+                        return currentValue; // Return current value if no time is selected
+                      });
+                    }
+                    return currentValue; // Return current value if no date is selected
+                  });
+                },
+              ),
+              SizedBox(height: 20), // Space between fields
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState.validate()) { // Validate the form
+                    // Process the data
+                    print("Selected Date and Time: $_selectedDate"); // Print selected date and time
+                  }
+                },
+                child: Text('Submit'), // Button text
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts with the main function, which runs the MyApp widget.
+// MyApp sets up a MaterialApp with a title and theme, and the home is set to RealFlutter.
+// The RealFlutter widget is a stateful widget that contains a form for selecting date and time.
+// A GlobalKey is used for form validation, and a DateTime variable holds the selected date.
+// The build method creates a Scaffold with an AppBar and a Form.
+// Inside the Form, a DateTimeField is created, which shows a date picker when tapped.
+// The date picker allows users to select a date, and then a time picker appears to select the time.
+// The selected date and time are combined and can be validated when the Submit button is pressed.
+// If the form is valid, the selected date and time are printed to the console.
+
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the `datetime_picker_formfield_new` package, including its features, setup instructions, and a complete example to help developers integrate it into their Flutter applications effectively.

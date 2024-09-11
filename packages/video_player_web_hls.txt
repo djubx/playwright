@@ -1,84 +1,79 @@
+```markdown
 <-- START_DESCRIPTION -->
 
-# Video Player Web HLS Flutter Package
-=====================================
+# Overview of the `video_player_web_hls` Flutter Package
 
-The `video_player_web_hls` package is a Flutter plugin that allows you to play HLS (HTTP Live Streaming) videos on web platforms. This package is a wrapper around the popular `hls.js` library, which provides a robust and efficient way to play HLS videos in the browser.
+The `video_player_web_hls` package is a powerful extension for Flutter developers looking to integrate HLS (HTTP Live Streaming) video playback capabilities into their web applications. This package builds upon the existing `video_player` package, providing seamless support for HLS streams, which are commonly used for live broadcasts and adaptive bitrate streaming.
 
-## When to Use This Package
+## When to Use
 
-You should use this package when you need to play HLS videos in your Flutter web application. This package is particularly useful when you want to:
-
-* Play live or on-demand HLS videos
-* Support multiple audio and subtitle tracks
-* Handle various HLS playlist formats (e.g., M3U8, M3U, etc.)
-* Leverage the robustness and efficiency of the `hls.js` library
+This package is particularly useful in scenarios where you need to:
+- Stream live video content over the web.
+- Provide adaptive streaming to accommodate varying network conditions.
+- Integrate video playback in a Flutter web application with minimal setup.
 
 ## Features
 
-The `video_player_web_hls` package provides the following features:
-
-* Support for playing HLS videos on web platforms
-* Multiple audio and subtitle track support
-* Handling of various HLS playlist formats
-* Robust and efficient playback using the `hls.js` library
+- **HLS Support**: Enables playback of HLS streams directly in Flutter web applications.
+- **Cross-Platform Compatibility**: While primarily for web, it integrates smoothly with existing video player setups for mobile.
+- **Customizable Controls**: Offers flexibility to design custom video controls.
+- **Performance Optimizations**: Efficiently handles video buffering and playback for a smooth user experience.
 
 <-- END_DESCRIPTION -->
 
 <-- START_TUTORIAL -->
 
-# Setup and Usage
-================
+# Setting Up the `video_player_web_hls` Package
 
-## Step 1: Add the Package to Your Flutter Project
+In this tutorial, we will walk through the process of setting up and using the `video_player_web_hls` package in a Flutter project. We will cover platform-specific configurations for both Android and iOS, although the primary focus is on web integration.
 
-Add the following line to your `pubspec.yaml` file:
-```yml
+## Step 1: Add the Package to Your Project
+
+First, add the `video_player_web_hls` package to your `pubspec.yaml` file:
+
+```yaml
 dependencies:
-  video_player_web_hls: ^1.0.0
+  flutter:
+    sdk: flutter
+  video_player: ^2.2.11
+  video_player_web_hls: ^0.1.0
 ```
-Then, run `flutter pub get` to install the package.
 
-## Step 2: Import the Package
+Run `flutter pub get` to install the package.
 
-Import the package in your Dart file:
-```dart
-import 'package:video_player_web_hls/video_player_web_hls.dart';
+## Step 2: Configure for Web
+
+The `video_player_web_hls` package is designed to work out of the box for web applications. Ensure your Flutter project is set up for web development by running:
+
+```bash
+flutter config --enable-web
 ```
-## Step 3: Create a Video Player Instance
 
-Create a `VideoPlayerWebHLS` instance and pass the HLS video URL:
-```dart
-final videoPlayer = VideoPlayerWebHLS(
-  url: 'https://example.com/hls/playlist.m3u8',
-);
-```
-## Step 4: Add the Video Player to Your Widget Tree
-
-Add the `VideoPlayerWebHLS` instance to your widget tree:
-```dart
-Scaffold(
-  appBar: AppBar(
-    title: Text('Video Player Web HLS Example'),
-  ),
-  body: Center(
-    child: videoPlayer,
-  ),
-);
-```
-## Platform-Specific Details
+## Step 3: Platform-Specific Details
 
 ### Android
 
-No additional setup is required for Android.
+For Android, ensure that your `AndroidManifest.xml` includes internet permissions:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
 
 ### iOS
 
-No additional setup is required for iOS.
+For iOS, ensure that your `Info.plist` allows arbitrary loads if you are testing with non-secure HTTP streams (not recommended for production):
 
-## Required Configurations or Optimizations
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
 
-No additional configurations or optimizations are required.
+## Step 4: Implementing the Video Player
+
+Now, let's implement a basic video player using the `RealFlutter` class as our main widget.
 
 <-- END_TUTORIAL -->
 
@@ -86,61 +81,97 @@ No additional configurations or optimizations are required.
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'package:video_player_web_hls/video_player_web_hls.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(RealFlutter());
 }
 
-class MyApp extends StatelessWidget {
+class RealFlutter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Video Player Web HLS Example',
+      title: 'HLS Video Player',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: VideoPlayerScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class VideoPlayerScreen extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final videoPlayer = VideoPlayerWebHLS(
-    url: 'https://example.com/hls/playlist.m3u8',
-  );
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the video player controller with an HLS stream URL
+    _controller = VideoPlayerController.network(
+      'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
+
+    // Load the video and set the state when ready
+    _controller.initialize().then((_) {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the controller to free up resources
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Video Player Web HLS Example'),
+        title: Text('HLS Video Player'),
       ),
       body: Center(
-        child: videoPlayer,
+        child: _controller.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+            : CircularProgressIndicator(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Toggle play/pause on button press
+          setState(() {
+            _controller.value.isPlaying
+                ? _controller.pause()
+                : _controller.play();
+          });
+        },
+        child: Icon(
+          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+        ),
       ),
     );
   }
 }
+
+// Application Flow:
+// 1. The `RealFlutter` class initializes the app and sets the home screen to `VideoPlayerScreen`.
+// 2. `VideoPlayerScreen` is a stateful widget that manages the video player state.
+// 3. In `initState`, the video player controller is initialized with an HLS stream URL.
+// 4. The video is loaded asynchronously, and the UI is updated once the video is ready.
+// 5. The `build` method checks if the video is initialized and displays it using `VideoPlayer`.
+// 6. A floating action button toggles between play and pause states.
+// 7. The controller is disposed of in `dispose` to clean up resources.
+
 ```
 
-// The application flow is as follows:
-// 1. The user runs the app, and the `MyApp` widget is created.
-// 2. The `MyApp` widget builds the `MaterialApp` widget, which contains the `MyHomePage` widget.
-// 3. The `MyHomePage` widget creates a `VideoPlayerWebHLS` instance and passes the HLS video URL.
-// 4. The `VideoPlayerWebHLS` instance is added to the widget tree.
-// 5. The `VideoPlayerWebHLS` instance plays the HLS video.
-
-// In summary, the code flows as follows:
-// 1. The app is run, and the `MyApp` widget is created.
-// 2. The `MyApp` widget builds the `MaterialApp` widget.
-// 3. The `MaterialApp` widget contains the `MyHomePage` widget.
-// 4. The `MyHomePage` widget creates a `VideoPlayerWebHLS` instance.
-// 5. The `VideoPlayerWebHLS` instance plays the HLS video.
-
 <-- END_MAIN -->
+```

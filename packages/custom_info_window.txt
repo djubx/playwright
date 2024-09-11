@@ -1,0 +1,246 @@
+Here's a detailed technical blog on the "custom_info_window" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Custom Info Window Flutter Package
+
+The `custom_info_window` Flutter package is a powerful tool for developers looking to enhance the user experience in their applications by providing customizable information windows for map markers. This package allows you to create rich, interactive info windows that can display various types of content, including images, text, and buttons, making it ideal for applications that require detailed information about locations, such as travel apps, real estate listings, or event management systems.
+
+## When to Use This Package
+
+You should consider using the `custom_info_window` package when:
+- You need to display additional information about map markers in a visually appealing way.
+- You want to provide users with interactive elements (like buttons) within the info window.
+- You require a high level of customization for the info window's appearance and behavior.
+
+## Features
+
+- **Customizable Layout**: Create info windows with custom layouts using Flutter widgets.
+- **Interactive Elements**: Add buttons and other interactive components to the info window.
+- **Animation Support**: Smoothly animate the appearance and disappearance of info windows.
+- **Easy Integration**: Simple setup and integration with existing Flutter map packages like `google_maps_flutter`.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Custom Info Window Package
+
+## Step 1: Add Dependency
+
+To get started, add the `custom_info_window` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  custom_info_window: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    compileSdkVersion 31  // Use the latest stable version
+    ...
+}
+```
+
+2. Ensure you have the necessary permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add the following permissions:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to show nearby places.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to show nearby places.</string>
+```
+
+## Step 3: Basic Usage
+
+Now, let's implement the `custom_info_window` in a simple Flutter application.
+
+1. Import the necessary packages in your Dart file:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:custom_info_window/custom_info_window.dart';
+```
+
+2. Create a stateful widget to manage the map and info window:
+
+```dart
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late GoogleMapController mapController;
+  final CustomInfoWindowController _customInfoWindowController = CustomInfoWindowController();
+
+  // Sample marker data
+  final Set<Marker> _markers = {
+    Marker(
+      markerId: MarkerId('1'),
+      position: LatLng(37.7749, -122.4194), // San Francisco
+      onTap: () {
+        _customInfoWindowController.addInfoWindow!(
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                Text('San Francisco', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('A beautiful city in California.'),
+              ],
+            ),
+          ),
+          LatLng(37.7749, -122.4194),
+        );
+      },
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Custom Info Window Example')),
+      body: GoogleMap(
+        onMapCreated: (GoogleMapController controller) {
+          mapController = controller;
+          _customInfoWindowController.googleMapController = mapController;
+        },
+        markers: _markers,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(37.7749, -122.4194),
+          zoom: 10,
+        ),
+        onTap: (position) {
+          _customInfoWindowController.hideInfoWindow!();
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Example of hiding the info window
+          _customInfoWindowController.hideInfoWindow!();
+        },
+        child: Icon(Icons.close),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+}
+```
+
+3. Finally, run your application to see the custom info window in action!
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Custom Info Window in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:custom_info_window/custom_info_window.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Custom Info Window Demo',
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late GoogleMapController mapController; // Controller for Google Map
+  final CustomInfoWindowController _customInfoWindowController = CustomInfoWindowController(); // Controller for custom info window
+
+  // Sample marker data
+  final Set<Marker> _markers = {
+    Marker(
+      markerId: MarkerId('1'), // Unique ID for the marker
+      position: LatLng(37.7749, -122.4194), // San Francisco coordinates
+      onTap: () {
+        // Show custom info window when marker is tapped
+        _customInfoWindowController.addInfoWindow!(
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                Text('San Francisco', style: TextStyle(fontWeight: FontWeight.bold)), // Title
+                Text('A beautiful city in California.'), // Description
+              ],
+            ),
+          ),
+          LatLng(37.7749, -122.4194), // Position of the info window
+        );
+      },
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Custom Info Window Example')), // App bar title
+      body: GoogleMap(
+        onMapCreated: (GoogleMapController controller) {
+          mapController = controller; // Initialize map controller
+          _customInfoWindowController.googleMapController = mapController; // Link custom info window controller to map
+        },
+        markers: _markers, // Set markers on the map
+        initialCameraPosition: CameraPosition(
+          target: LatLng(37.7749, -122.4194), // Initial camera position
+          zoom: 10, // Initial zoom level
+        ),
+        onTap: (position) {
+          _customInfoWindowController.hideInfoWindow!(); // Hide info window on map tap
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Example of hiding the info window
+          _customInfoWindowController.hideInfoWindow!(); // Hide info window when button is pressed
+        },
+        child: Icon(Icons.close), // Close icon for the button
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // Position of the floating action button
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp sets up the MaterialApp and points to the RealFlutter widget.
+// 3. RealFlutter is a stateful widget that manages the Google Map and custom info window.
+// 4. The Google Map is initialized with a marker for San Francisco.
+// 5. When the marker is tapped, a custom info window appears with details about the location.
+// 6. Tapping anywhere on the map hides the info window.
+// 7. A floating action button is provided to hide the info window as well.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provides a comprehensive overview of the `custom_info_window` Flutter package, including its features, setup instructions, and a complete example. The code demonstrates how to create a simple map application with customizable info windows, enhancing the user experience with interactive and informative content.
