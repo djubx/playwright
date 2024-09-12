@@ -1,0 +1,244 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `sqfentity_gen` Flutter Package
+
+The `sqfentity_gen` package is a powerful code generator for Flutter applications that simplifies the process of working with SQLite databases. It is part of the `sqfentity` suite, which provides a complete ORM solution for Flutter, allowing developers to define their database schema using Dart classes and annotations. The package automatically generates the necessary code to interact with the database, making it easier to perform CRUD operations without writing boilerplate SQL code.
+
+## When to Use `sqfentity_gen`
+
+- **Data-Driven Applications**: Ideal for apps that require persistent data storage, such as note-taking apps, task managers, or any application that needs to store and retrieve structured data.
+- **Rapid Development**: Useful for developers who want to quickly set up a database without delving into the complexities of SQL.
+- **Maintainable Codebase**: Helps in maintaining a clean and organized codebase by abstracting database operations into Dart classes.
+
+## Key Features
+
+- **Code Generation**: Automatically generates data models and database helper classes.
+- **Schema Definition**: Define your database schema using Dart classes and annotations.
+- **CRUD Operations**: Simplifies the implementation of create, read, update, and delete operations.
+- **Cross-Platform**: Works seamlessly on both Android and iOS platforms.
+- **Migration Support**: Provides tools for handling database migrations.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `sqfentity_gen`
+
+In this tutorial, we will walk through the process of setting up the `sqfentity_gen` package in a Flutter project and demonstrate how to use it to manage a simple database.
+
+## Step 1: Add Dependencies
+
+Add the following dependencies to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sqfentity: ^2.0.0+4
+
+dev_dependencies:
+  sqfentity_gen: ^2.0.0+4
+  build_runner: ^2.1.0
+```
+
+## Step 2: Define Your Model
+
+Create a Dart file, e.g., `model.dart`, and define your database model using annotations:
+
+```dart
+import 'package:sqfentity/sqfentity.dart';
+
+part 'model.g.dart';
+
+const tableRealFlutter = SqfEntityTable(
+  tableName: 'realFlutter',
+  primaryKeyName: 'id',
+  primaryKeyType: PrimaryKeyType.integer_auto_incremental,
+  fields: [
+    SqfEntityField('name', DbType.text),
+    SqfEntityField('description', DbType.text),
+  ],
+);
+
+@SqfEntityBuilder(tableRealFlutter)
+const realFlutterDbModel = SqfEntityModel(
+  modelName: 'RealFlutterDbModel',
+  databaseName: 'real_flutter.db',
+  databaseTables: [tableRealFlutter],
+);
+```
+
+## Step 3: Generate the Code
+
+Run the following command to generate the necessary code:
+
+```bash
+flutter pub run build_runner build
+```
+
+This will create a `model.g.dart` file containing the generated code for database operations.
+
+## Step 4: Platform-Specific Configurations
+
+### Android
+
+Ensure that your `android/app/build.gradle` file has the following configuration:
+
+```gradle
+android {
+    defaultConfig {
+        ...
+        multiDexEnabled true
+    }
+}
+```
+
+### iOS
+
+No specific configurations are required for iOS, but ensure that your project is set up to use Swift if you encounter any issues.
+
+## Step 5: Using the Generated Code
+
+You can now use the generated code to perform database operations. The next section will provide a complete example.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+# Complete Example: Flutter Main File
+
+Below is a complete example of a Flutter application using the `sqfentity_gen` package to manage a simple database.
+
+```dart
+import 'package:flutter/material.dart';
+import 'model.dart'; // Import the generated model file
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SqfEntity Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutterHomePage(),
+    );
+  }
+}
+
+class RealFlutterHomePage extends StatefulWidget {
+  @override
+  _RealFlutterHomePageState createState() => _RealFlutterHomePageState();
+}
+
+class _RealFlutterHomePageState extends State<RealFlutterHomePage> {
+  List<RealFlutter> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItems(); // Load items from the database when the app starts
+  }
+
+  Future<void> _loadItems() async {
+    final items = await RealFlutter().select().toList(); // Fetch all items
+    setState(() {
+      _items = items;
+    });
+  }
+
+  Future<void> _addItem(String name, String description) async {
+    final newItem = RealFlutter(name: name, description: description);
+    await newItem.save(); // Save the new item to the database
+    _loadItems(); // Reload items to update the UI
+  }
+
+  Future<void> _deleteItem(int id) async {
+    final item = RealFlutter(id: id);
+    await item.delete(); // Delete the item from the database
+    _loadItems(); // Reload items to update the UI
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SqfEntity Demo'),
+      ),
+      body: ListView.builder(
+        itemCount: _items.length,
+        itemBuilder: (context, index) {
+          final item = _items[index];
+          return ListTile(
+            title: Text(item.name),
+            subtitle: Text(item.description),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => _deleteItem(item.id!),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddItemDialog(context),
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _showAddItemDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add New Item'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _addItem(nameController.text, descriptionController.text);
+              },
+              child: Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts and initializes the home page, which is a stateful widget.
+// 2. On initialization, the app loads items from the database using the _loadItems method.
+// 3. The _loadItems method fetches all items from the database and updates the state to display them.
+// 4. The user can add a new item by clicking the floating action button, which opens a dialog.
+// 5. In the dialog, the user enters the name and description of the new item and clicks 'Add'.
+// 6. The _addItem method is called, which saves the new item to the database and reloads the items.
+// 7. Each item in the list has a delete button, which calls the _deleteItem method to remove the item from the database.
+// 8. After deletion, the items are reloaded to update the UI.
+
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,189 @@
+<-- START_DESCRIPTION -->
+
+# ERC20 Flutter Package: A Comprehensive Overview
+=====================================================
+
+The `erc20` Flutter package provides a simple and efficient way to interact with ERC20 tokens on the Ethereum blockchain. It allows developers to easily integrate ERC20 token functionality into their Flutter applications, enabling users to send, receive, and manage their tokens.
+
+### When to Use This Package
+
+This package is ideal for developers who want to build Flutter applications that interact with ERC20 tokens, such as:
+
+* Cryptocurrency wallets
+* Token-based games
+* Decentralized finance (DeFi) applications
+* Non-fungible token (NFT) marketplaces
+
+### Features
+
+The `erc20` package provides the following features:
+
+* Token balance retrieval
+* Token transfer
+* Token approval
+* Token allowance retrieval
+* Event listening (e.g., transfer, approval)
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the ERC20 Package
+=============================================
+
+### Step 1: Add the Package to Your Flutter Project
+
+Add the following dependency to your `pubspec.yaml` file:
+```yml
+dependencies:
+  erc20: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:erc20/erc20.dart';
+```
+### Step 3: Set Up the Ethereum Provider
+
+Set up an Ethereum provider, such as `web3dart` or `ethers.dart`. For this example, we'll use `web3dart`:
+```dart
+import 'package:web3dart/web3dart.dart';
+
+Future<void> main() async {
+  final Web3Client _web3Client = Web3Client('https://mainnet.infura.io/v3/YOUR_PROJECT_ID');
+  // ...
+}
+```
+### Step 4: Create an ERC20 Token Instance
+
+Create an instance of the ERC20 token you want to interact with:
+```dart
+final Erc20 _token = Erc20(
+  address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', // token address
+  web3Client: _web3Client,
+);
+```
+### Step 5: Use the Token Instance
+
+Now you can use the token instance to interact with the ERC20 token:
+```dart
+final BigInt balance = await _token.getBalance('0xYourWalletAddress');
+print(balance);
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:erc20/erc20.dart';
+import 'package:web3dart/web3dart.dart';
+
+void main() async {
+  final Web3Client _web3Client = Web3Client('https://mainnet.infura.io/v3/YOUR_PROJECT_ID');
+
+  final Erc20 _token = Erc20(
+    address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', // token address
+    web3Client: _web3Client,
+  );
+
+  runApp(MyApp(_token));
+}
+
+class MyApp extends StatelessWidget {
+  final Erc20 _token;
+
+  MyApp(this._token);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'ERC20 Token Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(_token),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  final Erc20 _token;
+
+  MyHomePage(this._token);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+
+  String _balance = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('ERC20 Token Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Balance: $_balance',
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _addressController,
+              decoration: InputDecoration(
+                labelText: 'Wallet Address',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _amountController,
+              decoration: InputDecoration(
+                labelText: 'Amount',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                final BigInt balance = await widget._token.getBalance(_addressController.text);
+                setState(() {
+                  _balance = balance.toString();
+                });
+              },
+              child: Text('Get Balance'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () async {
+                await widget._token.transfer(_addressController.text, BigInt.parse(_amountController.text));
+              },
+              child: Text('Transfer'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user enters their wallet address and the amount they want to transfer.
+// 2. The user clicks the "Get Balance" button to retrieve their current balance.
+// 3. The user clicks the "Transfer" button to transfer the specified amount to the specified wallet address.
+// 4. The application updates the balance display with the new balance after the transfer.
+```
+
+<-- END_MAIN -->

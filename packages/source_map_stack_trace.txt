@@ -1,0 +1,188 @@
+<-- START_DESCRIPTION -->
+
+# Source Map Stack Trace Flutter Package
+=============================================
+
+The `source_map_stack_trace` package is a powerful tool for Flutter developers to handle and process stack traces. It provides a simple way to parse and manipulate stack traces, making it easier to diagnose and fix errors in your app.
+
+## When to Use This Package
+---------------------------
+
+This package is particularly useful when you need to:
+
+* Handle and process stack traces in your Flutter app
+* Parse and manipulate stack traces to extract useful information
+* Diagnose and fix errors in your app
+
+## Features
+------------
+
+The `source_map_stack_trace` package provides the following features:
+
+* Parse and process stack traces
+* Extract useful information from stack traces, such as file names, line numbers, and column numbers
+* Manipulate stack traces to remove or modify frames
+* Support for both Android and iOS platforms
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `source_map_stack_trace` package, you need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  source_map_stack_trace: ^2.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Platform-Specific Details
+---------------------------
+
+### Android
+
+On Android, you need to add the following configuration to your `android/app/build.gradle` file:
+
+```groovy
+android {
+    // ...
+    buildTypes {
+        release {
+            // ...
+            ndk {
+                abiFilters "armeabi-v7l", "arm64-v8a", "x86", "x86_64"
+            }
+        }
+    }
+}
+```
+
+### iOS
+
+On iOS, you need to add the following configuration to your `ios/Podfile` file:
+
+```ruby
+target 'YourApp' do
+  # ...
+  pod 'source_map_stack_trace', :path => '../.symlinks/plugins/source_map_stack_trace/ios'
+end
+```
+
+## Using the Package
+---------------------
+
+To use the package, you need to import it in your Dart file:
+
+```dart
+import 'package:source_map_stack_trace/source_map_stack_trace.dart';
+```
+
+Then, you can use the `StackTrace` class to parse and manipulate stack traces:
+
+```dart
+void main() {
+  final stackTrace = StackTrace.fromString('''
+    #0      RealFlutter._handlePointerEvent (package:flutter/src/gestures/binding.dart:221:7)
+    #1      RealFlutter._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:199:7)
+    #2      RealFlutter._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:197:54)
+  ''');
+
+  print(stackTrace.frames[0].fileName); // prints 'package:flutter/src/gestures/binding.dart'
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:source_map_stack_trace/source_map_stack_trace.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Source Map Stack Trace Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String _stackTraceString = '';
+
+  void _handleError() {
+    try {
+      // simulate an error
+      throw Exception('Something went wrong');
+    } catch (e, stackTrace) {
+      // parse the stack trace
+      final stackTraceObject = StackTrace.fromString(stackTrace.toString());
+
+      // manipulate the stack trace
+      final frames = stackTraceObject.frames.map((frame) {
+        return Frame(
+          fileName: frame.fileName,
+          lineNumber: frame.lineNumber,
+          columnNumber: frame.columnNumber,
+        );
+      }).toList();
+
+      // convert the stack trace back to a string
+      _stackTraceString = frames.map((frame) {
+        return '#${frames.indexOf(frame)}      ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}';
+      }).join('\n');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Source Map Stack Trace Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_stackTraceString),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _handleError,
+              child: Text('Simulate Error'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user clicks the 'Simulate Error' button, which calls the _handleError function.
+// 2. The _handleError function simulates an error by throwing an exception.
+// 3. The exception is caught and the stack trace is parsed using the StackTrace.fromString method.
+// 4. The stack trace is manipulated by mapping over the frames and creating a new list of Frame objects.
+// 5. The manipulated stack trace is converted back to a string using the map method and the join method.
+// 6. The resulting string is assigned to the _stackTraceString variable.
+// 7. The _stackTraceString variable is displayed in the UI.
+
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,202 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Pay UPI Package
+================================
+
+The `flutter_pay_upi` package is a Flutter plugin that allows developers to integrate Unified Payments Interface (UPI) payment functionality into their apps. UPI is a popular payment system in India that enables users to make transactions between bank accounts using a virtual address.
+
+## When to Use
+--------------
+
+Use this package when you want to provide a seamless payment experience to your users in India. This package is particularly useful for e-commerce apps, bill payment apps, and any other app that requires payment processing.
+
+## Features
+------------
+
+*   Supports all major UPI payment apps, including Google Pay, PhonePe, and Paytm
+*   Allows users to make payments using their UPI ID or by scanning a QR code
+*   Provides a simple and intuitive API for initiating and handling payments
+*   Supports both Android and iOS platforms
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_pay_upi` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec File
+
+Add the following line to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_pay_upi: ^1.0.0
+```
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:flutter_pay_upi/flutter_pay_upi.dart';
+```
+
+### Step 3: Initialize the Package
+
+Initialize the package by calling the `init` method:
+
+```dart
+await FlutterPayUpi.init();
+```
+
+### Step 4: Set Up Platform-Specific Configurations
+
+#### Android
+
+In your `AndroidManifest.xml` file, add the following lines:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+```
+
+#### iOS
+
+In your `Info.plist` file, add the following lines:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+### Step 5: Handle Payment Responses
+
+To handle payment responses, use the `onPaymentResponse` callback:
+
+```dart
+FlutterPayUpi.onPaymentResponse.listen((response) {
+  if (response.status == PaymentStatus.SUCCESS) {
+    // Handle successful payment
+  } else if (response.status == PaymentStatus.FAILURE) {
+    // Handle failed payment
+  }
+});
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_pay_upi/flutter_pay_upi.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Pay UPI Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _upiIdController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Pay UPI Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _amountController,
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter amount';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _upiIdController,
+                decoration: InputDecoration(
+                  labelText: 'UPI ID',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter UPI ID';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState.validate()) {
+                    await FlutterPayUpi.init();
+                    await FlutterPayUpi.makePayment(
+                      amount: _amountController.text,
+                      upiId: _upiIdController.text,
+                    );
+                  }
+                },
+                child: Text('Make Payment'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user enters the amount and UPI ID in the text fields.
+// 2. The user clicks the "Make Payment" button.
+// 3. The app validates the input fields and shows an error message if any field is empty.
+// 4. If the input fields are valid, the app initializes the Flutter Pay UPI package.
+// 5. The app makes a payment request to the UPI server using the entered amount and UPI ID.
+// 6. The UPI server processes the payment request and sends a response back to the app.
+// 7. The app handles the payment response and shows a success or failure message to the user.
+
+// Summary:
+// This code demonstrates how to use the Flutter Pay UPI package to make a payment request to the UPI server.
+// The app takes the amount and UPI ID as input from the user, validates the input fields, and makes a payment request to the UPI server.
+// The app handles the payment response and shows a success or failure message to the user.
+```
+
+<-- END_MAIN -->

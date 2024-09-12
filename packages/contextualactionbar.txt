@@ -1,0 +1,178 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# ContextualActionBar Flutter Package
+
+The `contextualactionbar` Flutter package is a powerful tool designed to enhance user interaction by providing a contextual action bar (CAB) in your Flutter applications. This package is particularly useful in scenarios where you need to offer additional actions based on user selection, similar to the contextual menus found in many native mobile applications.
+
+## When to Use
+
+The `contextualactionbar` package is ideal for applications that require multi-selection capabilities, such as email clients, file managers, or any app where users might need to select multiple items and perform actions like delete, share, or edit. It provides a clean and intuitive way to handle these interactions without cluttering the main UI.
+
+## Features
+
+- **Multi-Selection Support**: Easily enable multi-selection mode for list items.
+- **Customizable Action Bar**: Define custom actions that appear when items are selected.
+- **Seamless Integration**: Works well with existing Flutter widgets and state management solutions.
+- **Platform Consistency**: Provides a native-like experience on both Android and iOS.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using ContextualActionBar
+
+In this tutorial, we'll walk through the process of setting up the `contextualactionbar` package in a Flutter project and demonstrate how to use it effectively.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the `contextualactionbar` package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     contextualactionbar: ^1.0.0
+   ```
+
+2. **Install Packages**: Run `flutter pub get` to install the new package.
+
+3. **Import the Package**: In your Dart file, import the package.
+
+   ```dart
+   import 'package:contextualactionbar/contextualactionbar.dart';
+   ```
+
+## Platform-Specific Details
+
+### Android
+
+- Ensure your `minSdkVersion` in `android/app/build.gradle` is set to at least 21 to support all features of the package.
+
+### iOS
+
+- No specific configurations are required for iOS, but ensure your deployment target is set to a version that supports Flutter.
+
+## Using the Package
+
+To use the `contextualactionbar`, wrap your list widget with the `ContextualScaffold` and manage the selection state using the provided `ContextualActionBar` widget.
+
+1. **Wrap with ContextualScaffold**: This widget provides the necessary context for the action bar.
+
+   ```dart
+   ContextualScaffold(
+     contextualAppBar: ContextualAppBar(
+       counterBuilder: (int count) => Text('$count selected'),
+       actions: [
+         ContextualAction(
+           icon: Icons.delete,
+           onPressed: (items) {
+             // Handle delete action
+           },
+         ),
+       ],
+     ),
+     body: YourListWidget(),
+   );
+   ```
+
+2. **Manage Selection**: Use a state management solution like `Provider` or `setState` to manage the selection state of your items.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:contextualactionbar/contextualactionbar.dart';
+
+void main() => runApp(RealFlutterApp());
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Contextual Action Bar Demo',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // List of items to display
+  final List<String> items = List.generate(20, (index) => 'Item $index');
+  // Set to keep track of selected items
+  final Set<int> selectedItems = Set<int>();
+
+  @override
+  Widget build(BuildContext context) {
+    return ContextualScaffold(
+      contextualAppBar: ContextualAppBar(
+        // Display the number of selected items
+        counterBuilder: (int count) => Text('$count selected'),
+        actions: [
+          ContextualAction(
+            icon: Icons.delete,
+            onPressed: (items) {
+              // Remove selected items from the list
+              setState(() {
+                selectedItems.forEach((index) => this.items.removeAt(index));
+                selectedItems.clear();
+              });
+            },
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final isSelected = selectedItems.contains(index);
+          return ListTile(
+            title: Text(items[index]),
+            // Highlight selected items
+            selected: isSelected,
+            onLongPress: () {
+              // Toggle selection on long press
+              setState(() {
+                if (isSelected) {
+                  selectedItems.remove(index);
+                } else {
+                  selectedItems.add(index);
+                }
+              });
+            },
+            onTap: () {
+              // Handle item tap
+              if (selectedItems.isNotEmpty) {
+                setState(() {
+                  if (isSelected) {
+                    selectedItems.remove(index);
+                  } else {
+                    selectedItems.add(index);
+                  }
+                });
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with a list of items displayed using a ListView.
+// 2. Each ListTile can be long-pressed to toggle its selection state.
+// 3. When one or more items are selected, the ContextualAppBar appears, showing the number of selected items.
+// 4. The ContextualAppBar provides actions, such as delete, which operate on the selected items.
+// 5. The delete action removes the selected items from the list and clears the selection.
+// 6. The UI updates dynamically to reflect changes in selection and item removal.
+
+<-- END_MAIN -->
+```

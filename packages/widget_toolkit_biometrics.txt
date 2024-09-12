@@ -1,0 +1,176 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `widget_toolkit_biometrics` Flutter Package
+
+The `widget_toolkit_biometrics` package is a powerful Flutter library designed to simplify the integration of biometric authentication into your mobile applications. This package provides a seamless interface for utilizing device-specific biometric capabilities, such as fingerprint and facial recognition, across both Android and iOS platforms.
+
+## When to Use
+
+This package is ideal for applications that require an additional layer of security, such as banking apps, secure messaging platforms, or any app where user authentication is critical. By leveraging biometric authentication, developers can enhance user experience by providing a quick and secure login method.
+
+## Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Easy Integration**: Simple API for quick setup and use.
+- **Customizable UI**: Allows developers to customize the authentication dialog.
+- **Secure**: Utilizes device-level security features to ensure data protection.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `widget_toolkit_biometrics` in Your Flutter Project
+
+Integrating the `widget_toolkit_biometrics` package into your Flutter project involves a few straightforward steps. Below, we outline the setup process for both Android and iOS platforms.
+
+## Installation
+
+Add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  widget_toolkit_biometrics: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Android Configuration
+
+1. **Update `AndroidManifest.xml`:**
+
+   Add the following permissions inside the `<manifest>` tag:
+
+   ```xml
+   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+   <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+   ```
+
+2. **Ensure Minimum SDK Version:**
+
+   In `android/app/build.gradle`, set the minimum SDK version to 23 or higher:
+
+   ```gradle
+   defaultConfig {
+       minSdkVersion 23
+   }
+   ```
+
+## iOS Configuration
+
+1. **Update `Info.plist`:**
+
+   Add the following keys to your `Info.plist` file:
+
+   ```xml
+   <key>NSFaceIDUsageDescription</key>
+   <string>We use Face ID to authenticate you</string>
+   ```
+
+2. **Enable Biometric Capability:**
+
+   Ensure that the biometric capability is enabled in your Xcode project settings.
+
+## Using the Package
+
+To use the package, import it into your Dart file:
+
+```dart
+import 'package:widget_toolkit_biometrics/widget_toolkit_biometrics.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:widget_toolkit_biometrics/widget_toolkit_biometrics.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Biometric Authentication Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: BiometricAuthScreen(),
+    );
+  }
+}
+
+class BiometricAuthScreen extends StatefulWidget {
+  @override
+  _BiometricAuthScreenState createState() => _BiometricAuthScreenState();
+}
+
+class _BiometricAuthScreenState extends State<BiometricAuthScreen> {
+  final RealFlutter _biometricAuth = RealFlutter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Biometric Authentication'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _authenticate,
+          child: Text('Authenticate'),
+        ),
+      ),
+    );
+  }
+
+  // Function to initiate biometric authentication
+  Future<void> _authenticate() async {
+    try {
+      // Check if biometrics are available
+      bool canCheckBiometrics = await _biometricAuth.canCheckBiometrics;
+      if (!canCheckBiometrics) {
+        _showMessage('Biometric authentication is not available.');
+        return;
+      }
+
+      // Attempt to authenticate using biometrics
+      bool authenticated = await _biometricAuth.authenticate(
+        localizedReason: 'Please authenticate to access the secure area',
+        useErrorDialogs: true,
+        stickyAuth: true,
+      );
+
+      // Show success or failure message based on authentication result
+      if (authenticated) {
+        _showMessage('Authentication successful!');
+      } else {
+        _showMessage('Authentication failed.');
+      }
+    } catch (e) {
+      _showMessage('An error occurred: $e');
+    }
+  }
+
+  // Helper function to display messages
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+}
+```
+
+// The application starts by running the `MyApp` class, which sets up the MaterialApp.
+// The home screen is set to `BiometricAuthScreen`, which is a stateful widget.
+// In the `_BiometricAuthScreenState`, we initialize the `RealFlutter` class for biometric operations.
+// The UI consists of a single button that, when pressed, calls the `_authenticate` method.
+// `_authenticate` checks if biometric authentication is available and attempts to authenticate the user.
+// If authentication is successful, a success message is shown; otherwise, a failure message is displayed.
+// The `_showMessage` function is a utility to display messages using a SnackBar.
+
+<-- END_MAIN -->
+```

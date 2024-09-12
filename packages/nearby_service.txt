@@ -1,0 +1,210 @@
+<-- START_DESCRIPTION -->
+
+# Nearby Service Flutter Package
+================================
+
+The `nearby_service` Flutter package allows you to easily discover and connect to nearby devices. It provides a simple and intuitive API for publishing and subscribing to services, making it perfect for applications that require peer-to-peer communication.
+
+## When to Use
+
+This package is ideal for applications that require:
+
+* Peer-to-peer communication between devices
+* Proximity-based features, such as file sharing or multiplayer gaming
+* Automatic discovery of nearby devices
+
+## Features
+
+* Publish and subscribe to services
+* Discover nearby devices
+* Establish connections between devices
+* Send and receive data between devices
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `nearby_service` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  nearby_service: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:nearby_service/nearby_service.dart';
+```
+### Step 3: Initialize the Package
+
+Initialize the package by calling the `init` method:
+```dart
+NearbyService.init();
+```
+### Platform-Specific Details
+
+#### Android
+
+* Add the following permissions to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+```
+* Add the following code to your `MainActivity` class:
+```java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+  super.onCreate(savedInstanceState);
+  NearbyService.init(this);
+}
+```
+#### iOS
+
+* Add the following code to your `Info.plist` file:
+```xml
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>This app needs access to Bluetooth</string>
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>This app needs access to Bluetooth peripherals</string>
+```
+### Required Configurations
+
+* Make sure to add the necessary permissions to your app's manifest file.
+* Initialize the package in your app's main activity.
+
+### Optimizations
+
+* Use the `NearbyService.setLogLevel` method to set the log level for the package.
+* Use the `NearbyService.setDiscoveryTimeout` method to set the discovery timeout for the package.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:nearby_service/nearby_service.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Nearby Service Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  NearbyService _nearbyService;
+  List<Device> _devices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _nearbyService = NearbyService();
+    _nearbyService.init();
+    _nearbyService.setDiscoveryTimeout(10000);
+    _nearbyService.setLogLevel(LogLevel.debug);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Nearby Service Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _startDiscovery,
+              child: Text('Start Discovery'),
+            ),
+            ElevatedButton(
+              onPressed: _stopDiscovery,
+              child: Text('Stop Discovery'),
+            ),
+            ElevatedButton(
+              onPressed: _connectToDevice,
+              child: Text('Connect to Device'),
+            ),
+            Text(
+              'Devices:',
+              style: TextStyle(fontSize: 24),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _devices.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_devices[index].name),
+                    subtitle: Text(_devices[index].id),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _startDiscovery() {
+    _nearbyService.startDiscovery((device) {
+      setState(() {
+        _devices.add(device);
+      });
+    });
+  }
+
+  void _stopDiscovery() {
+    _nearbyService.stopDiscovery();
+  }
+
+  void _connectToDevice() {
+    if (_devices.isNotEmpty) {
+      _nearbyService.connectToDevice(_devices[0].id, (success) {
+        if (success) {
+          print('Connected to device!');
+        } else {
+          print('Failed to connect to device!');
+        }
+      });
+    }
+  }
+}
+
+// The app starts by initializing the NearbyService package and setting the discovery timeout and log level.
+// The user can then start the discovery process by pressing the "Start Discovery" button.
+// When a device is discovered, it is added to the list of devices and displayed on the screen.
+// The user can then connect to a device by pressing the "Connect to Device" button.
+// If the connection is successful, a message is printed to the console indicating that the device has been connected.
+// The user can then stop the discovery process by pressing the "Stop Discovery" button.
+```
+
+<-- END_MAIN -->

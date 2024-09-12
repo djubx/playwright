@@ -1,0 +1,221 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `flutter_map_line_editor` Package
+
+The `flutter_map_line_editor` package is a powerful tool for developers looking to integrate interactive map line editing capabilities into their Flutter applications. This package is particularly useful for applications that require users to draw, edit, or manipulate lines on a map, such as route planning apps, geographic data visualization tools, or any application that involves spatial data manipulation.
+
+## Key Features
+
+- **Interactive Line Editing**: Users can add, remove, and modify lines directly on the map.
+- **Customizable Appearance**: Developers can customize the appearance of lines, including color, width, and style.
+- **Integration with `flutter_map`**: Seamlessly integrates with the `flutter_map` package, allowing for a rich mapping experience.
+- **Event Handling**: Provides callbacks for line editing events, enabling developers to respond to user interactions.
+
+## When to Use
+
+- **Route Planning Applications**: Allow users to draw and edit routes on a map.
+- **Geographic Information Systems (GIS)**: Enable users to manipulate spatial data visually.
+- **Custom Map Annotations**: Provide users with the ability to annotate maps with lines for various purposes.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `flutter_map_line_editor`
+
+In this section, we'll walk through the setup process for the `flutter_map_line_editor` package and demonstrate how to use it in a Flutter application. We'll cover platform-specific details for both Android and iOS.
+
+## Setup
+
+1. **Add Dependency**
+
+   Add the `flutter_map_line_editor` package to your `pubspec.yaml` file:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     flutter_map: ^0.14.0
+     flutter_map_line_editor: ^0.1.0
+   ```
+
+2. **Platform-Specific Configuration**
+
+   - **Android**: Ensure that your `AndroidManifest.xml` includes the necessary permissions for internet access and location services if required.
+   - **iOS**: Update your `Info.plist` to include permissions for location services if your application uses them.
+
+3. **Import the Package**
+
+   Import the package in your Dart file:
+
+   ```dart
+   import 'package:flutter_map/flutter_map.dart';
+   import 'package:flutter_map_line_editor/flutter_map_line_editor.dart';
+   ```
+
+## Usage
+
+1. **Initialize the Map**
+
+   Set up a basic `flutter_map` widget and integrate the line editor:
+
+   ```dart
+   Widget build(BuildContext context) {
+     return FlutterMap(
+       options: MapOptions(
+         center: LatLng(51.5, -0.09),
+         zoom: 13.0,
+       ),
+       layers: [
+         TileLayerOptions(
+           urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+           subdomains: ['a', 'b', 'c'],
+         ),
+         PolylineLayerOptions(
+           polylines: [
+             Polyline(
+               points: [], // Initialize with empty or existing points
+               strokeWidth: 4.0,
+               color: Colors.blue,
+             ),
+           ],
+         ),
+       ],
+     );
+   }
+   ```
+
+2. **Enable Line Editing**
+
+   Use the `LineEditor` class to enable line editing capabilities:
+
+   ```dart
+   LineEditor lineEditor = LineEditor(
+     polyline: Polyline(
+       points: [], // Points to be edited
+       strokeWidth: 4.0,
+       color: Colors.blue,
+     ),
+     onEdit: (updatedPolyline) {
+       // Handle the updated polyline
+     },
+   );
+   ```
+
+3. **Handle User Interactions**
+
+   Implement event handlers to respond to user interactions with the map lines:
+
+   ```dart
+   lineEditor.onEdit = (updatedPolyline) {
+     setState(() {
+       // Update the state with the new polyline
+     });
+   };
+   ```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_line_editor/flutter_map_line_editor.dart';
+import 'package:latlong2/latlong.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Map Line Editor Demo',
+      home: MapEditorScreen(),
+    );
+  }
+}
+
+class MapEditorScreen extends StatefulWidget {
+  @override
+  _MapEditorScreenState createState() => _MapEditorScreenState();
+}
+
+class _MapEditorScreenState extends State<MapEditorScreen> {
+  // Initialize a list of points for the polyline
+  List<LatLng> points = [
+    LatLng(51.5, -0.09),
+    LatLng(51.51, -0.1),
+    LatLng(51.52, -0.12),
+  ];
+
+  // Create a LineEditor instance
+  late LineEditor lineEditor;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the LineEditor with the polyline
+    lineEditor = LineEditor(
+      polyline: Polyline(
+        points: points,
+        strokeWidth: 4.0,
+        color: Colors.blue,
+      ),
+      onEdit: (updatedPolyline) {
+        // Update the state with the new polyline
+        setState(() {
+          points = updatedPolyline.points;
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Map Line Editor'),
+      ),
+      body: FlutterMap(
+        options: MapOptions(
+          center: LatLng(51.5, -0.09),
+          zoom: 13.0,
+          onTap: (tapPosition, point) {
+            // Add a new point to the polyline on map tap
+            setState(() {
+              points.add(point);
+              lineEditor.polyline.points = points;
+            });
+          },
+        ),
+        layers: [
+          TileLayerOptions(
+            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            subdomains: ['a', 'b', 'c'],
+          ),
+          PolylineLayerOptions(
+            polylines: [
+              lineEditor.polyline,
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts with the main function, which runs MyApp.
+// 2. MyApp is a StatelessWidget that sets up the MaterialApp and directs to MapEditorScreen.
+// 3. MapEditorScreen is a StatefulWidget that manages the state of the map and line editor.
+// 4. In initState, a LineEditor is initialized with a default polyline.
+// 5. The build method sets up the FlutterMap with TileLayerOptions for map tiles and PolylineLayerOptions for the line.
+// 6. The map listens for tap events to add new points to the polyline.
+// 7. The LineEditor updates the polyline and triggers a state update on edit events.
+// 8. The UI updates to reflect changes in the polyline, allowing interactive line editing on the map.
+```
+
+<-- END_MAIN -->
+```

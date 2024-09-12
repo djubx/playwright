@@ -1,0 +1,170 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Optimizely Flutter SDK: A Comprehensive Overview
+
+The `optimizely_flutter_sdk` is a powerful package designed to integrate Optimizely's experimentation and feature management capabilities into Flutter applications. Optimizely is a leading experimentation platform that allows developers to test and optimize their applications by delivering personalized experiences to users. This SDK provides a seamless way to incorporate these features into Flutter apps, enabling developers to make data-driven decisions and improve user engagement.
+
+## When to Use Optimizely Flutter SDK
+
+- **A/B Testing**: When you need to test different versions of a feature to determine which performs better.
+- **Feature Flagging**: To enable or disable features remotely without deploying new code.
+- **Personalization**: To deliver personalized content and experiences to different user segments.
+- **Rollouts**: Gradually release new features to a subset of users to monitor performance and impact.
+
+## Key Features
+
+- **Real-time Updates**: Changes made in the Optimizely dashboard are reflected in the app without requiring a new deployment.
+- **User Segmentation**: Target specific user groups based on attributes and behaviors.
+- **Multi-platform Support**: Works seamlessly across Android and iOS platforms.
+- **Data-driven Insights**: Provides analytics and insights to help understand user interactions and optimize features.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Optimizely Flutter SDK
+
+Integrating the `optimizely_flutter_sdk` into your Flutter project involves several steps. Below is a detailed guide to help you get started.
+
+## Step 1: Add Dependency
+
+Add the `optimizely_flutter_sdk` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  optimizely_flutter_sdk: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-specific Setup
+
+### Android
+
+1. **Permissions**: Ensure your `AndroidManifest.xml` includes internet permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **ProGuard**: If using ProGuard, add the following rules to keep Optimizely classes:
+
+   ```pro
+   -keep class com.optimizely.** { *; }
+   -keep class com.optimizely.ab.** { *; }
+   ```
+
+### iOS
+
+1. **Podfile**: Ensure your `ios/Podfile` has platform version set to at least 10.0:
+
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+2. **CocoaPods**: Run `pod install` in the `ios` directory to ensure all dependencies are correctly installed.
+
+## Step 3: Initialize the SDK
+
+Initialize the Optimizely SDK in your Flutter app. This is typically done in the `main.dart` file.
+
+```dart
+import 'package:optimizely_flutter_sdk/optimizely_flutter_sdk.dart';
+
+void main() async {
+  final optimizelyClient = await OptimizelyClient.createInstance('YOUR_SDK_KEY');
+  runApp(MyApp(optimizelyClient: optimizelyClient));
+}
+```
+
+Replace `'YOUR_SDK_KEY'` with your actual Optimizely SDK key.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:optimizely_flutter_sdk/optimizely_flutter_sdk.dart';
+
+void main() async {
+  // Initialize the Optimizely client with your SDK key
+  final optimizelyClient = await OptimizelyClient.createInstance('YOUR_SDK_KEY');
+  runApp(MyApp(optimizelyClient: optimizelyClient));
+}
+
+class MyApp extends StatelessWidget {
+  final OptimizelyClient optimizelyClient;
+
+  // Constructor to receive the Optimizely client
+  MyApp({required this.optimizelyClient});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Optimizely Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(optimizelyClient: optimizelyClient),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  final OptimizelyClient optimizelyClient;
+
+  // Constructor to receive the Optimizely client
+  HomePage({required this.optimizelyClient});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String featureStatus = 'Unknown';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFeatureStatus();
+  }
+
+  // Method to check the status of a feature flag
+  void _checkFeatureStatus() async {
+    // Fetch the feature flag status from Optimizely
+    bool isFeatureEnabled = await widget.optimizelyClient.isFeatureEnabled('new_feature', 'user123');
+    setState(() {
+      featureStatus = isFeatureEnabled ? 'Enabled' : 'Disabled';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Optimizely Feature Flag Demo'),
+      ),
+      body: Center(
+        child: Text(
+          'Feature is $featureStatus',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts by initializing the Optimizely client with the provided SDK key.
+// 2. The `MyApp` widget is created, passing the Optimizely client to the `HomePage`.
+// 3. The `HomePage` widget initializes and calls `_checkFeatureStatus` to determine the status of a feature flag.
+// 4. The feature flag status is fetched using the `isFeatureEnabled` method, which checks if 'new_feature' is enabled for 'user123'.
+// 5. The UI updates to display whether the feature is 'Enabled' or 'Disabled' based on the flag status.
+```
+
+<-- END_MAIN -->
+```

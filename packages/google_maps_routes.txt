@@ -1,0 +1,177 @@
+<-- START_DESCRIPTION -->
+
+# Google Maps Routes Flutter Package
+=====================================
+
+The `google_maps_routes` Flutter package is a powerful library that allows developers to easily integrate Google Maps routing functionality into their Flutter applications. With this package, you can calculate routes between two or more points on a map, providing your users with turn-by-turn directions and estimated arrival times.
+
+### When to Use This Package
+
+This package is ideal for any Flutter application that requires routing or navigation functionality, such as:
+
+* Ride-hailing or ride-sharing apps
+* Food delivery or logistics apps
+* Travel or tourism apps
+* Fitness or activity tracking apps
+
+### Features
+
+The `google_maps_routes` package offers a range of features, including:
+
+* Route calculation between two or more points
+* Turn-by-turn directions
+* Estimated arrival times
+* Support for multiple transportation modes (driving, walking, cycling)
+* Customizable route rendering
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `google_maps_routes` package in your Flutter application, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec File
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  google_maps_routes: ^1.0.0
+```
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:google_maps_routes/google_maps_routes.dart';
+```
+### Step 3: Set Up Your Google Maps API Key
+
+To use the Google Maps API, you need to set up an API key. Follow these steps:
+
+* Go to the Google Cloud Console and create a new project.
+* Click on "Navigation menu" ( three horizontal lines in the top left corner) and select "APIs & Services" > "Dashboard".
+* Click on "Enable APIs and Services" and search for "Google Maps JavaScript API".
+* Click on "Google Maps JavaScript API" and click on the "Enable" button.
+* Create a new API key by clicking on "Navigation menu" > "APIs & Services" > "Credentials".
+* Copy the API key and add it to your `AndroidManifest.xml` file (for Android) or `Info.plist` file (for iOS).
+
+### Android-Specific Configuration
+
+Add the following lines to your `AndroidManifest.xml` file:
+```xml
+<application>
+  ...
+  <meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="YOUR_API_KEY_HERE" />
+</application>
+```
+### iOS-Specific Configuration
+
+Add the following lines to your `Info.plist` file:
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs access to location to work properly</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs access to location to work properly</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs access to location to work properly</string>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_maps_routes/google_maps_routes.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _mapController = GoogleMapController();
+  final _routeController = RouteController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Google Maps Routes Demo'),
+      ),
+      body: GoogleMap(
+        onMapCreated: (GoogleMapController controller) {
+          _mapController = controller;
+        },
+        initialCameraPosition: CameraPosition(
+          target: LatLng(37.7749, -122.4194),
+          zoom: 12,
+        ),
+        markers: {
+          Marker(
+            markerId: MarkerId('start'),
+            position: LatLng(37.7749, -122.4194),
+            icon: BitmapDescriptor.defaultMarker,
+          ),
+          Marker(
+            markerId: MarkerId('end'),
+            position: LatLng(37.8024, -122.4056),
+            icon: BitmapDescriptor.defaultMarker,
+          ),
+        },
+        polylines: {
+          Polyline(
+            polylineId: PolylineId('route'),
+            points: [
+              LatLng(37.7749, -122.4194),
+              LatLng(37.8024, -122.4056),
+            ],
+            color: Colors.blue,
+            width: 5,
+          ),
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final route = await _routeController.getRoute(
+            origin: LatLng(37.7749, -122.4194),
+            destination: LatLng(37.8024, -122.4056),
+            mode: Mode.driving,
+          );
+          _mapController.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(37.7873, -122.4116),
+                zoom: 15,
+              ),
+            ),
+          );
+          setState(() {
+            _mapController.addPolyline(
+              Polyline(
+                polylineId: PolylineId('route'),
+                points: route.points,
+                color: Colors.blue,
+                width: 5,
+              ),
+            );
+          });
+        },
+        child: Icon(Icons.directions),
+      ),
+    );
+  }
+}
+
+// The app starts by displaying a Google Map with two markers: a start marker and an end marker.
+// When the user clicks the floating action button, the app calculates the route between the two markers using the Google Maps Routes API.
+// The app then animates the camera to zoom in on the route and displays the route as a polyline on the map.
+// The polyline is updated in real-time as the user interacts with the map.
+```
+
+<-- END_MAIN -->

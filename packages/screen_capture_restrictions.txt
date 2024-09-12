@@ -1,0 +1,202 @@
+Here's a detailed technical blog on the "screen_capture_restrictions" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Screen Capture Restrictions Flutter Package
+
+The `screen_capture_restrictions` Flutter package is designed to help developers manage screen capture functionalities in their applications. This package is particularly useful for applications that handle sensitive information, such as banking apps, healthcare applications, or any app where user privacy is paramount. By restricting screen capture, developers can prevent unauthorized users from taking screenshots or recording the screen while using the app.
+
+## When to Use This Package
+
+You should consider using the `screen_capture_restrictions` package in scenarios such as:
+
+- **Banking Applications**: To protect sensitive financial information from being captured.
+- **Healthcare Apps**: To ensure patient data remains confidential.
+- **Messaging Apps**: To prevent users from capturing private conversations.
+- **Content Protection**: For apps that display proprietary content, such as e-learning platforms or streaming services.
+
+## Features
+
+- **Screen Capture Prevention**: The primary feature is the ability to prevent screen capture on both Android and iOS platforms.
+- **Platform-Specific Implementations**: The package provides tailored implementations for Android and iOS, ensuring optimal performance and compliance with platform guidelines.
+- **Easy Integration**: The package is straightforward to integrate into existing Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Screen Capture Restrictions Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `screen_capture_restrictions` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  screen_capture_restrictions: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/screen_capture_restrictions).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permission inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+```
+
+3. Ensure that your app's target SDK version is set to 21 or higher in `android/app/build.gradle`:
+
+```groovy
+android {
+    compileSdkVersion 33
+    ...
+    defaultConfig {
+        ...
+        targetSdkVersion 33
+    }
+}
+```
+
+### iOS Configuration
+
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following key to request permission for screen recording:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone for screen recording.</string>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can use it in your Flutter application. Here’s how to implement screen capture restrictions:
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:screen_capture_restrictions/screen_capture_restrictions.dart';
+```
+
+2. Use the following methods to manage screen capture:
+
+- **Enable Screen Capture Restrictions**: Call this method when you want to prevent screen capture.
+
+```dart
+await ScreenCaptureRestrictions.setRestrictions(true);
+```
+
+- **Disable Screen Capture Restrictions**: Call this method when you want to allow screen capture again.
+
+```dart
+await ScreenCaptureRestrictions.setRestrictions(false);
+```
+
+3. You can check the current status of screen capture restrictions using:
+
+```dart
+bool isRestricted = await ScreenCaptureRestrictions.isRestricted();
+```
+
+With these steps, you can effectively manage screen capture restrictions in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Screen Capture Restrictions
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:screen_capture_restrictions/screen_capture_restrictions.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Screen Capture Restrictions Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isRestricted = false; // Variable to track screen capture restriction status
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRestrictions(); // Check current restrictions on app start
+  }
+
+  // Method to check if screen capture is restricted
+  Future<void> _checkRestrictions() async {
+    bool isRestricted = await ScreenCaptureRestrictions.isRestricted();
+    setState(() {
+      _isRestricted = isRestricted; // Update state based on current restrictions
+    });
+  }
+
+  // Method to toggle screen capture restrictions
+  Future<void> _toggleRestrictions() async {
+    await ScreenCaptureRestrictions.setRestrictions(!_isRestricted); // Toggle restrictions
+    _checkRestrictions(); // Check the new status
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Screen Capture Restrictions'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Screen Capture is ${_isRestricted ? "Restricted" : "Allowed"}',
+              style: TextStyle(fontSize: 20),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _toggleRestrictions, // Toggle button to change restrictions
+              child: Text(_isRestricted ? 'Allow Screen Capture' : 'Restrict Screen Capture'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+```
+// Explanation of the application flow:
+
+// 1. The application starts with the `main` function, which runs the `MyApp` widget.
+// 2. `MyApp` sets up the MaterialApp and defines the home screen as `HomeScreen`.
+// 3. In `HomeScreen`, we maintain a boolean variable `_isRestricted` to track the screen capture restriction status.
+// 4. The `initState` method checks the current restriction status when the screen is initialized.
+// 5. The `_checkRestrictions` method uses the `ScreenCaptureRestrictions.isRestricted()` method to determine if screen capture is currently restricted and updates the state accordingly.
+// 6. The `_toggleRestrictions` method toggles the restriction status by calling `ScreenCaptureRestrictions.setRestrictions()` and then checks the new status.
+// 7. The UI displays the current restriction status and provides a button to toggle the restrictions.
+// 8. When the button is pressed, it calls `_toggleRestrictions`, which updates the restriction status and refreshes the UI.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the `screen_capture_restrictions` Flutter package, including its features, setup instructions, and a complete example application. By following the steps outlined, developers can effectively manage screen capture functionalities in their Flutter applications, ensuring user privacy and data security.

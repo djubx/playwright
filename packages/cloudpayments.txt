@@ -1,0 +1,180 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# CloudPayments Flutter Package: An Overview
+
+The `cloudpayments` Flutter package is a powerful tool designed to facilitate seamless integration with the CloudPayments payment gateway. This package is particularly useful for developers looking to implement secure and efficient payment processing in their Flutter applications. 
+
+## When to Use CloudPayments
+
+The `cloudpayments` package is ideal for applications that require:
+- **Secure Payment Processing**: Ensures transactions are handled securely with encryption.
+- **Multi-Currency Support**: Allows transactions in various currencies, making it suitable for international applications.
+- **Ease of Integration**: Provides a straightforward API for integrating payment functionalities into your app.
+
+## Key Features
+
+- **Tokenization**: Securely handles card data by converting it into tokens.
+- **3D Secure Support**: Enhances security by supporting 3D Secure authentication.
+- **Customizable UI**: Offers flexibility in designing the payment interface to match your app's theme.
+- **Cross-Platform Compatibility**: Works seamlessly on both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up CloudPayments in Flutter
+
+Integrating the `cloudpayments` package into your Flutter application involves several steps. Below is a detailed guide to help you get started.
+
+## Step 1: Add Dependency
+
+First, add the `cloudpayments` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cloudpayments: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Setup
+
+### Android
+
+1. **Permissions**: Ensure that your `AndroidManifest.xml` includes the necessary permissions for internet access:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **ProGuard Rules**: If you are using ProGuard, add the following rules to your `proguard-rules.pro` file to prevent obfuscation issues:
+
+   ```pro
+   -keep class com.cloudpayments.** { *; }
+   ```
+
+### iOS
+
+1. **Info.plist**: Update your `Info.plist` to allow network access:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **Podfile**: Ensure your `Podfile` is set to use frameworks:
+
+   ```ruby
+   use_frameworks!
+   ```
+
+## Step 3: Initialize the Package
+
+In your Flutter application, initialize the `cloudpayments` package in the main class, `RealFlutter`, to set up the payment environment.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cloudpayments/cloudpayments.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CloudPayments Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PaymentScreen(),
+    );
+  }
+}
+
+class PaymentScreen extends StatefulWidget {
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  final _cloudPayments = CloudPayments();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize CloudPayments with your public key
+    _cloudPayments.init(publicKey: 'your-public-key');
+  }
+
+  void _makePayment() async {
+    try {
+      // Create a card token
+      final cardToken = await _cloudPayments.createToken(
+        cardNumber: '4111111111111111',
+        cardExpDate: '12/24',
+        cardCvv: '123',
+      );
+
+      // Process the payment
+      final paymentResult = await _cloudPayments.charge(
+        amount: 100.0, // Amount in the smallest currency unit
+        currency: 'USD',
+        cardToken: cardToken,
+      );
+
+      // Check the payment result
+      if (paymentResult.success) {
+        // Payment was successful
+        print('Payment successful!');
+      } else {
+        // Payment failed
+        print('Payment failed: ${paymentResult.message}');
+      }
+    } catch (e) {
+      // Handle errors
+      print('Error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('CloudPayments Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _makePayment,
+          child: Text('Pay Now'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts with the `RealFlutter` class, which sets up the MaterialApp.
+// 2. The `PaymentScreen` widget is the main screen where the payment process is initiated.
+// 3. In `initState`, the CloudPayments package is initialized with a public key.
+// 4. The `_makePayment` method is called when the "Pay Now" button is pressed.
+// 5. A card token is created using the card details.
+// 6. The `charge` method processes the payment with the specified amount and currency.
+// 7. The result of the payment is checked, and a success or failure message is printed.
+// 8. Errors are caught and printed to the console.
+
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,174 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter IoC Container: A Comprehensive Overview
+
+The `flutter_ioc_container` package is a powerful tool for managing dependencies in Flutter applications. It provides an Inversion of Control (IoC) container that helps developers manage object creation and dependency injection, promoting a clean and maintainable codebase.
+
+## When to Use `flutter_ioc_container`
+
+This package is particularly useful in large applications where managing dependencies manually can become cumbersome. By using an IoC container, you can:
+
+- **Decouple Components**: Reduce tight coupling between classes by injecting dependencies rather than instantiating them directly.
+- **Improve Testability**: Easily mock dependencies for unit testing, leading to more robust and reliable tests.
+- **Enhance Maintainability**: Simplify the process of updating or replacing dependencies without altering the dependent code.
+
+## Key Features
+
+- **Automatic Dependency Resolution**: Automatically resolves and injects dependencies based on the configuration.
+- **Singleton and Transient Scopes**: Supports both singleton and transient object lifetimes, allowing for flexible dependency management.
+- **Lazy Initialization**: Dependencies are only created when they are first needed, optimizing resource usage.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `flutter_ioc_container`
+
+In this tutorial, we'll walk through the setup and usage of the `flutter_ioc_container` package in a Flutter project. We'll cover platform-specific details for both Android and iOS, ensuring a smooth integration process.
+
+## Installation
+
+Add the `flutter_ioc_container` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_ioc_container: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Basic Setup
+
+1. **Initialize the IoC Container**: Create an instance of the `RealFlutter` class, which will act as your IoC container.
+
+2. **Register Dependencies**: Use the container to register your dependencies. You can specify whether each dependency should be a singleton or transient.
+
+3. **Resolve Dependencies**: Retrieve instances of your dependencies from the container as needed.
+
+### Platform-Specific Configuration
+
+#### Android
+
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+#### iOS
+
+No specific configuration is required for iOS, but ensure your deployment target is set to iOS 9.0 or higher in your `ios/Podfile`:
+
+```ruby
+platform :ios, '9.0'
+```
+
+## Using the Package
+
+Here's a simple example of how to use the `flutter_ioc_container` package:
+
+```dart
+import 'package:flutter_ioc_container/flutter_ioc_container.dart';
+
+void main() {
+  final container = RealFlutter();
+
+  // Register a singleton service
+  container.registerSingleton<MyService>(() => MyService());
+
+  // Register a transient service
+  container.register<MyRepository>(() => MyRepository());
+
+  // Resolve a service
+  final myService = container.resolve<MyService>();
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_ioc_container/flutter_ioc_container.dart';
+
+// Define a simple service
+class MyService {
+  String fetchData() => "Data from MyService";
+}
+
+// Define a repository that depends on MyService
+class MyRepository {
+  final MyService myService;
+
+  MyRepository(this.myService);
+
+  String getData() => myService.fetchData();
+}
+
+void main() {
+  // Initialize the IoC container
+  final container = RealFlutter();
+
+  // Register MyService as a singleton
+  container.registerSingleton<MyService>(() => MyService());
+
+  // Register MyRepository with a dependency on MyService
+  container.register<MyRepository>(() => MyRepository(container.resolve<MyService>()));
+
+  // Run the app
+  runApp(MyApp(container));
+}
+
+class MyApp extends StatelessWidget {
+  final RealFlutter container;
+
+  MyApp(this.container);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomeScreen(container),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  final RealFlutter container;
+
+  HomeScreen(this.container);
+
+  @override
+  Widget build(BuildContext context) {
+    // Resolve MyRepository from the container
+    final myRepository = container.resolve<MyRepository>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter IoC Container Example'),
+      ),
+      body: Center(
+        child: Text(myRepository.getData()), // Display data fetched from MyService
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The IoC container is initialized in the main function.
+// 2. MyService is registered as a singleton, ensuring only one instance is created.
+// 3. MyRepository is registered with a dependency on MyService, which is resolved by the container.
+// 4. The MyApp widget is created, passing the container to manage dependencies.
+// 5. In HomeScreen, MyRepository is resolved from the container, and its method is used to fetch data.
+// 6. The fetched data is displayed in the center of the screen, demonstrating dependency injection in action.
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,200 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# M-Pesa Flutter Package: RealFlutter
+
+The M-Pesa Flutter package, referred to as `RealFlutter` in this blog, is a powerful tool for integrating M-Pesa payment services into your Flutter applications. M-Pesa is a mobile phone-based money transfer, financing, and microfinancing service, popular in several African countries. This package allows developers to seamlessly incorporate M-Pesa's payment functionalities into their apps, providing users with a reliable and secure payment method.
+
+## When to Use RealFlutter
+
+- **E-commerce Applications**: If you're developing an app that involves selling products or services, integrating M-Pesa can provide a convenient payment option for users in regions where M-Pesa is widely used.
+- **Utility Payment Apps**: Apps that facilitate bill payments, such as electricity or water bills, can benefit from M-Pesa integration.
+- **Peer-to-Peer Payment Apps**: Applications that allow users to send money to each other can use M-Pesa for secure transactions.
+
+## Features
+
+- **Secure Transactions**: RealFlutter ensures that all transactions are secure and encrypted.
+- **User-Friendly**: The package provides a straightforward API that simplifies the integration process.
+- **Cross-Platform Support**: RealFlutter supports both Android and iOS platforms, making it versatile for all Flutter applications.
+- **Real-Time Payment Processing**: Transactions are processed in real-time, providing immediate feedback to users.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up RealFlutter: A Step-by-Step Guide
+
+Integrating the RealFlutter package into your Flutter application involves several steps. This section will guide you through the setup process for both Android and iOS platforms.
+
+## Step 1: Add Dependency
+
+First, add the RealFlutter package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  real_flutter: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Android Configuration
+
+1. **Permissions**: Open `android/app/src/main/AndroidManifest.xml` and add the necessary permissions:
+
+    ```xml
+    <uses-permission android:name="android.permission.INTERNET"/>
+    ```
+
+2. **ProGuard Rules**: If you are using ProGuard, add the following rules to `proguard-rules.pro`:
+
+    ```pro
+    -keep class com.realflutter.** { *; }
+    -dontwarn com.realflutter.**
+    ```
+
+3. **Gradle Configuration**: Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21.
+
+## Step 3: iOS Configuration
+
+1. **Podfile**: Open `ios/Podfile` and ensure the platform is set to iOS 11.0 or higher:
+
+    ```ruby
+    platform :ios, '11.0'
+    ```
+
+2. **Info.plist**: Add the following entries to your `ios/Runner/Info.plist`:
+
+    ```xml
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    ```
+
+3. **CocoaPods**: Run `pod install` in the `ios` directory to ensure all dependencies are correctly installed.
+
+## Step 4: Initialize RealFlutter
+
+In your Flutter application, initialize the RealFlutter package in the main file:
+
+```dart
+import 'package:real_flutter/real_flutter.dart';
+
+void main() {
+  RealFlutter.initialize(
+    clientKey: 'your-client-key',
+    clientSecret: 'your-client-secret',
+  );
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:real_flutter/real_flutter.dart';
+
+void main() {
+  // Initialize the RealFlutter package with your credentials
+  RealFlutter.initialize(
+    clientKey: 'your-client-key',
+    clientSecret: 'your-client-secret',
+  );
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'M-Pesa Integration Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PaymentScreen(),
+    );
+  }
+}
+
+class PaymentScreen extends StatefulWidget {
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  final _amountController = TextEditingController();
+
+  // Function to initiate payment
+  void _makePayment() async {
+    final amount = _amountController.text;
+    if (amount.isNotEmpty) {
+      try {
+        // Call the RealFlutter payment method
+        final result = await RealFlutter.makePayment(
+          amount: double.parse(amount),
+          phoneNumber: '254712345678',
+          accountReference: 'Ref123',
+          transactionDesc: 'Payment for goods',
+        );
+        // Display success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment Successful: $result')),
+        );
+      } catch (e) {
+        // Handle errors
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Payment Failed: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('M-Pesa Payment'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _amountController,
+              decoration: InputDecoration(
+                labelText: 'Enter Amount',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _makePayment,
+              child: Text('Pay with M-Pesa'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts by initializing the RealFlutter package with the provided client key and secret.
+// 2. The main widget, MyApp, sets up the MaterialApp and directs the user to the PaymentScreen.
+// 3. On the PaymentScreen, the user can enter an amount in the TextField.
+// 4. When the "Pay with M-Pesa" button is pressed, the _makePayment function is triggered.
+// 5. The _makePayment function retrieves the entered amount, and if valid, calls RealFlutter's makePayment method.
+// 6. If the payment is successful, a success message is displayed using a SnackBar.
+// 7. If the payment fails, an error message is shown instead.
+
+```
+
+<-- END_MAIN -->
+```

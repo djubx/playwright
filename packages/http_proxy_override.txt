@@ -1,0 +1,148 @@
+<-- START_DESCRIPTION -->
+
+# http_proxy_override Flutter Package
+=====================================
+
+The `http_proxy_override` package is a Flutter plugin that allows you to override the default HTTP proxy settings for your app. This is particularly useful when you need to route your app's HTTP traffic through a specific proxy server, such as in a corporate network or for testing purposes.
+
+### Features
+
+* Override default HTTP proxy settings for your app
+* Supports both Android and iOS platforms
+* Easy to use and configure
+
+### When to Use
+
+You may want to use this package in the following scenarios:
+
+* Your app needs to access a corporate network that requires a specific proxy server
+* You want to test your app's behavior behind a proxy server
+* You need to bypass certain network restrictions or firewalls
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Usage
+==================
+
+### Step 1: Add the Package to Your Pubspec
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  http_proxy_override: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:http_proxy_override/http_proxy_override.dart';
+```
+### Step 3: Configure the Proxy
+
+Create an instance of the `HttpProxyOverride` class and configure the proxy settings:
+```dart
+HttpProxyOverride _proxyOverride = HttpProxyOverride(
+  proxyUrl: 'http://your-proxy-server.com:8080',
+  bypass: ['localhost', '127.0.0.1'],
+);
+```
+### Step 4: Apply the Proxy Override
+
+Apply the proxy override to your app's HTTP client:
+```dart
+_httpClient = _proxyOverride.override(_httpClient);
+```
+### Platform-Specific Details
+
+#### Android
+
+On Android, you need to add the following permission to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+#### iOS
+
+On iOS, you need to add the following configuration to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:http_proxy_override/http_proxy_override.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Http Proxy Override Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  HttpProxyOverride _proxyOverride;
+  http.Client _httpClient;
+
+  @override
+  void initState() {
+    super.initState();
+    _proxyOverride = HttpProxyOverride(
+      proxyUrl: 'http://your-proxy-server.com:8080',
+      bypass: ['localhost', '127.0.0.1'],
+    );
+    _httpClient = _proxyOverride.override(http.Client());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Http Proxy Override Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            final response = await _httpClient.get(Uri.parse('https://example.com'));
+            print(response.body);
+          },
+          child: Text('Make Request'),
+        ),
+      ),
+    );
+  }
+}
+
+// The app starts by creating an instance of the HttpProxyOverride class and configuring the proxy settings.
+// The proxy override is then applied to the app's HTTP client.
+// When the user presses the "Make Request" button, the app makes a GET request to the specified URL using the overridden HTTP client.
+// The response from the server is then printed to the console.
+// The app demonstrates how to use the http_proxy_override package to override the default HTTP proxy settings for an app.
+```
+
+<-- END_MAIN -->

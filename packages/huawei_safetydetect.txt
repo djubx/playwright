@@ -1,0 +1,232 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Huawei Safety Detect Flutter Package
+
+The `huawei_safetydetect` Flutter package is a powerful tool designed to enhance the security of mobile applications by leveraging Huawei's Safety Detect service. This package provides a set of APIs that help developers integrate security features into their apps, ensuring a safer user experience. 
+
+## Overview
+
+Huawei Safety Detect offers several security capabilities, including:
+
+- **SysIntegrity**: Checks the integrity of the device to ensure it hasn't been tampered with.
+- **AppSecurity**: Verifies the security of installed applications.
+- **URLCheck**: Detects malicious URLs to prevent phishing attacks.
+- **UserDetect**: Identifies whether the user is a real person or a bot.
+- **MaliciousApps**: Scans for potentially harmful applications installed on the device.
+
+## When to Use
+
+This package is ideal for applications that require enhanced security measures, such as:
+
+- Banking and financial apps that handle sensitive user data.
+- E-commerce platforms that process transactions.
+- Social media apps that need to protect user privacy.
+- Any application that wants to ensure a secure environment for its users.
+
+By integrating `huawei_safetydetect`, developers can proactively protect their applications from various security threats.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up Huawei Safety Detect in Flutter
+
+In this tutorial, we will walk through the process of setting up and using the `huawei_safetydetect` package in a Flutter application. We will cover the necessary configurations for both Android and iOS platforms.
+
+## Prerequisites
+
+- A Flutter development environment set up on your machine.
+- A Huawei Developer account to access the Safety Detect service.
+
+## Step 1: Add the Dependency
+
+Add the `huawei_safetydetect` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  huawei_safetydetect: ^x.x.x
+```
+
+Replace `x.x.x` with the latest version of the package.
+
+## Step 2: Configure Android
+
+1. **Add the Huawei Maven Repository**: In your `android/build.gradle` file, add the Huawei Maven repository:
+
+   ```gradle
+   allprojects {
+       repositories {
+           google()
+           jcenter()
+           maven { url 'https://developer.huawei.com/repo/' }
+       }
+   }
+   ```
+
+2. **Configure the App-Level Gradle**: In `android/app/build.gradle`, add the following dependencies:
+
+   ```gradle
+   dependencies {
+       implementation 'com.huawei.hms:safetydetect:5.0.0.300'
+   }
+   ```
+
+3. **Add the API Key**: In `android/app/src/main/AndroidManifest.xml`, add your API key:
+
+   ```xml
+   <meta-data
+       android:name="com.huawei.hms.client.appid"
+       android:value="appid=YOUR_APP_ID" />
+   ```
+
+## Step 3: Configure iOS
+
+1. **CocoaPods Setup**: Ensure your `ios/Podfile` has the following configuration:
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+2. **Add the HMS Core SDK**: In your `ios/Podfile`, add:
+
+   ```ruby
+   pod 'HuaweiSafetyDetect'
+   ```
+
+3. **API Key Configuration**: Add your API key to the `Info.plist` file:
+
+   ```xml
+   <key>HMSApiKey</key>
+   <string>YOUR_API_KEY</string>
+   ```
+
+## Step 4: Initialize the Package
+
+In your Flutter application, initialize the `huawei_safetydetect` package in the `main.dart` file:
+
+```dart
+import 'package:huawei_safetydetect/huawei_safetydetect.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: SafetyDetectDemo(),
+    );
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:huawei_safetydetect/huawei_safetydetect.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Huawei Safety Detect Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: SafetyDetectDemo(),
+    );
+  }
+}
+
+class SafetyDetectDemo extends StatefulWidget {
+  @override
+  _SafetyDetectDemoState createState() => _SafetyDetectDemoState();
+}
+
+class _SafetyDetectDemoState extends State<SafetyDetectDemo> {
+  String _sysIntegrityResult = 'Unknown';
+  String _urlCheckResult = 'Unknown';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSysIntegrity();
+    _checkUrl();
+  }
+
+  // Function to check system integrity
+  Future<void> _checkSysIntegrity() async {
+    try {
+      // Requesting system integrity check
+      String result = await SafetyDetect.sysIntegrity(nonce: 'test_nonce');
+      setState(() {
+        _sysIntegrityResult = result;
+      });
+    } catch (e) {
+      setState(() {
+        _sysIntegrityResult = 'Error: $e';
+      });
+    }
+  }
+
+  // Function to check URL safety
+  Future<void> _checkUrl() async {
+    try {
+      // Requesting URL check
+      String result = await SafetyDetect.urlCheck(
+        url: 'http://example.com',
+        appId: 'YOUR_APP_ID',
+      );
+      setState(() {
+        _urlCheckResult = result;
+      });
+    } catch (e) {
+      setState(() {
+        _urlCheckResult = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Safety Detect Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('System Integrity: $_sysIntegrityResult'),
+            SizedBox(height: 20),
+            Text('URL Check: $_urlCheckResult'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts with the `RealFlutter` widget, which sets up the MaterialApp.
+// 2. The `SafetyDetectDemo` widget is the home screen, which initializes the safety checks.
+// 3. In `initState`, two functions are called: `_checkSysIntegrity` and `_checkUrl`.
+// 4. `_checkSysIntegrity` requests a system integrity check and updates the UI with the result.
+// 5. `_checkUrl` checks the safety of a given URL and updates the UI with the result.
+// 6. The results are displayed on the screen using Text widgets within a Column layout.
+```
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,160 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# AR Flutter Plugin: Augmented Reality in Flutter
+
+The `ar_flutter_plugin` is a powerful Flutter package that enables developers to integrate Augmented Reality (AR) capabilities into their Flutter applications. This package leverages the capabilities of ARCore on Android and ARKit on iOS, providing a unified API to create immersive AR experiences.
+
+## When to Use `ar_flutter_plugin`
+
+- **Interactive Educational Apps**: Enhance learning experiences by overlaying digital content in the real world.
+- **Retail and E-commerce**: Allow users to visualize products in their environment before purchasing.
+- **Gaming**: Create engaging AR games that interact with the user's surroundings.
+- **Navigation and Mapping**: Provide real-time navigation assistance with AR overlays.
+
+## Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **3D Object Rendering**: Render 3D models in the real world.
+- **Plane Detection**: Detect horizontal and vertical planes for placing objects.
+- **Image Recognition**: Recognize and track images in the environment.
+- **Customizable AR Views**: Tailor the AR experience to fit your app's needs.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `ar_flutter_plugin` in Your Flutter Project
+
+Integrating `ar_flutter_plugin` into your Flutter project involves several steps, including platform-specific configurations for Android and iOS.
+
+## Step 1: Add Dependency
+
+Add the `ar_flutter_plugin` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  ar_flutter_plugin: ^0.6.0
+```
+
+## Step 2: Platform-Specific Setup
+
+### Android
+
+1. **Update `AndroidManifest.xml`**: Add the following permissions and features:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-feature android:name="android.hardware.camera.ar" android:required="true"/>
+<uses-feature android:name="android.hardware.camera" android:required="true"/>
+```
+
+2. **ARCore Dependency**: Ensure your `build.gradle` includes ARCore:
+
+```gradle
+dependencies {
+    implementation 'com.google.ar:core:1.31.0'
+}
+```
+
+### iOS
+
+1. **Update `Info.plist`**: Add the following keys:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Camera access is required for AR functionality.</string>
+<key>io.flutter.embedded_views_preview</key>
+<true/>
+```
+
+2. **Enable ARKit**: Ensure your project supports ARKit by setting the deployment target to iOS 11.0 or later.
+
+## Step 3: Initialize the Plugin
+
+Initialize the AR session in your Flutter app by creating a widget that uses `ARView`.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+
+void main() => runApp(RealFlutterApp());
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'AR Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ARHomePage(),
+    );
+  }
+}
+
+class ARHomePage extends StatefulWidget {
+  @override
+  _ARHomePageState createState() => _ARHomePageState();
+}
+
+class _ARHomePageState extends State<ARHomePage> {
+  late ARSessionManager arSessionManager;
+  late ARObjectManager arObjectManager;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('AR Flutter Plugin Example'),
+      ),
+      body: ARView(
+        onARViewCreated: onARViewCreated,
+        planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
+      ),
+    );
+  }
+
+  // This method is called when the AR view is created
+  void onARViewCreated(ARSessionManager arSessionManager, ARObjectManager arObjectManager) {
+    this.arSessionManager = arSessionManager;
+    this.arObjectManager = arObjectManager;
+
+    // Initialize the AR session
+    arSessionManager.onInitialize(
+      showFeaturePoints: true,
+      showPlanes: true,
+      customPlaneTexturePath: "Images/triangle.png",
+      showWorldOrigin: true,
+    );
+
+    // Initialize the object manager
+    arObjectManager.onInitialize();
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the AR session and object manager
+    arSessionManager.dispose();
+    arObjectManager.dispose();
+    super.dispose();
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutterApp` widget, which sets up the MaterialApp.
+// 2. The `ARHomePage` widget is the main screen, displaying an AR view.
+// 3. When the AR view is created, `onARViewCreated` is called, initializing the AR session and object manager.
+// 4. The AR session is configured to show feature points, planes, and the world origin.
+// 5. The app listens for AR events and manages AR objects through the `arObjectManager`.
+// 6. Resources are cleaned up in the `dispose` method to prevent memory leaks.
+```
+
+<-- END_MAIN -->
+```

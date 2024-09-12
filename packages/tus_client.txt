@@ -1,0 +1,192 @@
+Here's a detailed technical blog on the "tus_client" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# tus_client Flutter Package
+
+The `tus_client` package is a Flutter implementation of the [TUS](https://tus.io/) protocol, which is designed for resumable file uploads. This package allows developers to easily integrate resumable uploads into their Flutter applications, making it particularly useful for applications that require reliable file uploads, such as media sharing apps, document management systems, or any app that handles large files.
+
+## When to Use `tus_client`
+
+You should consider using the `tus_client` package in scenarios where:
+- You need to upload large files that may take a long time to complete.
+- You want to ensure that uploads can be resumed after interruptions (e.g., network issues).
+- You require a robust solution for handling file uploads without losing progress.
+
+## Features
+- **Resumable Uploads**: Automatically resumes uploads from where they left off in case of interruptions.
+- **Progress Tracking**: Provides callbacks to track upload progress.
+- **Error Handling**: Built-in mechanisms to handle errors and retries.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+
+With these features, the `tus_client` package simplifies the process of implementing reliable file uploads in your Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `tus_client`
+
+## Step 1: Adding the Dependency
+
+To get started, add the `tus_client` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  tus_client: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle`.
+2. Ensure that the `minSdkVersion` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist`.
+2. Add the following permissions to allow file uploads:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to upload files.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to upload files.</string>
+```
+
+## Step 3: Basic Usage
+
+Here’s how to use the `tus_client` package in your Flutter application:
+
+1. Import the package:
+
+```dart
+import 'package:tus_client/tus_client.dart';
+```
+
+2. Create an instance of the `RealFlutter` class to manage uploads:
+
+```dart
+class RealFlutter {
+  final TusClient _client;
+
+  RealFlutter(String uploadUrl)
+      : _client = TusClient(uploadUrl: uploadUrl);
+
+  Future<void> uploadFile(String filePath) async {
+    try {
+      // Start the upload
+      await _client.upload(filePath);
+      print('Upload complete!');
+    } catch (e) {
+      print('Upload failed: $e');
+    }
+  }
+}
+```
+
+3. Call the `uploadFile` method with the path of the file you want to upload.
+
+This setup allows you to initiate a resumable upload using the TUS protocol.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `tus_client`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:tus_client/tus_client.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'TUS Client Example',
+      home: UploadPage(),
+    );
+  }
+}
+
+class UploadPage extends StatefulWidget {
+  @override
+  _UploadPageState createState() => _UploadPageState();
+}
+
+class _UploadPageState extends State<UploadPage> {
+  final String uploadUrl = 'https://your-tus-server.com/files/';
+  late RealFlutter _realFlutter;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the RealFlutter instance with the upload URL
+    _realFlutter = RealFlutter(uploadUrl);
+  }
+
+  // Function to handle file upload
+  void _uploadFile() async {
+    String filePath = 'path/to/your/file.txt'; // Replace with your file path
+    await _realFlutter.uploadFile(filePath);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('TUS Client Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _uploadFile,
+          child: Text('Upload File'),
+        ),
+      ),
+    );
+  }
+}
+
+class RealFlutter {
+  final TusClient _client;
+
+  RealFlutter(String uploadUrl)
+      : _client = TusClient(uploadUrl: uploadUrl);
+
+  Future<void> uploadFile(String filePath) async {
+    try {
+      // Start the upload
+      await _client.upload(filePath);
+      print('Upload complete!');
+    } catch (e) {
+      print('Upload failed: $e');
+    }
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and displays a button to upload a file.
+// 2. When the button is pressed, the _uploadFile method is called.
+// 3. This method calls the uploadFile method of the RealFlutter class.
+// 4. The RealFlutter class initializes a TusClient with the specified upload URL.
+// 5. The upload method of the TusClient is called with the file path.
+// 6. If the upload is successful, a message is printed; otherwise, an error message is shown.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the `tus_client` Flutter package, detailing its features, setup process, and providing a complete example of its usage. The application flow is straightforward: it initializes the upload client, handles file uploads, and provides feedback on the upload status. This makes it an excellent choice for developers looking to implement reliable file uploads in their Flutter applications.

@@ -1,0 +1,193 @@
+<-- START_DESCRIPTION -->
+
+# Description of fl_mlkit_text_recognize Flutter Package
+=====================================================
+
+The `fl_mlkit_text_recognize` package is a Flutter plugin that utilizes the Google ML Kit Text Recognition API to recognize text in images. It provides a simple and efficient way to integrate text recognition capabilities into your Flutter applications.
+
+### When to Use This Package
+
+This package is ideal for applications that require text recognition from images, such as:
+
+*   OCR (Optical Character Recognition) apps
+*   Image-based document scanning apps
+*   Text extraction from images for data analysis or processing
+
+### Features
+
+*   Recognize text in images using the Google ML Kit Text Recognition API
+*   Support for both Android and iOS platforms
+*   Simple and efficient API for integrating text recognition capabilities into your Flutter applications
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the fl_mlkit_text_recognize Package
+=============================================================
+
+### Step 1: Add the Package to Your Flutter Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  fl_mlkit_text_recognize: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Configure Platform-Specific Settings
+
+#### Android
+
+In your `AndroidManifest.xml` file, add the following permission:
+
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+```
+
+#### iOS
+
+In your `Info.plist` file, add the following key:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to scan documents.</string>
+```
+
+### Step 3: Import the Package and Use the Text Recognition API
+
+Import the package in your Dart file:
+
+```dart
+import 'package:fl_mlkit_text_recognize/fl_mlkit_text_recognize.dart';
+```
+
+Create an instance of the `TextRecognizer` class and use the `recognizeText` method to recognize text in an image:
+
+```dart
+TextRecognizer _textRecognizer = TextRecognizer();
+
+Future<void> _recognizeText() async {
+  final File imageFile = File('path_to_your_image.jpg');
+  final List<TextBlock> textBlocks = await _textRecognizer.recognizeText(imageFile);
+
+  // Process the recognized text blocks
+  for (TextBlock textBlock in textBlocks) {
+    print(textBlock.text);
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:fl_mlkit_text_recognize/fl_mlkit_text_recognize.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  File _imageFile;
+  List<TextBlock> _textBlocks = [];
+
+  // Create an instance of the TextRecognizer class
+  TextRecognizer _textRecognizer = TextRecognizer();
+
+  // Function to pick an image from the gallery
+  Future<void> _pickImage() async {
+    final File imageFile = await ImagePicker().getImage(source: ImageSource.gallery).then((pickedFile) => File(pickedFile.path));
+    setState(() {
+      _imageFile = imageFile;
+    });
+  }
+
+  // Function to recognize text in the picked image
+  Future<void> _recognizeText() async {
+    if (_imageFile != null) {
+      // Use the recognizeText method to recognize text in the image
+      final List<TextBlock> textBlocks = await _textRecognizer.recognizeText(_imageFile);
+      setState(() {
+        _textBlocks = textBlocks;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Text Recognition Example'),
+      ),
+      body: Column(
+        children: <Widget>[
+          // Display the picked image
+          _imageFile != null
+              ? Image.file(_imageFile)
+              : Container(),
+          SizedBox(height: 20),
+          // Button to pick an image
+          ElevatedButton(
+            onPressed: _pickImage,
+            child: Text('Pick Image'),
+          ),
+          SizedBox(height: 10),
+          // Button to recognize text
+          ElevatedButton(
+            onPressed: _recognizeText,
+            child: Text('Recognize Text'),
+          ),
+          SizedBox(height: 20),
+          // Display the recognized text blocks
+          _textBlocks.isNotEmpty
+              ? Expanded(
+                  child: ListView.builder(
+                    itemCount: _textBlocks.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ListTile(
+                        title: Text(_textBlocks[index].text),
+                      );
+                    },
+                  ),
+                )
+              : Container(),
+        ],
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user clicks the "Pick Image" button to select an image from the gallery.
+// 2. The picked image is displayed on the screen.
+// 3. The user clicks the "Recognize Text" button to recognize text in the picked image.
+// 4. The recognized text blocks are displayed on the screen in a list view.
+// 5. The user can scroll through the list view to view all the recognized text blocks.
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Text Recognition Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+```
+
+<-- END_MAIN -->

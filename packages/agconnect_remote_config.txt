@@ -1,0 +1,153 @@
+<-- START_DESCRIPTION -->
+
+# agconnect_remote_config Flutter Package
+=====================================
+
+The `agconnect_remote_config` Flutter package is a powerful tool for managing remote configurations in your Flutter applications. It allows you to store and manage configuration data in the cloud, making it easy to update and change your app's behavior without requiring a new release.
+
+## When to Use This Package
+---------------------------
+
+This package is particularly useful in scenarios where you need to:
+
+* Store and manage configuration data that changes frequently
+* Update your app's behavior without requiring a new release
+* A/B testing and experimentation
+* Feature flagging and rollouts
+
+## Features
+------------
+
+The `agconnect_remote_config` package provides the following features:
+
+* Store and manage configuration data in the cloud
+* Support for multiple data types (strings, numbers, booleans, etc.)
+* Support for conditional statements and rules
+* Integration with Huawei's AGC Remote Configuration service
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `agconnect_remote_config` package, you need to follow these steps:
+
+### Step 1: Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+```yml
+dependencies:
+  agconnect_remote_config: ^1.0.0
+```
+### Step 2: Initialize the Package
+
+Import the package and initialize it in your `main` function:
+```dart
+import 'package:agconnect_remote_config/agconnect_remote_config.dart';
+
+void main() {
+  AgconnectRemoteConfig.instance.initialize(
+    appId: 'YOUR_APP_ID',
+    apiKey: 'YOUR_API_KEY',
+  );
+  runApp(MyApp());
+}
+```
+### Step 3: Configure the Package
+
+Configure the package by setting up the remote configuration service:
+```dart
+AgconnectRemoteConfig.instance.configure(
+  fetchInterval: Duration(hours: 1),
+  minimumFetchInterval: Duration(minutes: 30),
+);
+```
+### Platform-Specific Details
+
+For Android, you need to add the following configuration to your `AndroidManifest.xml` file:
+```xml
+<application>
+  <meta-data
+    android:name="com.huawei.agconnect.remoteconfig.app_id"
+    android:value="YOUR_APP_ID" />
+  <meta-data
+    android:name="com.huawei.agconnect.remoteconfig.api_key"
+    android:value="YOUR_API_KEY" />
+</application>
+```
+For iOS, you need to add the following configuration to your `Info.plist` file:
+```xml
+<key>AGCRemoteConfigAppId</key>
+<string>YOUR_APP_ID</string>
+<key>AGCRemoteConfigApiKey</key>
+<string>YOUR_API_KEY</string>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:agconnect_remote_config/agconnect_remote_config.dart';
+
+void main() {
+  AgconnectRemoteConfig.instance.initialize(
+    appId: 'YOUR_APP_ID',
+    apiKey: 'YOUR_API_KEY',
+  );
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  String _welcomeMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRemoteConfig();
+  }
+
+  Future<void> _fetchRemoteConfig() async {
+    try {
+      await AgconnectRemoteConfig.instance.fetchAndActivate();
+      final welcomeMessage = AgconnectRemoteConfig.instance.getValue('welcome_message');
+      setState(() {
+        _welcomeMessage = welcomeMessage;
+      });
+    } catch (e) {
+      print('Error fetching remote config: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Real Flutter',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Real Flutter'),
+        ),
+        body: Center(
+          child: Text(_welcomeMessage),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The app initializes the AgconnectRemoteConfig instance with the app ID and API key.
+// 2. The app fetches the remote configuration using the fetchAndActivate method.
+// 3. The app gets the value of the 'welcome_message' key from the remote configuration.
+// 4. The app updates the UI with the welcome message.
+// 5. If there is an error fetching the remote configuration, the app prints the error message.
+```
+
+// The code flow is straightforward. The app initializes the AgconnectRemoteConfig instance, fetches the remote configuration, gets the value of the 'welcome_message' key, and updates the UI with the welcome message. If there is an error, the app prints the error message. The remote configuration is fetched and activated using the fetchAndActivate method, which is a convenient way to fetch and activate the remote configuration in a single step. The getValue method is used to get the value of the 'welcome_message' key from the remote configuration. The UI is updated with the welcome message using the setState method.

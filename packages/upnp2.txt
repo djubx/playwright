@@ -1,0 +1,171 @@
+Here's a detailed technical blog on the "upnp2" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# UPnP2 Flutter Package
+
+The **UPnP2** package for Flutter is a powerful library that allows developers to implement Universal Plug and Play (UPnP) functionalities in their applications. UPnP is a set of networking protocols that permits networked devices to discover each other and establish functional network services for data sharing, communications, and entertainment.
+
+## When to Use UPnP2
+
+You might consider using the UPnP2 package in scenarios such as:
+- **Home Automation**: To control smart devices like lights, cameras, and thermostats that support UPnP.
+- **Media Streaming**: To discover and interact with media servers and renderers in a local network.
+- **Network Management**: To manage and configure network devices dynamically.
+
+## Features
+
+- **Device Discovery**: Automatically discover UPnP devices on the local network.
+- **Service Control**: Interact with the services provided by UPnP devices.
+- **Event Subscription**: Subscribe to events from UPnP devices to receive updates.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+
+The UPnP2 package simplifies the integration of UPnP functionalities into Flutter applications, making it easier to create rich, interactive experiences that leverage local network capabilities.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using UPnP2
+
+## Step 1: Adding the Dependency
+
+To get started with the UPnP2 package, add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  upnp2: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/upnp2).
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+1. **Permissions**: Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+   ```
+
+2. **Network Security**: If you are targeting Android 9 (API level 28) or higher, you may need to add a network security configuration to allow cleartext traffic. Add the following to your `AndroidManifest.xml`:
+
+   ```xml
+   <application
+       ...
+       android:networkSecurityConfig="@xml/network_security_config">
+   </application>
+   ```
+
+   Then create a new XML file at `android/app/src/main/res/xml/network_security_config.xml`:
+
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <network-security-config>
+       <domain-config cleartextTrafficPermitted="true">
+           <domain includeSubdomains="true">your_domain.com</domain>
+       </domain-config>
+   </network-security-config>
+   ```
+
+### iOS
+
+1. **Permissions**: Open your `Info.plist` file located at `ios/Runner/Info.plist` and add the following:
+
+   ```xml
+   <key>NSBonjourServices</key>
+   <array>
+       <string>_http._tcp</string>
+   </array>
+   <key>NSLocalNetworkUsageDescription</key>
+   <string>This app requires access to the local network to discover UPnP devices.</string>
+   ```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Below is a complete example demonstrating how to discover UPnP devices and interact with them.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of UPnP2 in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:upnp2/upnp2.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // List to hold discovered UPnP devices
+  List<UPnPDevice> devices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Start device discovery when the app initializes
+    discoverDevices();
+  }
+
+  // Function to discover UPnP devices
+  void discoverDevices() async {
+    // Create a UPnP client
+    final client = UPnPClient();
+    
+    // Start discovering devices
+    await client.start();
+    
+    // Listen for discovered devices
+    client.onDeviceDiscovered.listen((device) {
+      // Add discovered device to the list
+      setState(() {
+        devices.add(device);
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('UPnP2 Example'),
+        ),
+        body: ListView.builder(
+          itemCount: devices.length,
+          itemBuilder: (context, index) {
+            // Display each discovered device
+            return ListTile(
+              title: Text(devices[index].friendlyName),
+              subtitle: Text(devices[index].location),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts by running the RealFlutter widget.
+// 2. In the initState method, the discoverDevices function is called to start discovering UPnP devices.
+// 3. A UPnPClient instance is created, and device discovery begins.
+// 4. When a device is discovered, it is added to the devices list, and the UI is updated.
+// 5. The build method constructs the UI, displaying a list of discovered devices with their friendly names and locations.
+```
+
+<!-- END_MAIN -->
+
+In this example, the application initializes a UPnP client to discover devices on the local network. The discovered devices are displayed in a list, showing their friendly names and locations. The flow of the application is straightforward: it starts device discovery upon initialization, updates the UI with discovered devices, and presents them in a user-friendly manner. 
+
+This blog provides a comprehensive overview of the UPnP2 Flutter package, guiding you through its setup and usage, and demonstrating its capabilities with a complete example.

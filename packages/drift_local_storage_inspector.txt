@@ -1,0 +1,220 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Drift Local Storage Inspector Flutter Package
+
+The `drift_local_storage_inspector` package is a powerful tool for Flutter developers who want to inspect and debug their local storage databases. It provides a user-friendly interface to view and manipulate the data stored in SQLite databases used by the Drift (previously known as moor) package. This package is particularly useful during development and testing phases, allowing developers to ensure that their data is being stored and retrieved correctly.
+
+## When to Use This Package
+
+- **Debugging**: When you need to inspect the contents of your local database to troubleshoot issues.
+- **Data Validation**: To verify that the data being stored matches your expectations.
+- **Development**: During the development phase, to quickly check the state of your database without writing additional code.
+
+## Features
+
+- **User-Friendly Interface**: Provides a simple UI to browse through your database tables and records.
+- **Real-Time Updates**: Automatically refreshes the displayed data when changes occur in the database.
+- **Data Manipulation**: Allows you to add, update, or delete records directly from the inspector.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+By integrating this package into your Flutter application, you can significantly enhance your debugging capabilities and streamline your development process.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Drift Local Storage Inspector
+
+In this tutorial, we will walk through the setup process for the `drift_local_storage_inspector` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependencies
+
+First, you need to add the `drift_local_storage_inspector` package to your `pubspec.yaml` file. Make sure to also include the `drift` package if you haven't already.
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  drift: ^x.x.x # Replace with the latest version
+  drift_local_storage_inspector: ^x.x.x # Replace with the latest version
+```
+
+## Step 2: Configure for Android
+
+For Android, ensure that your `AndroidManifest.xml` file includes the necessary permissions for accessing local storage. You may need to add the following lines:
+
+```xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+```
+
+## Step 3: Configure for iOS
+
+For iOS, you need to add the following keys to your `Info.plist` file to allow access to local storage:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to save images.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to take pictures.</string>
+```
+
+## Step 4: Initialize the Inspector
+
+In your main application file, you need to initialize the `drift_local_storage_inspector`. Here’s how you can do it:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:drift_local_storage_inspector/drift_local_storage_inspector.dart';
+
+void main() {
+  runApp(MyApp());
+  DriftLocalStorageInspector.init();
+}
+```
+
+## Step 5: Using the Inspector
+
+To use the inspector, you can simply call `DriftLocalStorageInspector.show()` at any point in your application where you want to inspect the database. For example, you might want to add a button that opens the inspector:
+
+```dart
+ElevatedButton(
+  onPressed: () {
+    DriftLocalStorageInspector.show();
+  },
+  child: Text('Open Database Inspector'),
+)
+```
+
+With these steps, you should be able to set up and use the `drift_local_storage_inspector` package in your Flutter application effectively.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using Drift Local Storage Inspector
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:drift/drift.dart';
+import 'package:drift_local_storage_inspector/drift_local_storage_inspector.dart';
+
+// Define a simple database table
+@DataClassName('User')
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 1, max: 50)();
+}
+
+// Create a database class
+@DriftDatabase(tables: [Users])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'app.db'));
+
+  @override
+  int get schemaVersion => 1;
+
+  // Function to insert a user
+  Future<int> insertUser(UsersCompanion user) {
+    return into(users).insert(user);
+  }
+
+  // Function to retrieve all users
+  Future<List<User>> getAllUsers() {
+    return select(users).get();
+  }
+}
+
+void main() {
+  runApp(MyApp());
+  DriftLocalStorageInspector.init(); // Initialize the inspector
+}
+
+// Main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Drift Local Storage Inspector Example',
+      home: UserListScreen(),
+    );
+  }
+}
+
+// Screen to display the list of users
+class UserListScreen extends StatefulWidget {
+  @override
+  _UserListScreenState createState() => _UserListScreenState();
+}
+
+class _UserListScreenState extends State<UserListScreen> {
+  final AppDatabase database = AppDatabase();
+  List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers(); // Load users when the screen initializes
+  }
+
+  // Load users from the database
+  Future<void> _loadUsers() async {
+    users = await database.getAllUsers();
+    setState(() {}); // Update the UI
+  }
+
+  // Function to add a new user
+  void _addUser() async {
+    await database.insertUser(UsersCompanion(name: Value('New User')));
+    _loadUsers(); // Reload users after adding
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('User List'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.storage),
+            onPressed: () {
+              DriftLocalStorageInspector.show(); // Open the inspector
+            },
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        itemCount: users.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(users[index].name),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addUser, // Add user on button press
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+```
+
+```
+// Explanation of the application flow:
+
+// 1. The application starts with the `main()` function, which initializes the Flutter app and the Drift Local Storage Inspector.
+// 2. The `MyApp` widget is the root of the application, setting up the title and home screen.
+// 3. The `UserListScreen` widget is responsible for displaying a list of users from the database.
+// 4. In the `initState()` method, the `_loadUsers()` function is called to fetch users from the database when the screen is initialized.
+// 5. The `_loadUsers()` function retrieves all users and updates the state to refresh the UI.
+// 6. The app bar includes an icon button that opens the Drift Local Storage Inspector when pressed.
+// 7. The body of the screen displays a list of users, and a floating action button allows users to add a new user.
+// 8. When the floating action button is pressed, the `_addUser()` function is called, which inserts a new user into the database and reloads the user list.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog provides a comprehensive overview of the `drift_local_storage_inspector` package, guiding users through its setup, usage, and a complete example to illustrate its functionality.

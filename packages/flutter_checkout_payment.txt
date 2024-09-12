@@ -1,0 +1,230 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Checkout Payment Package
+=====================================
+
+The `flutter_checkout_payment` package is a Flutter plugin that allows developers to integrate Checkout.com payment gateway into their Flutter applications. It provides a simple and secure way to process payments using various payment methods, including credit/debit cards, PayPal, and more.
+
+### When to Use This Package
+
+This package is ideal for e-commerce applications, online marketplaces, and any other type of application that requires payment processing. It's also suitable for applications that need to handle recurring payments, refunds, and other payment-related operations.
+
+### Features
+
+*   Supports multiple payment methods, including credit/debit cards, PayPal, and more
+*   Handles payment processing, including tokenization and charging
+*   Supports recurring payments and refunds
+*   Provides a customizable payment form for collecting payment information
+*   Supports 3D Secure payment flow
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_checkout_payment` package, follow these steps:
+
+### Step 1: Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_checkout_payment: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:flutter_checkout_payment/flutter_checkout_payment.dart';
+```
+
+### Step 3: Initialize the Package
+
+Initialize the package with your Checkout.com API keys:
+
+```dart
+CheckoutPayment.init(
+  publicKey: 'YOUR_PUBLIC_KEY',
+  secretKey: 'YOUR_SECRET_KEY',
+);
+```
+
+### Platform-Specific Details
+
+#### Android
+
+Add the following code to your `AndroidManifest.xml` file:
+
+```xml
+<application
+  ...
+  android:usesCleartextTraffic="true"
+  ...>
+</application>
+```
+
+#### iOS
+
+Add the following code to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+### Required Configurations
+
+You need to configure the payment form to collect payment information. You can customize the form by providing your own layout and styles.
+
+### Optimizations
+
+You can optimize the payment flow by using the `CheckoutPayment.tokenize` method to tokenize the payment information before charging the customer.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_checkout_payment/flutter_checkout_payment.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Checkout Payment Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: CheckoutPaymentDemo(),
+    );
+  }
+}
+
+class CheckoutPaymentDemo extends StatefulWidget {
+  @override
+  _CheckoutPaymentDemoState createState() => _CheckoutPaymentDemoState();
+}
+
+class _CheckoutPaymentDemoState extends State<CheckoutPaymentDemo> {
+  final _formKey = GlobalKey<FormState>();
+  final _cardNumberController = TextEditingController();
+  final _expiryDateController = TextEditingController();
+  final _cvvController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Checkout Payment Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _cardNumberController,
+                decoration: InputDecoration(
+                  labelText: 'Card Number',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter your card number';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _expiryDateController,
+                decoration: InputDecoration(
+                  labelText: 'Expiry Date',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter your expiry date';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _cvvController,
+                decoration: InputDecoration(
+                  labelText: 'CVV',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter your CVV';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    // Tokenize the payment information
+                    final token = await CheckoutPayment.tokenize(
+                      cardNumber: _cardNumberController.text,
+                      expiryDate: _expiryDateController.text,
+                      cvv: _cvvController.text,
+                    );
+
+                    // Charge the customer
+                    final charge = await CheckoutPayment.charge(
+                      token: token,
+                      amount: 10.99,
+                      currency: 'USD',
+                    );
+
+                    // Handle the charge response
+                    if (charge.status == 'Authorized') {
+                      print('Payment successful!');
+                    } else {
+                      print('Payment failed!');
+                    }
+                  }
+                },
+                child: Text('Make Payment'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user enters their payment information (card number, expiry date, and CVV) into the form.
+// 2. When the user submits the form, the payment information is tokenized using the `CheckoutPayment.tokenize` method.
+// 3. The tokenized payment information is then used to charge the customer using the `CheckoutPayment.charge` method.
+// 4. The charge response is handled, and if the payment is successful, a success message is printed to the console.
+// 5. If the payment fails, an error message is printed to the console.
+
+// In summary, the code flows as follows:
+// Payment Form -> Tokenize Payment Information -> Charge Customer -> Handle Charge Response
+
+```
+
+<-- END_MAIN -->

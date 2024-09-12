@@ -1,0 +1,146 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Web Socket Package Overview
+=====================================
+
+The `flutter_web_socket` package provides a simple and efficient way to establish WebSocket connections in Flutter applications. WebSockets allow for bidirectional, real-time communication between a client (in this case, a Flutter app) and a server over the web.
+
+### When to Use This Package
+
+Use this package when you need to:
+
+* Establish real-time communication between your Flutter app and a server
+* Send and receive data in real-time, such as live updates or chat messages
+* Implement features like live updates, gaming, or collaborative editing
+
+### Features
+
+* Supports WebSocket protocol version 13 (RFC 6455)
+* Automatic connection management (connect, disconnect, reconnect)
+* Event-driven API for receiving messages and connection state changes
+* Supports sending and receiving text and binary data
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the Package
+=====================================
+
+### Step 1: Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter_web_socket: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:flutter_web_socket/flutter_web_socket.dart';
+```
+### Step 3: Create a WebSocket Connection
+
+Create a WebSocket connection by calling the `connect` method:
+```dart
+final WebSocket _webSocket = await WebSocket.connect('ws://example.com/ws');
+```
+Replace `ws://example.com/ws` with your server's WebSocket URL.
+
+### Step 4: Send and Receive Data
+
+Send data using the `send` method:
+```dart
+_webSocket.send('Hello, server!');
+```
+Receive data by listening to the `onMessage` event:
+```dart
+_webSocket.onMessage.listen((event) {
+  print('Received message: $event');
+});
+```
+### Platform-Specific Details
+
+* Android: No additional setup required.
+* iOS: Add the following lines to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+This allows the app to make WebSocket connections to any server.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_web_socket/flutter_web_socket.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _webSocket = WebSocket.connect('ws://example.com/ws');
+
+  @override
+  void initState() {
+    super.initState();
+    _webSocket.then((webSocket) {
+      webSocket.onMessage.listen((event) {
+        print('Received message: $event');
+        setState(() {
+          _receivedMessage = event;
+        });
+      });
+    });
+  }
+
+  String _receivedMessage = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('WebSocket Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_receivedMessage),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _webSocket.then((webSocket) {
+                  webSocket.send('Hello, server!');
+                });
+              },
+              child: Text('Send Message'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The app creates a WebSocket connection to the server when the widget is initialized.
+// 2. When the connection is established, the app listens for incoming messages from the server.
+// 3. When a message is received, the app updates the UI with the received message.
+// 4. When the user presses the "Send Message" button, the app sends a message to the server.
+// 5. The server processes the message and sends a response back to the app.
+// 6. The app receives the response and updates the UI with the received message.
+
+```
+
+<-- END_MAIN -->

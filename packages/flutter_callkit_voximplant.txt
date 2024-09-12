@@ -1,0 +1,222 @@
+<-- START_DESCRIPTION -->
+
+# Flutter CallKit Voximplant Package
+=====================================
+
+The `flutter_callkit_voximplant` package is a Flutter plugin that allows developers to integrate CallKit functionality into their apps using the Voximplant platform. CallKit is a framework provided by Apple that enables developers to integrate their VoIP apps with the native Phone app on iOS devices.
+
+This package is particularly useful when building VoIP-based applications that require seamless integration with the native call screen on iOS devices. It provides a set of APIs that allow developers to handle incoming and outgoing calls, as well as manage call states and events.
+
+Some key features of the `flutter_callkit_voximplant` package include:
+
+*   Handling incoming and outgoing calls
+*   Managing call states and events
+*   Integrating with the native call screen on iOS devices
+*   Supporting both audio and video calls
+
+When to use this package:
+
+*   Building VoIP-based applications that require integration with the native call screen on iOS devices
+*   Developing apps that need to handle incoming and outgoing calls
+*   Creating applications that require seamless CallKit integration
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_callkit_voximplant` package, follow these steps:
+
+### Step 1: Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_callkit_voximplant: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Configure the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:flutter_callkit_voximplant/flutter_callkit_voximplant.dart';
+```
+
+### Step 3: Initialize the Package
+
+Initialize the package by calling the `init` method:
+
+```dart
+await FlutterCallkitVoximplant.init(
+  voximplantAccountId: 'YOUR_ACCOUNT_ID',
+  voximplantAccountPassword: 'YOUR_ACCOUNT_PASSWORD',
+  voximplantApplicationId: 'YOUR_APPLICATION_ID',
+);
+```
+
+### Platform-Specific Details
+
+#### Android
+
+On Android, you need to add the following permissions to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+```
+
+#### iOS
+
+On iOS, you need to add the following permissions to your `Info.plist` file:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>This app needs access to the microphone to make calls</string>
+<key>NSCameraUsageDescription</key>
+<string>This app needs access to the camera to make video calls</string>
+```
+
+You also need to add the following code to your `AppDelegate.swift` file:
+
+```swift
+import CallKit
+
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+  // Initialize CallKit
+  CXProviderConfiguration.localizedName = "Your App Name"
+  CXProviderConfiguration.ringtoneSound = "Your Ringtone Sound"
+  return true
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_callkit_voximplant/flutter_callkit_voximplant.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Initialize the package
+  Future<void> _initPackage() async {
+    await FlutterCallkitVoximplant.init(
+      voximplantAccountId: 'YOUR_ACCOUNT_ID',
+      voximplantAccountPassword: 'YOUR_ACCOUNT_PASSWORD',
+      voximplantApplicationId: 'YOUR_APPLICATION_ID',
+    );
+  }
+
+  // Make a call
+  Future<void> _makeCall() async {
+    // Get the current call state
+    final callState = await FlutterCallkitVoximplant.getCallState();
+
+    // Check if the call is already in progress
+    if (callState == CallState.inProgress) {
+      print('Call is already in progress');
+      return;
+    }
+
+    // Make the call
+    await FlutterCallkitVoximplant.makeCall(
+      to: 'TO_NUMBER',
+      from: 'FROM_NUMBER',
+      video: true,
+    );
+  }
+
+  // Answer a call
+  Future<void> _answerCall() async {
+    // Get the current call state
+    final callState = await FlutterCallkitVoximplant.getCallState();
+
+    // Check if the call is ringing
+    if (callState == CallState.ringing) {
+      // Answer the call
+      await FlutterCallkitVoximplant.answerCall();
+    } else {
+      print('Call is not ringing');
+    }
+  }
+
+  // Hang up a call
+  Future<void> _hangUpCall() async {
+    // Get the current call state
+    final callState = await FlutterCallkitVoximplant.getCallState();
+
+    // Check if the call is in progress
+    if (callState == CallState.inProgress) {
+      // Hang up the call
+      await FlutterCallkitVoximplant.hangUpCall();
+    } else {
+      print('Call is not in progress');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter CallKit Voximplant'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _initPackage,
+              child: Text('Initialize Package'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _makeCall,
+              child: Text('Make Call'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _answerCall,
+              child: Text('Answer Call'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _hangUpCall,
+              child: Text('Hang Up Call'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. Initialize the package by calling the `init` method.
+// 2. Make a call by calling the `makeCall` method.
+// 3. Answer a call by calling the `answerCall` method.
+// 4. Hang up a call by calling the `hangUpCall` method.
+// 5. Get the current call state by calling the `getCallState` method.
+// 6. Check if the call is already in progress before making a new call.
+// 7. Check if the call is ringing before answering the call.
+// 8. Check if the call is in progress before hanging up the call.
+
+void main() {
+  runApp(RealFlutter());
+}
+```
+
+<-- END_MAIN -->

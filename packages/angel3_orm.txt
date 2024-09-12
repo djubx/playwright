@@ -1,0 +1,169 @@
+<-- START_DESCRIPTION -->
+
+# Angel3 ORM Flutter Package
+================================
+
+The `angel3_orm` package is a powerful Object-Relational Mapping (ORM) tool for Flutter, designed to simplify the process of interacting with databases. It provides a robust and flexible framework for mapping database tables to Dart objects, making it easier to manage data in your Flutter applications.
+
+## When to Use Angel3 ORM
+-------------------------
+
+You should consider using `angel3_orm` in the following scenarios:
+
+* When working with complex databases that involve multiple tables and relationships.
+* When you need to perform CRUD (Create, Read, Update, Delete) operations on data in a database.
+* When you want to abstract away the underlying database implementation and focus on writing business logic.
+
+## Key Features
+----------------
+
+* Support for multiple database platforms, including MySQL, PostgreSQL, and SQLite.
+* Automatic generation of database schema from Dart objects.
+* Robust support for relationships between tables, including one-to-one, one-to-many, and many-to-many.
+* Efficient data retrieval and caching mechanisms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Angel3 ORM
+-------------------------
+
+To use `angel3_orm` in your Flutter project, follow these steps:
+
+### Step 1: Add the Package to Your `pubspec.yaml` File
+
+```yml
+dependencies:
+  angel3_orm: ^1.0.0
+```
+
+### Step 2: Import the Package in Your Dart File
+
+```dart
+import 'package:angel3_orm/angel3_orm.dart';
+```
+
+### Step 3: Define Your Database Schema
+
+Create a new file called `schema.dart` and define your database schema using the `angel3_orm` API:
+
+```dart
+import 'package:angel3_orm/angel3_orm.dart';
+
+part 'schema.g.dart';
+
+@orm
+class User extends Model {
+  @Column(primaryKey: true)
+  int id;
+
+  @Column()
+  String name;
+
+  @Column()
+  String email;
+}
+```
+
+### Step 4: Generate the Database Schema
+
+Run the following command in your terminal to generate the database schema:
+
+```bash
+flutter pub run build_runner build
+```
+
+### Step 5: Initialize the Database
+
+Create a new file called `database.dart` and initialize the database using the `angel3_orm` API:
+
+```dart
+import 'package:angel3_orm/angel3_orm.dart';
+import 'package:path/path.dart' as path;
+
+Future<Database> initializeDatabase() async {
+  final databasePath = await getDatabasesPath();
+  final database = await openDatabase(
+    path.join(databasePath, 'my_database.db'),
+    version: 1,
+    onCreate: (db, version) async {
+      await db.execute('''
+        CREATE TABLE users (
+          id INTEGER PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL
+        );
+      ''');
+    },
+  );
+
+  return database;
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:angel3_orm/angel3_orm.dart';
+import 'package:path/path.dart' as path;
+
+void main() async {
+  final database = await initializeDatabase();
+
+  // Create a new user
+  final user = User(
+    id: 1,
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+  );
+
+  // Insert the user into the database
+  await database.insert('users', user.toJson());
+
+  // Retrieve the user from the database
+  final retrievedUser = await database.query('users', where: 'id = ?', whereArgs: [1]);
+
+  // Update the user's email address
+  retrievedUser.first['email'] = 'jane.doe@example.com';
+
+  // Update the user in the database
+  await database.update('users', retrievedUser.first, where: 'id = ?', whereArgs: [1]);
+
+  // Delete the user from the database
+  await database.delete('users', where: 'id = ?', whereArgs: [1]);
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Angel3 ORM Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Angel3 ORM Demo'),
+        ),
+        body: Center(
+          child: Text('Angel3 ORM Demo'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application flow is as follows:
+// 1. The `main` function is called, which initializes the database using the `initializeDatabase` function.
+// 2. The `initializeDatabase` function opens the database and creates the `users` table if it does not exist.
+// 3. The `main` function creates a new `User` object and inserts it into the database using the `insert` method.
+// 4. The `main` function retrieves the user from the database using the `query` method.
+// 5. The `main` function updates the user's email address and updates the user in the database using the `update` method.
+// 6. The `main` function deletes the user from the database using the `delete` method.
+// 7. The `main` function runs the `MyApp` widget, which displays a simple text message.
+
+<-- END_MAIN -->

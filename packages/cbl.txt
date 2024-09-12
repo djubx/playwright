@@ -1,0 +1,226 @@
+Here's a detailed technical blog on the "cbl" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# CBL Flutter Package
+
+The **CBL (Couchbase Lite)** Flutter package is a powerful tool that allows developers to integrate Couchbase Lite into their Flutter applications. Couchbase Lite is a NoSQL database designed for mobile and embedded applications, providing features like offline data access, synchronization, and real-time updates. This package is particularly useful for applications that require local data storage and synchronization with a remote Couchbase server.
+
+## When to Use CBL
+
+You should consider using the CBL Flutter package in scenarios such as:
+
+- **Offline-First Applications**: When your app needs to function without an internet connection and sync data when connectivity is restored.
+- **Real-Time Collaboration**: For applications that require multiple users to interact with the same data in real-time.
+- **Complex Data Structures**: When your application needs to handle complex data types and relationships that are better suited for a NoSQL database.
+
+## Features
+
+- **Local Data Storage**: Store data locally on the device, allowing for fast access and manipulation.
+- **Synchronization**: Automatically sync data between the local database and a remote Couchbase server.
+- **Querying**: Use N1QL (SQL-like query language) to perform complex queries on your data.
+- **Change Notifications**: Listen for changes in the database and update the UI accordingly.
+
+The CBL Flutter package provides a robust solution for managing data in Flutter applications, making it an excellent choice for developers looking to implement offline capabilities and real-time data synchronization.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the CBL Flutter Package
+
+In this tutorial, we will walk through the setup process for the CBL Flutter package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the CBL Flutter package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cbl: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/cbl).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update `android/app/build.gradle`**: Ensure that your `minSdkVersion` is set to at least 21.
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+2. **Permissions**: Add the necessary permissions in `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+### iOS Configuration
+
+1. **Update `ios/Podfile`**: Ensure that the platform is set to at least 10.0.
+
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+2. **Permissions**: Add the necessary permissions in `Info.plist`:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Initializing the Database
+
+In your Flutter application, you need to initialize the Couchbase Lite database. Here’s how to do it:
+
+```dart
+import 'package:cbl/cbl.dart';
+
+void main() async {
+  // Initialize the Couchbase Lite database
+  await CBL.initialize();
+  // Create or open a database
+  final database = await Database.open('my_database');
+}
+```
+
+## Step 4: Using the Database
+
+You can now perform CRUD operations on your database. Here’s a simple example of how to add and retrieve documents:
+
+```dart
+// Create a new document
+final document = MutableDocument('user_1')
+  ..setString('name', 'John Doe')
+  ..setInt('age', 30);
+
+// Save the document to the database
+await database.save(document);
+
+// Retrieve the document
+final retrievedDocument = await database.getDocument('user_1');
+print('Name: ${retrievedDocument?.getString('name')}');
+```
+
+This setup allows you to leverage the full power of Couchbase Lite in your Flutter applications, enabling offline capabilities and real-time data synchronization.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Using the CBL Flutter Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cbl/cbl.dart';
+
+void main() async {
+  // Initialize the Couchbase Lite database
+  await CBL.initialize();
+  // Create or open a database
+  final database = await Database.open('my_database');
+
+  runApp(MyApp(database: database));
+}
+
+class MyApp extends StatelessWidget {
+  final Database database;
+
+  MyApp({required this.database});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CBL Flutter Example',
+      home: HomePage(database: database),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  final Database database;
+
+  HomePage({required this.database});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<String> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  // Load users from the database
+  Future<void> _loadUsers() async {
+    final query = Query.allDocuments();
+    final result = await widget.database.query(query);
+    setState(() {
+      users = result.map((doc) => doc.getString('name') ?? '').toList();
+    });
+  }
+
+  // Add a new user to the database
+  Future<void> _addUser(String name) async {
+    final document = MutableDocument('user_${users.length + 1}')
+      ..setString('name', name);
+    await widget.database.save(document);
+    _loadUsers(); // Refresh the user list
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('CBL Users')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                return ListTile(title: Text(users[index]));
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onSubmitted: _addUser,
+              decoration: InputDecoration(labelText: 'Add User'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes the Couchbase Lite database and opens a database named 'my_database'.
+// 2. The MyApp widget is created, passing the database instance to the HomePage.
+// 3. In the HomePage, the _loadUsers method is called during initState to fetch existing users from the database.
+// 4. The users are displayed in a ListView, and a TextField allows users to add new names.
+// 5. When a name is submitted, the _addUser method creates a new document in the database and refreshes the user list.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the CBL Flutter package, detailing its features, setup process, and providing a complete example of its usage. The application demonstrates how to initialize the database, perform CRUD operations, and manage user input effectively. This package is a powerful tool for developers looking to implement offline capabilities and real-time data synchronization in their Flutter applications.

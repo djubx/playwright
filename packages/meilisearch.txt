@@ -1,0 +1,168 @@
+<-- START_DESCRIPTION -->
+
+Meilisearch Flutter Package
+==========================
+
+The Meilisearch Flutter package is a lightweight and highly customizable search library for Flutter applications. It provides a simple and efficient way to implement search functionality in your app, with features such as autocomplete, filtering, and sorting.
+
+When to Use Meilisearch
+----------------------
+
+Meilisearch is ideal for applications that require a robust search feature, such as:
+
+* E-commerce apps with large product catalogs
+* Social media apps with vast amounts of user-generated content
+* News apps with extensive article archives
+
+Features
+--------
+
+* **Autocomplete**: Provide users with instant suggestions as they type
+* **Filtering**: Narrow down search results based on specific criteria (e.g., category, price range)
+* **Sorting**: Allow users to sort search results by relevance, date, or other custom criteria
+* **Customizable**: Tailor the search experience to your app's unique needs and branding
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+Setup and Configuration
+-----------------------
+
+### Step 1: Add the Meilisearch Package to Your Flutter Project
+
+Add the following dependency to your `pubspec.yaml` file:
+```yml
+dependencies:
+  meilisearch: ^0.1.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Meilisearch Package
+
+In your Dart file, import the Meilisearch package:
+```dart
+import 'package:meilisearch/meilisearch.dart';
+```
+### Step 3: Initialize Meilisearch
+
+Create a Meilisearch instance and pass your app's API key and index name:
+```dart
+final meilisearch = Meilisearch(
+  apiKey: 'YOUR_API_KEY',
+  indexName: 'YOUR_INDEX_NAME',
+);
+```
+### Step 4: Configure Platform-Specific Settings (Optional)
+
+For Android, add the following configuration to your `AndroidManifest.xml` file:
+```xml
+<application>
+  ...
+  <meta-data
+    android:name="meilisearch.apiKey"
+    android:value="YOUR_API_KEY" />
+</application>
+```
+For iOS, add the following configuration to your `Info.plist` file:
+```xml
+<key>MeilisearchApiKey</key>
+<string>YOUR_API_KEY</string>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:meilisearch/meilisearch.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _searchController = TextEditingController();
+  final _meilisearch = Meilisearch(
+    apiKey: 'YOUR_API_KEY',
+    indexName: 'YOUR_INDEX_NAME',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Meilisearch Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Meilisearch Demo'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Search',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _search,
+                child: Text('Search'),
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: _buildSearchResults(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _search() async {
+    final query = _searchController.text;
+    final searchResponse = await _meilisearch.search(query);
+    print(searchResponse.hits);
+  }
+
+  Widget _buildSearchResults() {
+    return FutureBuilder(
+      future: _meilisearch.search(_searchController.text),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return ListView.builder(
+            itemCount: snapshot.data.hits.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(snapshot.data.hits[index].title),
+                subtitle: Text(snapshot.data.hits[index].description),
+              );
+            },
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
+  }
+}
+
+// The app starts by initializing the Meilisearch instance with the API key and index name.
+// When the user types a search query and presses the "Search" button, the _search function is called.
+// This function sends a search request to Meilisearch using the search query and displays the search results.
+// The search results are displayed in a ListView, with each item showing the title and description of the search hit.
+// If the search request is still in progress, a CircularProgressIndicator is displayed instead.
+```
+
+<-- END_MAIN -->

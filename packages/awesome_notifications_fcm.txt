@@ -1,0 +1,206 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `awesome_notifications_fcm` Flutter Package
+
+The `awesome_notifications_fcm` package is a powerful tool for Flutter developers looking to integrate Firebase Cloud Messaging (FCM) with rich notification features into their applications. This package extends the capabilities of the `awesome_notifications` package by adding support for FCM, allowing developers to send and manage notifications with ease.
+
+## When to Use
+
+This package is ideal for applications that require:
+- Real-time notifications from a backend server.
+- Rich media notifications, including images, sounds, and action buttons.
+- Cross-platform notification management for both Android and iOS.
+
+## Features
+
+- **Rich Notifications**: Customize notifications with images, sounds, and buttons.
+- **Cross-Platform Support**: Seamless integration for both Android and iOS.
+- **Background Handling**: Manage notifications even when the app is not running.
+- **Actionable Notifications**: Add buttons and actions to notifications for user interaction.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `awesome_notifications_fcm`
+
+In this tutorial, we will walk through the setup process for integrating `awesome_notifications_fcm` into a Flutter project. We will cover platform-specific configurations for both Android and iOS.
+
+## Step 1: Add Dependencies
+
+Add the following dependencies to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  awesome_notifications: ^0.0.6+10
+  awesome_notifications_fcm: ^0.0.6+10
+  firebase_core: ^2.0.0
+  firebase_messaging: ^14.0.0
+```
+
+## Step 2: Android Configuration
+
+1. **Update `AndroidManifest.xml`:**
+
+   Add the following permissions and service declarations:
+
+   ```xml
+   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+   <uses-permission android:name="android.permission.VIBRATE"/>
+
+   <application>
+       <service
+           android:name="me.carda.awesome_notifications.notifications.receivers.ActionReceiver"
+           android:permission="android.permission.BIND_JOB_SERVICE"
+           android:exported="true"/>
+       <receiver
+           android:name="me.carda.awesome_notifications.notifications.receivers.ActionReceiver"
+           android:exported="true"/>
+   </application>
+   ```
+
+2. **Firebase Setup:**
+
+   Ensure your `google-services.json` file is placed in the `android/app` directory.
+
+## Step 3: iOS Configuration
+
+1. **Update `Info.plist`:**
+
+   Add the following keys:
+
+   ```xml
+   <key>UIBackgroundModes</key>
+   <array>
+       <string>fetch</string>
+       <string>remote-notification</string>
+   </array>
+   <key>FirebaseAppDelegateProxyEnabled</key>
+   <false/>
+   ```
+
+2. **Firebase Setup:**
+
+   Ensure your `GoogleService-Info.plist` file is added to the iOS project.
+
+## Step 4: Initialize in Flutter
+
+Initialize the plugins in your `main.dart` file:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  AwesomeNotifications().initialize(
+    'resource://drawable/res_app_icon',
+    [
+      NotificationChannel(
+        channelKey: 'basic_channel',
+        channelName: 'Basic notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: Color(0xFF9D50DD),
+        ledColor: Colors.white,
+      )
+    ],
+  );
+  runApp(RealFlutter());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  AwesomeNotifications().initialize(
+    'resource://drawable/res_app_icon',
+    [
+      NotificationChannel(
+        channelKey: 'basic_channel',
+        channelName: 'Basic notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: Color(0xFF9D50DD),
+        ledColor: Colors.white,
+      )
+    ],
+  );
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Awesome Notifications FCM Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: NotificationHomePage(),
+    );
+  }
+}
+
+class NotificationHomePage extends StatefulWidget {
+  @override
+  _NotificationHomePageState createState() => _NotificationHomePageState();
+}
+
+class _NotificationHomePageState extends State<NotificationHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Handle foreground messages
+      AwesomeNotifications().createNotificationFromJsonData(message.data);
+    });
+  }
+
+  void _createNotification() {
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: 10,
+        channelKey: 'basic_channel',
+        title: 'Hello Awesome Notifications!',
+        body: 'This is a simple notification created using Awesome Notifications.',
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Awesome Notifications FCM Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _createNotification,
+          child: Text('Send Notification'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application initializes Firebase and Awesome Notifications in the main function.
+// 2. The RealFlutter widget is the root of the application, setting up the MaterialApp.
+// 3. NotificationHomePage is the main screen, where notifications are handled and triggered.
+// 4. In initState, the app listens for incoming FCM messages and creates notifications from them.
+// 5. The _createNotification method manually triggers a notification for demonstration purposes.
+// 6. The UI consists of a single button that, when pressed, sends a notification using Awesome Notifications.
+```
+
+<-- END_MAIN -->
+```

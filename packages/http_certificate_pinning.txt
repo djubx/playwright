@@ -1,0 +1,172 @@
+<-- START_DESCRIPTION -->
+
+# http_certificate_pinning Flutter Package
+=====================================
+
+The `http_certificate_pinning` package is a Flutter library that provides a secure way to make HTTP requests by pinning the expected SSL/TLS certificate or public key of the server. This helps prevent man-in-the-middle (MITM) attacks by ensuring that the app only communicates with the expected server.
+
+## When to Use
+--------------
+
+Use this package when:
+
+* You want to ensure that your app only communicates with a specific server.
+* You want to prevent MITM attacks.
+* You need to comply with security regulations that require certificate pinning.
+
+## Features
+------------
+
+* Pinning of SSL/TLS certificates or public keys.
+* Support for both Android and iOS platforms.
+* Compatible with the `http` package.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Usage
+-----------------
+
+### Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  http_certificate_pinning: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Platform-Specific Configurations
+
+#### Android
+
+No additional configurations are required for Android.
+
+#### iOS
+
+In your `Info.plist` file, add the following key:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSPinnedDomains</key>
+    <array>
+        <string>your_domain.com</string>
+    </array>
+</dict>
+```
+
+Replace `your_domain.com` with the domain of the server you want to pin.
+
+### Using the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:http_certificate_pinning/http_certificate_pinning.dart';
+```
+
+Create an instance of the `HttpCertificatePinning` class:
+
+```dart
+final httpCertificatePinning = HttpCertificatePinning(
+  baseUrl: 'https://your_domain.com',
+  certificate: 'path/to/certificate.pem',
+);
+```
+
+Replace `https://your_domain.com` with the URL of the server you want to pin, and `path/to/certificate.pem` with the path to the expected SSL/TLS certificate or public key.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:http_certificate_pinning/http_certificate_pinning.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Http Certificate Pinning Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final httpCertificatePinning = HttpCertificatePinning(
+    baseUrl: 'https://example.com',
+    certificate: 'assets/certificate.pem',
+  );
+
+  Future<void> _makeRequest() async {
+    // 1. Create a Uri object for the request
+    final uri = Uri.parse('https://example.com/api/data');
+
+    // 2. Use the HttpCertificatePinning instance to make the request
+    final response = await httpCertificatePinning.get(uri);
+
+    // 3. Check the response status code
+    if (response.statusCode == 200) {
+      // 4. Parse the response data
+      final jsonData = jsonDecode(response.body);
+
+      // 5. Update the UI with the response data
+      setState(() {
+        _data = jsonData;
+      });
+    } else {
+      // 6. Handle any errors
+      print('Error: ${response.statusCode}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Http Certificate Pinning Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_data != null ? _data.toString() : 'No data'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _makeRequest,
+              child: Text('Make Request'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user presses the "Make Request" button.
+// 2. The _makeRequest function is called, which creates a Uri object for the request.
+// 3. The HttpCertificatePinning instance is used to make the request, which checks the SSL/TLS certificate or public key of the server.
+// 4. If the certificate or public key matches the expected value, the request is sent and the response is received.
+// 5. The response data is parsed and updated in the UI.
+// 6. If any errors occur, an error message is printed to the console.
+```
+
+<-- END_MAIN -->
+
+In summary, this code demonstrates how to use the `http_certificate_pinning` package to make secure HTTP requests by pinning the expected SSL/TLS certificate or public key of the server. The application flow involves creating a Uri object for the request, using the `HttpCertificatePinning` instance to make the request, checking the response status code, parsing the response data, and updating the UI with the response data. Any errors that occur during the request are handled and printed to the console.

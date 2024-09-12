@@ -1,0 +1,173 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Document Scanner Flutter Package: Overview
+
+The `document_scanner_flutter` package is a powerful tool for Flutter developers looking to integrate document scanning capabilities into their mobile applications. This package leverages the device's camera to capture images of documents, automatically detecting edges and enhancing the scanned image for clarity and readability. 
+
+## When to Use
+
+This package is ideal for applications that require document digitization, such as:
+- Mobile banking apps for check deposits.
+- Educational apps for scanning notes or assignments.
+- Business apps for scanning receipts or invoices.
+
+## Features
+
+- **Edge Detection**: Automatically detects the edges of a document in the camera view.
+- **Image Enhancement**: Improves the quality of the scanned document for better readability.
+- **Multi-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Customizable UI**: Allows developers to customize the scanning interface to match the app's design.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Document Scanner Flutter Package
+
+In this tutorial, we will walk through the process of setting up and using the `document_scanner_flutter` package in a Flutter project. We will cover platform-specific configurations for both Android and iOS.
+
+## Installation
+
+Add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  document_scanner_flutter: ^0.0.1
+```
+
+Run `flutter pub get` to install the package.
+
+## Android Configuration
+
+1. **Permissions**: Update your `AndroidManifest.xml` to include camera permissions.
+
+```xml
+<uses-permission android:name="android.permission.CAMERA"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
+
+2. **Gradle Configuration**: Ensure your `minSdkVersion` is set to at least 21 in `android/app/build.gradle`.
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+## iOS Configuration
+
+1. **Permissions**: Add the following keys to your `Info.plist` file to request camera access.
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to scan documents.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to save scanned documents.</string>
+```
+
+2. **Podfile**: Ensure your iOS deployment target is set to at least 10.0.
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Using the Package
+
+To use the `document_scanner_flutter` package, import it into your Dart file:
+
+```dart
+import 'package:document_scanner_flutter/document_scanner_flutter.dart';
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:document_scanner_flutter/document_scanner_flutter.dart';
+
+void main() => runApp(RealFlutterApp());
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Document Scanner Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: DocumentScannerHome(),
+    );
+  }
+}
+
+class DocumentScannerHome extends StatefulWidget {
+  @override
+  _DocumentScannerHomeState createState() => _DocumentScannerHomeState();
+}
+
+class _DocumentScannerHomeState extends State<DocumentScannerHome> {
+  String _scannedDocumentPath;
+
+  // Function to initiate document scanning
+  Future<void> _scanDocument() async {
+    try {
+      // Launch the document scanner
+      final scannedDocument = await DocumentScannerFlutter.launch(context);
+      if (scannedDocument != null) {
+        // Update the state with the scanned document path
+        setState(() {
+          _scannedDocumentPath = scannedDocument;
+        });
+      }
+    } catch (e) {
+      // Handle any errors that occur during scanning
+      print('Error scanning document: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Document Scanner'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Display the scanned document if available
+            _scannedDocumentPath != null
+                ? Image.file(File(_scannedDocumentPath))
+                : Text('No document scanned yet.'),
+            SizedBox(height: 20),
+            // Button to start scanning
+            ElevatedButton(
+              onPressed: _scanDocument,
+              child: Text('Scan Document'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutterApp` widget, which sets up the MaterialApp.
+// 2. The `DocumentScannerHome` widget is the main screen, displaying a button to scan documents.
+// 3. When the "Scan Document" button is pressed, `_scanDocument` is called.
+// 4. `_scanDocument` uses `DocumentScannerFlutter.launch` to open the scanner interface.
+// 5. If a document is successfully scanned, its path is stored in `_scannedDocumentPath`.
+// 6. The scanned document is displayed using an `Image.file` widget if available.
+// 7. Errors during scanning are caught and printed to the console.
+```
+
+<-- END_MAIN -->
+```

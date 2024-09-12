@@ -1,0 +1,198 @@
+Here's a detailed technical blog on the "jikan_api" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Jikan API Flutter Package
+
+The **Jikan API** Flutter package is a powerful tool for developers looking to integrate anime and manga data into their Flutter applications. It serves as a wrapper around the Jikan API, which provides a wealth of information about anime, manga, characters, and more from MyAnimeList. This package is particularly useful for applications that aim to display anime-related content, such as recommendation systems, databases, or community platforms.
+
+## When to Use This Package
+- **Anime and Manga Apps**: If you're building an app that requires access to anime or manga data, this package simplifies the process of fetching and displaying that information.
+- **Recommendation Systems**: Use the package to pull data for creating personalized recommendations based on user preferences.
+- **Community Platforms**: Integrate user-generated content with anime and manga data to enhance user engagement.
+
+## Features
+- **Easy Integration**: Simple setup and usage within Flutter applications.
+- **Comprehensive Data Access**: Access to a wide range of data including anime, manga, characters, and user profiles.
+- **Asynchronous Operations**: Built-in support for asynchronous data fetching, making it easy to work with Flutter's reactive framework.
+- **Error Handling**: Robust error handling to manage API responses effectively.
+
+With these features, the Jikan API Flutter package is an excellent choice for developers looking to create rich, data-driven applications in the anime and manga space.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Jikan API Flutter Package
+
+## Step 1: Adding the Dependency
+To get started, you need to add the `jikan_api` package to your Flutter project. Open your `pubspec.yaml` file and add the following line under dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  jikan_api: ^0.0.1 # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS
+For iOS, you may need to update your `Info.plist` to allow network requests. Add the following lines to your `ios/Runner/Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+Now that you have set up the package, you can start using it in your Flutter application. Below is a simple example of how to fetch and display anime data.
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:jikan_api/jikan_api.dart';
+```
+
+2. Create an instance of the `Jikan` class:
+
+```dart
+final jikan = Jikan();
+```
+
+3. Fetch data asynchronously:
+
+```dart
+void fetchAnimeData() async {
+  try {
+    final anime = await jikan.getAnime(1); // Fetch anime with ID 1
+    print(anime.title); // Display the title of the anime
+  } catch (e) {
+    print('Error fetching anime data: $e');
+  }
+}
+```
+
+With these steps, you can easily integrate the Jikan API into your Flutter application and start fetching anime and manga data.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Flutter Application Using Jikan API
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:jikan_api/jikan_api.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Jikan API Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: AnimeListScreen(),
+    );
+  }
+}
+
+class AnimeListScreen extends StatefulWidget {
+  @override
+  _AnimeListScreenState createState() => _AnimeListScreenState();
+}
+
+class _AnimeListScreenState extends State<AnimeListScreen> {
+  final Jikan jikan = Jikan(); // Create an instance of Jikan
+  Future<List<Anime>>? _animeList; // Future to hold the list of anime
+
+  @override
+  void initState() {
+    super.initState();
+    _animeList = fetchAnimeList(); // Fetch the anime list when the widget is initialized
+  }
+
+  Future<List<Anime>> fetchAnimeList() async {
+    try {
+      final response = await jikan.getTopAnime(); // Fetch top anime
+      return response; // Return the list of anime
+    } catch (e) {
+      print('Error fetching anime list: $e');
+      return []; // Return an empty list on error
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Top Anime'),
+      ),
+      body: FutureBuilder<List<Anime>>(
+        future: _animeList, // Use the future to build the UI
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator()); // Show loading indicator
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}')); // Show error message
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No anime found')); // Show no data message
+          }
+
+          // Display the list of anime
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final anime = snapshot.data![index];
+              return ListTile(
+                title: Text(anime.title), // Display anime title
+                subtitle: Text('Score: ${anime.score}'), // Display anime score
+                leading: Image.network(anime.imageUrl), // Display anime image
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main function, which runs the MyApp widget.
+// 2. MyApp sets up the MaterialApp and defines the home screen as AnimeListScreen.
+// 3. AnimeListScreen is a stateful widget that fetches the top anime list when initialized.
+// 4. The fetchAnimeList method calls the Jikan API to get the top anime and returns the list.
+// 5. The FutureBuilder widget is used to handle the asynchronous data fetching.
+// 6. While the data is loading, a CircularProgressIndicator is displayed.
+// 7. If an error occurs, an error message is shown.
+// 8. Once the data is fetched, a ListView displays the anime titles, scores, and images.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the Jikan API Flutter package, detailing its features, setup process, and a complete example application. This package allows developers to easily integrate anime and manga data into their Flutter applications, providing a rich user experience.

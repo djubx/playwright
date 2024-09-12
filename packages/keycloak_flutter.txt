@@ -1,0 +1,188 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Keycloak Flutter Package: An Overview
+
+The `keycloak_flutter` package is a powerful tool for integrating Keycloak authentication into your Flutter applications. Keycloak is an open-source identity and access management solution that provides single sign-on (SSO), user federation, identity brokering, and social login. This package allows Flutter developers to easily connect their apps to a Keycloak server, enabling secure authentication and authorization.
+
+## When to Use `keycloak_flutter`
+
+- **Enterprise Applications**: When building applications that require robust security and user management.
+- **Multi-platform Apps**: For apps that need consistent authentication across web, mobile, and desktop platforms.
+- **Social Login**: To integrate social login options like Google, Facebook, etc., through Keycloak.
+- **Single Sign-On (SSO)**: To provide a seamless login experience across multiple applications.
+
+## Features
+
+- **OAuth2 and OpenID Connect**: Supports standard protocols for secure authentication.
+- **Token Management**: Handles access and refresh tokens automatically.
+- **Role-based Access Control**: Integrates with Keycloak's role-based access control system.
+- **Customizable UI**: Allows customization of the login and logout flows.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up `keycloak_flutter` in Your Project
+
+In this tutorial, we will walk through the process of setting up and using the `keycloak_flutter` package in a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Step 1: Add the Dependency
+
+Add `keycloak_flutter` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  keycloak_flutter: ^0.4.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Configure Keycloak
+
+1. **Create a Realm**: In your Keycloak admin console, create a new realm for your application.
+2. **Create a Client**: Within the realm, create a new client. Set the client protocol to `openid-connect` and configure the redirect URIs to match your app's callback URLs.
+
+## Step 3: Platform-specific Setup
+
+### Android
+
+1. **Update `AndroidManifest.xml`**: Add the following intent filter to handle the redirect URI:
+
+```xml
+<activity>
+    <intent-filter android:label="flutter_keycloak">
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="com.example.app" android:host="callback"/>
+    </intent-filter>
+</activity>
+```
+
+2. **Configure Gradle**: Ensure your `minSdkVersion` is set to at least 21 in `android/app/build.gradle`.
+
+### iOS
+
+1. **Update `Info.plist`**: Add the following to handle the redirect URI:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.example.app</string>
+        </array>
+    </dict>
+</array>
+```
+
+2. **Enable Universal Links**: Ensure your app is set up to handle universal links if required.
+
+## Step 4: Initialize and Use the Package
+
+In your Flutter app, initialize the `keycloak_flutter` package and configure it with your Keycloak settings.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:keycloak_flutter/keycloak_flutter.dart';
+
+void main() {
+  runApp(RealFlutterApp());
+}
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Keycloak Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final KeycloakFlutter keycloak = KeycloakFlutter(
+    url: 'https://your-keycloak-server/auth',
+    realm: 'your-realm',
+    clientId: 'your-client-id',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    keycloak.init();
+  }
+
+  Future<void> _login() async {
+    try {
+      await keycloak.login();
+      // Successfully logged in
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } catch (e) {
+      // Handle login error
+      print('Login failed: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Login'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _login,
+          child: Text('Login with Keycloak'),
+        ),
+      ),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'),
+      ),
+      body: Center(
+        child: Text('Welcome to the Home Page!'),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `RealFlutterApp` widget, which sets up the MaterialApp.
+// 2. The `LoginPage` is displayed as the home screen.
+// 3. The `KeycloakFlutter` instance is initialized with the Keycloak server details.
+// 4. When the user presses the login button, the `_login` method is called.
+// 5. The `_login` method attempts to authenticate the user with Keycloak.
+// 6. On successful login, the user is navigated to the `HomePage`.
+// 7. If login fails, an error message is printed to the console.
+
+```
+
+<-- END_MAIN -->
+```

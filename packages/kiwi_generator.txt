@@ -1,0 +1,189 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Kiwi Generator Flutter Package: An Overview
+
+The `kiwi_generator` package is a powerful tool for Flutter developers looking to implement dependency injection in their applications. This package is part of the Kiwi library, which provides a simple yet effective way to manage dependencies, making your code more modular, testable, and maintainable.
+
+## When to Use Kiwi Generator
+
+- **Modular Applications**: If your application is large and consists of multiple modules, using `kiwi_generator` can help manage dependencies across these modules efficiently.
+- **Testable Code**: By decoupling the creation of objects from their usage, you can easily mock dependencies during testing.
+- **Maintainable Code**: With a clear structure for dependency management, your codebase becomes easier to understand and maintain.
+
+## Features
+
+- **Automatic Code Generation**: The package generates boilerplate code for dependency injection, reducing manual coding effort.
+- **Integration with Kiwi**: Seamlessly integrates with the Kiwi container, allowing for easy registration and retrieval of dependencies.
+- **Platform Agnostic**: Works across all platforms supported by Flutter, including Android and iOS.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Kiwi Generator in Your Flutter Project
+
+In this section, we'll walk through the setup process for the `kiwi_generator` package and demonstrate how to use it in a Flutter project.
+
+## Step 1: Add Dependencies
+
+First, add the necessary dependencies to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  kiwi: ^3.0.0
+
+dev_dependencies:
+  kiwi_generator: ^3.0.0
+  build_runner: ^2.0.0
+```
+
+## Step 2: Create a Kiwi Container
+
+Create a new Dart file, `real_flutter_container.dart`, to define your Kiwi container:
+
+```dart
+import 'package:kiwi/kiwi.dart';
+
+part 'real_flutter_container.g.dart';
+
+class RealFlutterContainer {
+  static final KiwiContainer container = KiwiContainer();
+
+  static void setup() {
+    _$RealFlutterContainer()._configure();
+  }
+
+  void _configure() {
+    // Register your dependencies here
+  }
+}
+```
+
+## Step 3: Generate the Code
+
+Run the following command to generate the necessary code:
+
+```bash
+flutter pub run build_runner build
+```
+
+This command will generate the `real_flutter_container.g.dart` file, which contains the boilerplate code for dependency injection.
+
+## Step 4: Platform-Specific Configurations
+
+### Android
+
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+No specific configurations are required for iOS, but ensure your deployment target is set to iOS 9.0 or higher in your `ios/Podfile`:
+
+```ruby
+platform :ios, '9.0'
+```
+
+## Step 5: Using the Container
+
+In your Flutter application, initialize the container in the `main` function:
+
+```dart
+void main() {
+  RealFlutterContainer.setup();
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kiwi/kiwi.dart';
+
+part 'real_flutter_container.g.dart';
+
+// Define a simple service
+abstract class GreetingService {
+  String getGreeting();
+}
+
+class GreetingServiceImpl implements GreetingService {
+  @override
+  String getGreeting() => "Hello, Kiwi!";
+}
+
+// Kiwi container setup
+class RealFlutterContainer {
+  static final KiwiContainer container = KiwiContainer();
+
+  static void setup() {
+    _$RealFlutterContainer()._configure();
+  }
+
+  void _configure() {
+    // Registering the GreetingService implementation
+    container.registerSingleton<GreetingService, GreetingServiceImpl>();
+  }
+}
+
+void main() {
+  // Initialize the Kiwi container
+  RealFlutterContainer.setup();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Kiwi Generator Demo',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Retrieve the GreetingService from the Kiwi container
+    final greetingService = KiwiContainer().resolve<GreetingService>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Kiwi Generator Example'),
+      ),
+      body: Center(
+        child: Text(
+          greetingService.getGreeting(),
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation
+// 1. Define an abstract class `GreetingService` and its implementation `GreetingServiceImpl`.
+// 2. Set up the `RealFlutterContainer` class to register the `GreetingServiceImpl` as a singleton.
+// 3. In the `main` function, call `RealFlutterContainer.setup()` to initialize the container.
+// 4. Create a `MyApp` widget that serves as the root of the application.
+// 5. In the `HomeScreen` widget, retrieve the `GreetingService` instance from the Kiwi container.
+// 6. Display the greeting message from the `GreetingService` on the screen.
+
+```
+
+<-- END_MAIN -->
+```

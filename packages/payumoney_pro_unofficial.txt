@@ -1,0 +1,188 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `payumoney_pro_unofficial` Flutter Package
+
+The `payumoney_pro_unofficial` Flutter package is a powerful tool designed to integrate PayUMoney payment gateway into your Flutter applications seamlessly. This package is particularly useful for developers looking to implement a robust and secure payment solution in their apps without having to delve into the complexities of payment gateway integration from scratch.
+
+## When to Use
+
+- **E-commerce Applications**: Perfect for apps that require a checkout process with payment handling.
+- **Subscription Services**: Ideal for apps offering subscription-based services where recurring payments are necessary.
+- **Event Booking**: Useful for applications that handle ticket sales or event bookings.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Secure Transactions**: Ensures secure payment processing with encryption.
+- **Customizable UI**: Allows customization of the payment interface to match the app's theme.
+- **Transaction Status Handling**: Provides callbacks for transaction success, failure, and cancellation.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `payumoney_pro_unofficial`
+
+In this section, we will walk through the setup process for integrating the `payumoney_pro_unofficial` package into a Flutter application. We will cover platform-specific configurations for both Android and iOS.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  payumoney_pro_unofficial: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+### Step 2: Android Configuration
+
+1. **Update `AndroidManifest.xml`**: Ensure you have the necessary permissions and configurations.
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **ProGuard Rules**: If you are using ProGuard, add the following rules to `proguard-rules.pro`:
+
+   ```pro
+   -keep class com.payumoney.** { *; }
+   -keep class com.payu.** { *; }
+   ```
+
+### Step 3: iOS Configuration
+
+1. **Update `Info.plist`**: Add the following entries to handle network requests.
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **Podfile**: Ensure your iOS deployment target is set to at least 11.0.
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+### Step 4: Initialize the Package
+
+Initialize the package in your Dart code:
+
+```dart
+import 'package:payumoney_pro_unofficial/payumoney_pro_unofficial.dart';
+
+void initializePayment() {
+  RealFlutter.initialize(
+    merchantKey: 'your_merchant_key',
+    merchantID: 'your_merchant_id',
+    salt: 'your_salt',
+  );
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+# Complete Example of Using `payumoney_pro_unofficial`
+
+Below is a complete example of a Flutter application using the `payumoney_pro_unofficial` package. This example demonstrates initializing the payment gateway and handling a transaction.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:payumoney_pro_unofficial/payumoney_pro_unofficial.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'PayUMoney Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PaymentPage(),
+    );
+  }
+}
+
+class PaymentPage extends StatefulWidget {
+  @override
+  _PaymentPageState createState() => _PaymentPageState();
+}
+
+class _PaymentPageState extends State<PaymentPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the payment gateway with your credentials
+    RealFlutter.initialize(
+      merchantKey: 'your_merchant_key',
+      merchantID: 'your_merchant_id',
+      salt: 'your_salt',
+    );
+  }
+
+  void startTransaction() {
+    // Create a transaction request
+    RealFlutter.startTransaction(
+      amount: '10.00',
+      productInfo: 'Test Product',
+      firstName: 'John',
+      email: 'john.doe@example.com',
+      phone: '1234567890',
+      transactionID: 'txn123456',
+      successCallback: (response) {
+        // Handle success
+        print('Transaction Successful: $response');
+      },
+      failureCallback: (response) {
+        // Handle failure
+        print('Transaction Failed: $response');
+      },
+      cancelCallback: () {
+        // Handle cancellation
+        print('Transaction Cancelled');
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PayUMoney Payment'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: startTransaction,
+          child: Text('Pay Now'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app initializes the PayUMoney payment gateway with the necessary credentials in the `initState` method.
+// 2. When the user presses the "Pay Now" button, the `startTransaction` method is called.
+// 3. This method sets up a transaction with the specified details and provides callbacks for success, failure, and cancellation.
+// 4. Depending on the transaction outcome, the respective callback is triggered, and a message is printed to the console.
+
+<-- END_MAIN -->
+```
+
+This example demonstrates how to set up and execute a payment transaction using the `payumoney_pro_unofficial` package. The application initializes the payment gateway with merchant credentials and starts a transaction when the user interacts with the UI. The transaction's outcome is handled through callbacks, providing a seamless payment experience.

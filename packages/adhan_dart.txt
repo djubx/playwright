@@ -1,0 +1,190 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `adhan_dart` Flutter Package
+
+The `adhan_dart` package is a powerful library designed for Flutter applications to calculate Islamic prayer times. It is based on the Adhan library, which is widely used for its accuracy and reliability in determining prayer times. This package is particularly useful for developers looking to integrate Islamic prayer time functionalities into their mobile applications.
+
+## When to Use `adhan_dart`
+
+- **Islamic Applications**: If you are developing an app that serves the Muslim community, such as a prayer time app, mosque management app, or an Islamic calendar app, `adhan_dart` is an essential tool.
+- **Location-Based Services**: Apps that provide location-based services can use this package to offer users accurate prayer times based on their current location.
+- **Educational Tools**: Applications designed to educate users about Islamic practices can use this package to demonstrate how prayer times are calculated.
+
+## Features
+
+- **Accurate Calculations**: Utilizes the Adhan library's robust algorithms to ensure precise prayer time calculations.
+- **Multiple Calculation Methods**: Supports various methods for calculating prayer times, such as the Muslim World League, Egyptian General Authority of Survey, and more.
+- **Customizable Parameters**: Allows customization of parameters like calculation method, madhab (school of thought), and adjustments for high latitudes.
+- **Easy Integration**: Designed to be easily integrated into any Flutter application with minimal setup.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `adhan_dart` in Your Flutter Project
+
+In this section, we will walk through the process of setting up the `adhan_dart` package in a Flutter project and demonstrate how to use it effectively.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the `adhan_dart` package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     adhan_dart: ^1.0.0
+   ```
+
+2. **Install Packages**: Run the following command to install the package:
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Platform-Specific Configuration**: 
+   - **Android**: Ensure that your app has the necessary permissions to access location data. Add the following permissions to your `AndroidManifest.xml`:
+
+     ```xml
+     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+     ```
+
+   - **iOS**: Update your `Info.plist` to include location usage descriptions:
+
+     ```xml
+     <key>NSLocationWhenInUseUsageDescription</key>
+     <string>We need your location to calculate prayer times accurately.</string>
+     ```
+
+## Using the Package
+
+1. **Import the Package**: Import `adhan_dart` in your Dart file where you intend to use it.
+
+   ```dart
+   import 'package:adhan_dart/adhan_dart.dart';
+   ```
+
+2. **Calculate Prayer Times**: Use the `RealFlutter` class to calculate prayer times based on the user's location.
+
+   ```dart
+   // Create a Coordinates object with the user's latitude and longitude
+   final coordinates = Coordinates(35.6895, 139.6917); // Example: Tokyo, Japan
+
+   // Define the calculation parameters
+   final params = CalculationMethod.muslim_world_league.getParameters();
+
+   // Calculate prayer times
+   final prayerTimes = RealFlutter(coordinates, DateTime.now(), params);
+   ```
+
+3. **Access Prayer Times**: Retrieve the calculated prayer times.
+
+   ```dart
+   final fajr = prayerTimes.fajr;
+   final dhuhr = prayerTimes.dhuhr;
+   final asr = prayerTimes.asr;
+   final maghrib = prayerTimes.maghrib;
+   final isha = prayerTimes.isha;
+   ```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:adhan_dart/adhan_dart.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Prayer Times App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PrayerTimesScreen(),
+    );
+  }
+}
+
+class PrayerTimesScreen extends StatefulWidget {
+  @override
+  _PrayerTimesScreenState createState() => _PrayerTimesScreenState();
+}
+
+class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
+  // Variables to hold prayer times
+  DateTime? fajr;
+  DateTime? dhuhr;
+  DateTime? asr;
+  DateTime? maghrib;
+  DateTime? isha;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculatePrayerTimes();
+  }
+
+  // Function to calculate prayer times
+  void _calculatePrayerTimes() {
+    // Create a Coordinates object with the user's latitude and longitude
+    final coordinates = Coordinates(35.6895, 139.6917); // Example: Tokyo, Japan
+
+    // Define the calculation parameters
+    final params = CalculationMethod.muslim_world_league.getParameters();
+
+    // Calculate prayer times using RealFlutter class
+    final prayerTimes = RealFlutter(coordinates, DateTime.now(), params);
+
+    // Set the state with the calculated prayer times
+    setState(() {
+      fajr = prayerTimes.fajr;
+      dhuhr = prayerTimes.dhuhr;
+      asr = prayerTimes.asr;
+      maghrib = prayerTimes.maghrib;
+      isha = prayerTimes.isha;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Prayer Times'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Fajr: ${fajr?.toLocal() ?? 'Calculating...'}'),
+            Text('Dhuhr: ${dhuhr?.toLocal() ?? 'Calculating...'}'),
+            Text('Asr: ${asr?.toLocal() ?? 'Calculating...'}'),
+            Text('Maghrib: ${maghrib?.toLocal() ?? 'Calculating...'}'),
+            Text('Isha: ${isha?.toLocal() ?? 'Calculating...'}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts by running the `MyApp` class, which is a StatelessWidget.
+// `MyApp` sets up the MaterialApp with a title and theme, and specifies `PrayerTimesScreen` as the home screen.
+// `PrayerTimesScreen` is a StatefulWidget that manages the state of the prayer times.
+// In the `initState` method, `_calculatePrayerTimes` is called to compute the prayer times when the widget is first created.
+// `_calculatePrayerTimes` uses the `RealFlutter` class to calculate prayer times based on the specified coordinates and parameters.
+// The calculated prayer times are stored in state variables and displayed in the UI.
+// The UI consists of a simple column layout that shows each prayer time, updating as soon as the calculations are complete.
+
+<-- END_MAIN -->
+```

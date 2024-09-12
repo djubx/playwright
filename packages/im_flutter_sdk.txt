@@ -1,0 +1,226 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `im_flutter_sdk` Flutter Package
+
+The `im_flutter_sdk` is a powerful Flutter package designed to integrate instant messaging capabilities into your Flutter applications. This package provides a comprehensive set of features that allow developers to build chat applications with ease, supporting both one-on-one and group messaging functionalities.
+
+## When to Use `im_flutter_sdk`
+
+This package is ideal for developers looking to add real-time communication features to their apps. Whether you're building a social networking app, a customer support chat, or a collaborative platform, `im_flutter_sdk` offers the tools you need to implement robust messaging features.
+
+## Key Features
+
+- **Real-time Messaging**: Send and receive messages instantly with low latency.
+- **Group Chats**: Create and manage group conversations with multiple participants.
+- **Media Support**: Share images, videos, and other media files within chats.
+- **Presence Indicators**: Show online/offline status and typing indicators.
+- **Message History**: Access and manage chat history for users.
+- **Push Notifications**: Receive notifications for new messages even when the app is not active.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `im_flutter_sdk`
+
+In this tutorial, we'll walk through the process of setting up the `im_flutter_sdk` package in a Flutter project and demonstrate how to use its features effectively.
+
+## Installation
+
+To get started, add `im_flutter_sdk` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  im_flutter_sdk: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Setup
+
+### Android
+
+1. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+2. **ProGuard**: If you are using ProGuard, add the following rules to keep the necessary classes:
+
+   ```pro
+   -keep class com.example.im_flutter_sdk.** { *; }
+   ```
+
+### iOS
+
+1. **Info.plist**: Add the following keys to your `Info.plist` to handle network requests:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **Capabilities**: Enable background modes for "Background fetch" and "Remote notifications" in Xcode.
+
+## Basic Usage
+
+1. **Initialization**: Initialize the SDK in your main application file.
+
+   ```dart
+   import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+   void main() {
+     RealFlutter realFlutter = RealFlutter();
+     realFlutter.initialize();
+     runApp(MyApp());
+   }
+   ```
+
+2. **Login**: Use the SDK to log in a user.
+
+   ```dart
+   realFlutter.login(username: 'user1', password: 'password123');
+   ```
+
+3. **Send a Message**: Send a text message to another user.
+
+   ```dart
+   realFlutter.sendMessage(to: 'user2', message: 'Hello, World!');
+   ```
+
+4. **Receive Messages**: Set up a listener to receive incoming messages.
+
+   ```dart
+   realFlutter.onMessageReceived = (message) {
+     print('New message from ${message.from}: ${message.body}');
+   };
+   ```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:im_flutter_sdk/im_flutter_sdk.dart';
+
+void main() {
+  // Initialize the RealFlutter SDK
+  RealFlutter realFlutter = RealFlutter();
+  realFlutter.initialize();
+  
+  // Run the Flutter application
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'IM Flutter SDK Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ChatScreen(),
+    );
+  }
+}
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final RealFlutter realFlutter = RealFlutter();
+  final TextEditingController _controller = TextEditingController();
+  List<String> messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Log in the user when the screen initializes
+    realFlutter.login(username: 'user1', password: 'password123');
+
+    // Set up a listener for incoming messages
+    realFlutter.onMessageReceived = (message) {
+      setState(() {
+        messages.add('${message.from}: ${message.body}');
+      });
+    };
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      // Send a message using the RealFlutter SDK
+      realFlutter.sendMessage(to: 'user2', message: _controller.text);
+      setState(() {
+        messages.add('Me: ${_controller.text}');
+        _controller.clear();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat with RealFlutter'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(messages[index]),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your message',
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts by initializing the RealFlutter SDK.
+// 2. The main widget, MyApp, is run, which sets up the MaterialApp and the home screen.
+// 3. The ChatScreen widget is displayed, which manages the chat interface.
+// 4. Upon initialization, the user is logged in using the RealFlutter SDK.
+// 5. A message listener is set up to update the UI with incoming messages.
+// 6. The user can type a message in the TextField and send it using the send button.
+// 7. Sent messages are displayed in the chat list, and incoming messages are appended as they arrive.
+```
+
+<-- END_MAIN -->
+```

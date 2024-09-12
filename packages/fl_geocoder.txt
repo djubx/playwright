@@ -1,0 +1,184 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `fl_geocoder` Flutter Package
+
+The `fl_geocoder` package is a powerful tool for Flutter developers who need to convert addresses into geographic coordinates (geocoding) and vice versa (reverse geocoding). This package is particularly useful in applications that require location-based services, such as mapping apps, delivery services, or any app that needs to display or process location data.
+
+## When to Use `fl_geocoder`
+
+- **Mapping Applications**: Convert user-entered addresses into coordinates to display on a map.
+- **Location-Based Services**: Determine the address of a user's current location.
+- **Travel and Navigation Apps**: Provide users with detailed location information.
+- **Delivery Services**: Validate and process delivery addresses.
+
+## Features
+
+- **Geocoding**: Convert an address into latitude and longitude.
+- **Reverse Geocoding**: Convert latitude and longitude into a readable address.
+- **Platform Support**: Works seamlessly on both Android and iOS.
+- **Ease of Use**: Simple API that integrates easily into any Flutter project.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `fl_geocoder`
+
+In this section, we'll walk through the setup process for the `fl_geocoder` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add `fl_geocoder` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  fl_geocoder: ^1.0.0
+```
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+
+1. **Permissions**: Add the following permissions to your `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+   ```
+
+2. **Google Play Services**: Ensure your app is configured to use Google Play Services for location.
+
+#### iOS
+
+1. **Permissions**: Add the following keys to your `Info.plist`:
+
+   ```xml
+   <key>NSLocationWhenInUseUsageDescription</key>
+   <string>Your location is used to provide better services.</string>
+   <key>NSLocationAlwaysUsageDescription</key>
+   <string>Your location is used to provide better services.</string>
+   ```
+
+2. **CocoaPods**: Ensure your iOS project is using CocoaPods by running `pod install` in the `ios` directory.
+
+### Step 3: Import the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:fl_geocoder/fl_geocoder.dart';
+```
+
+## Using `fl_geocoder`
+
+To use the `fl_geocoder` package, you need to create an instance of the `RealFlutter` class and call its methods for geocoding and reverse geocoding.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:fl_geocoder/fl_geocoder.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Geocoder Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: GeocodeScreen(),
+    );
+  }
+}
+
+class GeocodeScreen extends StatefulWidget {
+  @override
+  _GeocodeScreenState createState() => _GeocodeScreenState();
+}
+
+class _GeocodeScreenState extends State<GeocodeScreen> {
+  final RealFlutter _geocoder = RealFlutter();
+  String _address = '';
+  String _coordinates = '';
+
+  // Function to perform geocoding
+  Future<void> _geocodeAddress(String address) async {
+    try {
+      final coordinates = await _geocoder.geocode(address);
+      setState(() {
+        _coordinates = 'Lat: ${coordinates.latitude}, Lng: ${coordinates.longitude}';
+      });
+    } catch (e) {
+      setState(() {
+        _coordinates = 'Error: $e';
+      });
+    }
+  }
+
+  // Function to perform reverse geocoding
+  Future<void> _reverseGeocode(double latitude, double longitude) async {
+    try {
+      final address = await _geocoder.reverseGeocode(latitude, longitude);
+      setState(() {
+        _address = address;
+      });
+    } catch (e) {
+      setState(() {
+        _address = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Geocoder Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(labelText: 'Enter Address'),
+              onSubmitted: _geocodeAddress,
+            ),
+            SizedBox(height: 20),
+            Text('Coordinates: $_coordinates'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => _reverseGeocode(37.7749, -122.4194), // Example coordinates
+              child: Text('Reverse Geocode Example Coordinates'),
+            ),
+            SizedBox(height: 20),
+            Text('Address: $_address'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow:
+// 1. The app starts with the `MyApp` widget, which sets up the MaterialApp and home screen.
+// 2. `GeocodeScreen` is the main screen where users can input an address or use a button to reverse geocode.
+// 3. `_geocodeAddress` function takes an address string, uses the `RealFlutter` instance to get coordinates, and updates the UI.
+// 4. `_reverseGeocode` function takes latitude and longitude, uses the `RealFlutter` instance to get an address, and updates the UI.
+// 5. The UI consists of a TextField for address input, a button for reverse geocoding, and Text widgets to display results.
+
+```
+
+<-- END_MAIN -->
+```

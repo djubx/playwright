@@ -1,0 +1,173 @@
+<-- START_DESCRIPTION -->
+
+# Proxy Manager Flutter Package
+================================
+
+The `proxy_manager` Flutter package is a powerful tool for managing proxy settings within your Flutter application. It provides a simple and efficient way to handle proxy configurations, allowing you to focus on building your app without worrying about the underlying network settings.
+
+## When to Use This Package
+---------------------------
+
+You should use this package when:
+
+* Your app requires access to the internet through a proxy server.
+* You need to switch between different proxy settings based on user input or network conditions.
+* You want to handle proxy authentication and authorization within your app.
+
+## Features
+------------
+
+The `proxy_manager` package offers the following features:
+
+* Easy proxy configuration: Set up proxy settings with just a few lines of code.
+* Proxy authentication: Handle authentication and authorization for your proxy server.
+* Dynamic proxy switching: Switch between different proxy settings based on user input or network conditions.
+* Platform-specific support: Works seamlessly on both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Proxy Manager Package
+--------------------------------------
+
+To use the `proxy_manager` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec File
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  proxy_manager: ^1.0.0
+```
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:proxy_manager/proxy_manager.dart';
+```
+### Step 3: Initialize the Proxy Manager
+
+Initialize the proxy manager with your proxy settings:
+```dart
+ProxyManager proxyManager = ProxyManager(
+  proxyUrl: 'http://your-proxy-url.com',
+  proxyPort: 8080,
+  username: 'your-username',
+  password: 'your-password',
+);
+```
+### Step 4: Set Up Platform-Specific Configurations
+
+For Android, add the following lines to your `AndroidManifest.xml` file:
+```xml
+<application
+    ...
+    android:networkSecurityConfig="@xml/network_security_config"
+    ...
+>
+```
+Create a new file `network_security_config.xml` in your `res/xml` directory:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
+```
+For iOS, add the following lines to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+### Step 5: Use the Proxy Manager
+
+Use the proxy manager to make HTTP requests:
+```dart
+http.Client client = http.Client();
+client.get(Uri.parse('https://example.com'), headers: {
+  'Proxy-Authorization': proxyManager.getProxyAuthorizationHeader(),
+});
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:proxy_manager/proxy_manager.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Proxy Manager Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  ProxyManager _proxyManager;
+
+  @override
+  void initState() {
+    super.initState();
+    _proxyManager = ProxyManager(
+      proxyUrl: 'http://your-proxy-url.com',
+      proxyPort: 8080,
+      username: 'your-username',
+      password: 'your-password',
+    );
+  }
+
+  Future<void> _makeRequest() async {
+    http.Client client = http.Client();
+    http.Response response = await client.get(Uri.parse('https://example.com'), headers: {
+      'Proxy-Authorization': _proxyManager.getProxyAuthorizationHeader(),
+    });
+    print(response.body);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Proxy Manager Demo'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _makeRequest,
+          child: Text('Make Request'),
+        ),
+      ),
+    );
+  }
+}
+
+// The app starts by initializing the proxy manager with the provided proxy settings.
+// When the user clicks the "Make Request" button, the app makes an HTTP GET request to the specified URL.
+// The request includes the proxy authorization header obtained from the proxy manager.
+// The response from the server is then printed to the console.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,166 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Understanding the `should_rebuild` Flutter Package
+
+The `should_rebuild` package is a powerful tool for Flutter developers who need fine-grained control over widget rebuilding. This package provides a mechanism to determine whether a widget should rebuild based on custom logic, which can lead to performance optimizations in Flutter applications.
+
+## When to Use `should_rebuild`
+
+In Flutter, widgets are rebuilt frequently, which can sometimes lead to unnecessary computations and performance bottlenecks. The `should_rebuild` package is particularly useful in scenarios where:
+
+- You have complex widgets that are expensive to rebuild.
+- You want to avoid rebuilding widgets when their dependencies have not changed.
+- You need to implement custom logic to determine when a widget should update.
+
+## Key Features
+
+- **Custom Rebuild Logic**: Define your own conditions for when a widget should rebuild.
+- **Performance Optimization**: Reduce unnecessary rebuilds, leading to smoother UI performance.
+- **Easy Integration**: Simple API that integrates seamlessly with existing Flutter applications.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `should_rebuild` Package
+
+In this tutorial, we will walk through the setup process for the `should_rebuild` package and demonstrate how to use it in a Flutter application. We will cover platform-specific details for both Android and iOS.
+
+## Setup Process
+
+1. **Add Dependency**: First, add the `should_rebuild` package to your `pubspec.yaml` file.
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     should_rebuild: ^1.0.0
+   ```
+
+2. **Install Packages**: Run `flutter pub get` to install the new package.
+
+3. **Import the Package**: In your Dart file, import the package.
+
+   ```dart
+   import 'package:should_rebuild/should_rebuild.dart';
+   ```
+
+## Platform-Specific Details
+
+### Android
+
+No additional configuration is required for Android. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21 to support all Flutter features.
+
+### iOS
+
+Ensure your iOS deployment target is set to at least 9.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '9.0'
+```
+
+## Using the Package
+
+To use the `should_rebuild` package, wrap your widget with `ShouldRebuild` and provide a custom logic function to determine when the widget should rebuild.
+
+```dart
+ShouldRebuild<RealFlutter>(
+  shouldRebuild: (oldWidget, newWidget) => oldWidget.data != newWidget.data,
+  builder: (context) => RealFlutter(data: someData),
+)
+```
+
+In this example, the `RealFlutter` widget will only rebuild if the `data` property changes.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:should_rebuild/should_rebuild.dart';
+
+// Main entry point of the Flutter application
+void main() {
+  runApp(MyApp());
+}
+
+// Root widget of the application
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'ShouldRebuild Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomeScreen(),
+    );
+  }
+}
+
+// Home screen widget
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+// State class for HomeScreen
+class _HomeScreenState extends State<HomeScreen> {
+  int _counter = 0;
+
+  // Method to increment the counter
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('ShouldRebuild Example'),
+      ),
+      body: Center(
+        child: ShouldRebuild<RealFlutter>(
+          // Custom logic to determine if the widget should rebuild
+          shouldRebuild: (oldWidget, newWidget) => oldWidget.data != newWidget.data,
+          builder: (context) => RealFlutter(data: _counter),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// Custom widget that displays the counter
+class RealFlutter extends StatelessWidget {
+  final int data;
+
+  RealFlutter({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Counter: $data',
+      style: Theme.of(context).textTheme.headline4,
+    );
+  }
+}
+
+// Application Flow:
+// 1. The application starts with the MyApp widget, which sets up the MaterialApp.
+// 2. HomeScreen is the main screen, which maintains a counter state.
+// 3. The counter is displayed using the RealFlutter widget, wrapped in ShouldRebuild.
+// 4. ShouldRebuild uses custom logic to decide if RealFlutter should rebuild based on the counter value.
+// 5. Pressing the FloatingActionButton increments the counter, triggering a rebuild if the counter value changes.
+```
+
+<-- END_MAIN -->
+```

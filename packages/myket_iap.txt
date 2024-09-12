@@ -1,0 +1,177 @@
+<-- START_DESCRIPTION -->
+
+# myket_iap Flutter Package
+================================
+
+The myket_iap Flutter package provides a simple and convenient way to integrate in-app purchases (IAP) into your Flutter applications. It supports both Android and iOS platforms, allowing you to monetize your app with ease.
+
+## When to Use
+--------------
+
+Use the myket_iap package when you want to offer digital products or services within your app, such as:
+
+* In-game items or currency
+* Premium features or subscriptions
+* Digital content, like e-books or music
+
+## Features
+------------
+
+* Supports Android and iOS platforms
+* Easy integration with your existing Flutter app
+* Handles purchase flow, including payment processing and receipt validation
+* Provides a simple API for querying product information and checking purchase status
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up myket_iap
+-------------------------
+
+To use the myket_iap package, follow these steps:
+
+### Step 1: Add the Package to Your pubspec.yaml File
+
+```yml
+dependencies:
+  myket_iap: ^1.0.0
+```
+
+### Step 2: Import the Package in Your Dart File
+
+```dart
+import 'package:myket_iap/myket_iap.dart';
+```
+
+### Step 3: Initialize the myket_iap Package
+
+```dart
+await MyketIAP.initialize();
+```
+
+### Step 4: Configure Platform-Specific Settings
+
+#### Android
+
+In your `AndroidManifest.xml` file, add the following permission:
+
+```xml
+<uses-permission android:name="com.android.vending.BILLING" />
+```
+
+#### iOS
+
+In your `Info.plist` file, add the following key:
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>processing</string>
+</array>
+```
+
+### Step 5: Create a Product List
+
+```dart
+List<Product> products = await MyketIAP.getProducts(['product_id_1', 'product_id_2']);
+```
+
+### Step 6: Handle Purchase Flow
+
+```dart
+await MyketIAP.purchase(products[0]);
+```
+
+### Step 7: Validate Receipt
+
+```dart
+bool isValid = await MyketIAP.validateReceipt();
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:myket_iap/myket_iap.dart';
+
+void main() async {
+  // Initialize the myket_iap package
+  await MyketIAP.initialize();
+
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  List<Product> _products = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    // Load product list
+    List<Product> products = await MyketIAP.getProducts(['product_id_1', 'product_id_2']);
+    setState(() {
+      _products = products;
+    });
+  }
+
+  Future<void> _handlePurchase(Product product) async {
+    // Handle purchase flow
+    await MyketIAP.purchase(product);
+
+    // Validate receipt
+    bool isValid = await MyketIAP.validateReceipt();
+    if (isValid) {
+      print('Purchase successful!');
+    } else {
+      print('Purchase failed!');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('myket_iap Example'),
+        ),
+        body: ListView.builder(
+          itemCount: _products.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(_products[index].title),
+              subtitle: Text(_products[index].price),
+              onTap: () {
+                _handlePurchase(_products[index]);
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and the product list is loaded.
+// 2. The user selects a product to purchase.
+// 3. The purchase flow is handled by the myket_iap package.
+// 4. The receipt is validated to ensure the purchase was successful.
+// 5. If the purchase was successful, a success message is printed.
+
+// This example demonstrates a basic implementation of the myket_iap package.
+// You can customize the UI and add additional features as needed.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,198 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Overview of the `pdf_merger` Flutter Package
+
+The `pdf_merger` Flutter package is a powerful tool designed to simplify the process of merging multiple PDF files into a single document. This package is particularly useful in applications where users need to combine documents, such as in document management systems, educational apps, or any application that handles multiple PDF files.
+
+## When to Use `pdf_merger`
+
+- **Document Management Systems**: Combine multiple reports or documents into a single file for easier sharing and storage.
+- **Educational Apps**: Merge lecture notes, assignments, and other educational materials into a single PDF for students.
+- **Business Applications**: Create a single PDF from multiple invoices, contracts, or other business documents.
+
+## Features
+
+- **Easy Integration**: Simple API for merging PDFs with minimal setup.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Efficient Performance**: Optimized for performance to handle large PDF files without significant lag.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using the `pdf_merger` Package
+
+In this tutorial, we will walk through the process of setting up the `pdf_merger` package in a Flutter project and demonstrate how to use it to merge PDF files.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add the `pdf_merger` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  pdf_merger: ^1.0.0
+```
+
+### Step 2: Install the Package
+
+Run the following command to install the package:
+
+```bash
+flutter pub get
+```
+
+### Step 3: Platform-Specific Configuration
+
+#### Android
+
+Ensure that your `android/app/src/main/AndroidManifest.xml` file has the necessary permissions to read and write files:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
+
+#### iOS
+
+For iOS, make sure to update your `ios/Runner/Info.plist` with the following permissions:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to save merged PDFs.</string>
+<key>NSDocumentsFolderUsageDescription</key>
+<string>We need access to your documents folder to save merged PDFs.</string>
+```
+
+## Using the Package
+
+To merge PDFs, you will use the `RealFlutter` class provided by the package. Here is a basic example of how to use it:
+
+```dart
+import 'package:pdf_merger/pdf_merger.dart';
+
+class RealFlutter {
+  Future<void> mergePDFs(List<String> pdfPaths) async {
+    try {
+      String mergedPDFPath = await PdfMerger.mergeMultiplePDF(paths: pdfPaths);
+      print('Merged PDF saved at: $mergedPDFPath');
+    } catch (e) {
+      print('Error merging PDFs: $e');
+    }
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+# Complete Example of Using `pdf_merger` in a Flutter App
+
+Below is a complete example of a Flutter application that uses the `pdf_merger` package to merge PDF files.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:pdf_merger/pdf_merger.dart';
+import 'package:file_picker/file_picker.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'PDF Merger Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PDFMergerScreen(),
+    );
+  }
+}
+
+class PDFMergerScreen extends StatefulWidget {
+  @override
+  _PDFMergerScreenState createState() => _PDFMergerScreenState();
+}
+
+class _PDFMergerScreenState extends State<PDFMergerScreen> {
+  List<String> _pdfPaths = [];
+
+  // Function to pick PDF files
+  Future<void> _pickPDFs() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: true,
+    );
+
+    if (result != null) {
+      setState(() {
+        _pdfPaths = result.paths.map((path) => path!).toList();
+      });
+    }
+  }
+
+  // Function to merge selected PDF files
+  Future<void> _mergePDFs() async {
+    if (_pdfPaths.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select PDF files to merge')),
+      );
+      return;
+    }
+
+    try {
+      String mergedPDFPath = await PdfMerger.mergeMultiplePDF(paths: _pdfPaths);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Merged PDF saved at: $mergedPDFPath')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error merging PDFs: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PDF Merger'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _pickPDFs,
+              child: Text('Select PDF Files'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _mergePDFs,
+              child: Text('Merge PDFs'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The application starts with the `main` function, which runs the `MyApp` widget.
+// `MyApp` is a stateless widget that sets up the MaterialApp with a home screen of `PDFMergerScreen`.
+// `PDFMergerScreen` is a stateful widget that manages the state of selected PDF files and handles user interactions.
+// The `_pickPDFs` function uses `file_picker` to allow users to select multiple PDF files from their device.
+// The `_mergePDFs` function uses the `pdf_merger` package to merge the selected PDF files and displays the result using a `SnackBar`.
+// The UI consists of two buttons: one for selecting PDF files and another for merging them.
+// The app provides feedback to the user through `SnackBar` messages, indicating the success or failure of the merge operation.
+
+<-- END_MAIN -->
+```

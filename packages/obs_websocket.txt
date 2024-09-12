@@ -1,0 +1,178 @@
+<-- START_DESCRIPTION -->
+
+# Description of the obs_websocket Flutter Package
+=====================================================
+
+The obs_websocket package is a Flutter library that allows you to establish a WebSocket connection to an OBS (Open Broadcasting Software) instance. This enables you to control and interact with OBS from your Flutter application.
+
+### When to Use This Package
+
+This package is useful when you want to create a Flutter application that needs to interact with OBS, such as:
+
+* Remote control applications for OBS
+* Custom OBS user interfaces
+* OBS automation tools
+
+### Features of the Package
+
+The obs_websocket package provides the following features:
+
+* Establish a WebSocket connection to an OBS instance
+* Send and receive messages to/from OBS
+* Control OBS scenes, sources, and transitions
+* Get information about the current OBS scene, sources, and settings
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the obs_websocket Package
+=====================================================
+
+### Step 1: Add the Package to Your Flutter Project
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  obs_websocket: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:obs_websocket/obs_websocket.dart';
+```
+### Step 3: Establish a WebSocket Connection
+
+Create an instance of the `ObsWebSocket` class and establish a connection to your OBS instance:
+```dart
+ObsWebSocket obsWebSocket = ObsWebSocket(
+  host: 'localhost',
+  port: 4444,
+  password: 'your_obs_password',
+);
+
+await obsWebSocket.connect();
+```
+### Step 4: Send and Receive Messages
+
+Use the `send` method to send messages to OBS and the `onMessage` callback to receive messages from OBS:
+```dart
+obsWebSocket.send('GetSceneList');
+
+obsWebSocket.onMessage((message) {
+  print(message);
+});
+```
+### Platform-Specific Details
+
+* Android: Make sure to add the `android.permission.INTERNET` permission to your `AndroidManifest.xml` file.
+* iOS: Make sure to add the `NSAppTransportSecurity` key to your `Info.plist` file and set `NSAllowsArbitraryLoads` to `YES`.
+
+### Required Configurations and Optimizations
+
+* Make sure to handle WebSocket connection errors and disconnections.
+* Use the `ping` method to keep the WebSocket connection alive.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:obs_websocket/obs_websocket.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'OBS WebSocket Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  ObsWebSocket _obsWebSocket;
+
+  @override
+  void initState() {
+    super.initState();
+    _connectToObs();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('OBS WebSocket Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _getSceneList,
+              child: Text('Get Scene List'),
+            ),
+            ElevatedButton(
+              onPressed: _switchToScene,
+              child: Text('Switch to Scene'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _connectToObs() async {
+    _obsWebSocket = ObsWebSocket(
+      host: 'localhost',
+      port: 4444,
+      password: 'your_obs_password',
+    );
+    await _obsWebSocket.connect();
+    _obsWebSocket.onMessage((message) {
+      print(message);
+    });
+  }
+
+  _getSceneList() async {
+    _obsWebSocket.send('GetSceneList');
+  }
+
+  _switchToScene() async {
+    _obsWebSocket.send('SetCurrentScene', {'scene-name': 'Your Scene Name'});
+  }
+}
+
+// Application flow:
+// 1. The app starts and connects to the OBS instance using the `ObsWebSocket` class.
+// 2. The app sends a `GetSceneList` message to OBS to retrieve the list of scenes.
+// 3. OBS responds with the list of scenes, which is printed to the console.
+// 4. The user can switch to a different scene by pressing the `Switch to Scene` button.
+// 5. The app sends a `SetCurrentScene` message to OBS to switch to the selected scene.
+```
+
+// Final summary:
+// The code flows as follows:
+// The app starts and connects to OBS.
+// The user can get the scene list or switch to a scene.
+// The app sends messages to OBS and receives responses.
+// The app handles WebSocket connection errors and disconnections.
+
+<-- END_MAIN -->

@@ -1,0 +1,206 @@
+<-- START_DESCRIPTION -->
+
+Typed Preferences Flutter Package
+================================
+
+The `typed_preferences` package is a lightweight, type-safe solution for storing and retrieving application preferences in Flutter. It provides a simple and efficient way to manage app settings, user preferences, and other data that needs to be persisted across app sessions.
+
+When to Use
+------------
+
+* Store user preferences, such as theme settings, font sizes, or notification preferences.
+* Save app settings, like API keys, server URLs, or logging configurations.
+* Persist data that needs to be accessed across multiple app sessions, like user authentication tokens.
+
+Features
+--------
+
+* Type-safe: ensures that only the correct data type is stored and retrieved for each preference.
+* Lightweight: uses the `shared_preferences` package under the hood, which is a thin wrapper around the platform's native storage solutions.
+* Easy to use: provides a simple, intuitive API for storing and retrieving preferences.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+Setup and Usage
+---------------
+
+### Step 1: Add the package to your pubspec.yaml file
+
+```yml
+dependencies:
+  typed_preferences: ^1.0.0
+```
+
+### Step 2: Import the package in your Dart file
+
+```dart
+import 'package:typed_preferences/typed_preferences.dart';
+```
+
+### Step 3: Create a `RealFlutter` class to hold your app's preferences
+
+```dart
+class RealFlutter {
+  static const String _themeKey = 'theme';
+  static const String _fontSizeKey = 'font_size';
+
+  static Future<void> init() async {
+    await TypedPreferences.init();
+  }
+
+  static Future<void> setTheme(String theme) async {
+    await TypedPreferences.setString(_themeKey, theme);
+  }
+
+  static Future<String> getTheme() async {
+    return TypedPreferences.getString(_themeKey, defaultValue: 'light');
+  }
+
+  static Future<void> setFontSize(double fontSize) async {
+    await TypedPreferences.setDouble(_fontSizeKey, fontSize);
+  }
+
+  static Future<double> getFontSize() async {
+    return TypedPreferences.getDouble(_fontSizeKey, defaultValue: 14.0);
+  }
+}
+```
+
+### Step 4: Initialize the `RealFlutter` class in your app's `main` function
+
+```dart
+void main() async {
+  await RealFlutter.init();
+  runApp(MyApp());
+}
+```
+
+### Platform-Specific Details
+
+* On Android, the `typed_preferences` package uses the `SharedPreferences` class to store data.
+* On iOS, the package uses the `NSUserDefaults` class to store data.
+
+### Configurations and Optimizations
+
+* You can configure the package to use a custom storage solution by implementing the `Storage` interface.
+* You can optimize the package's performance by using the ` cached` option when storing and retrieving preferences.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:typed_preferences/typed_preferences.dart';
+
+class RealFlutter {
+  static const String _themeKey = 'theme';
+  static const String _fontSizeKey = 'font_size';
+
+  static Future<void> init() async {
+    await TypedPreferences.init();
+  }
+
+  static Future<void> setTheme(String theme) async {
+    // Set the theme preference
+    await TypedPreferences.setString(_themeKey, theme);
+  }
+
+  static Future<String> getTheme() async {
+    // Get the theme preference, defaulting to 'light' if not set
+    return TypedPreferences.getString(_themeKey, defaultValue: 'light');
+  }
+
+  static Future<void> setFontSize(double fontSize) async {
+    // Set the font size preference
+    await TypedPreferences.setDouble(_fontSizeKey, fontSize);
+  }
+
+  static Future<double> getFontSize() async {
+    // Get the font size preference, defaulting to 14.0 if not set
+    return TypedPreferences.getDouble(_fontSizeKey, defaultValue: 14.0);
+  }
+}
+
+void main() async {
+  // Initialize the RealFlutter class
+  await RealFlutter.init();
+
+  // Run the app
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Typed Preferences Demo',
+      theme: ThemeData(
+        // Use the theme preference to set the app's theme
+        brightness: RealFlutter.getTheme().then((theme) {
+          return theme == 'dark' ? Brightness.dark : Brightness.light;
+        }),
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  double _fontSize = 14.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Get the font size preference and update the UI
+    RealFlutter.getFontSize().then((fontSize) {
+      setState(() {
+        _fontSize = fontSize;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Typed Preferences Demo'),
+      ),
+      body: Center(
+        child: Text(
+          'Hello, World!',
+          style: TextStyle(fontSize: _fontSize),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Set the font size preference and update the UI
+          RealFlutter.setFontSize(18.0).then((_) {
+            setState(() {
+              _fontSize = 18.0;
+            });
+          });
+        },
+        tooltip: 'Increase Font Size',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// The app's flow:
+// 1. The RealFlutter class is initialized in the main function.
+// 2. The app's theme is set using the theme preference.
+// 3. The font size is set using the font size preference.
+// 4. The user can increase the font size by pressing the floating action button.
+// 5. The font size preference is updated and the UI is refreshed.
+```
+
+<-- END_MAIN -->

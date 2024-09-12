@@ -1,0 +1,208 @@
+Here's a detailed technical blog on the "wifi_hunter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `wifi_hunter` Flutter package is a powerful tool designed for developers who need to manage and interact with Wi-Fi networks in their Flutter applications. This package allows you to scan for available Wi-Fi networks, connect to them, and retrieve detailed information about the networks. 
+
+## When to Use This Package
+You might consider using the `wifi_hunter` package in scenarios such as:
+- Building a Wi-Fi management app that allows users to view and connect to available networks.
+- Creating a network monitoring tool that provides insights into the Wi-Fi environment.
+- Developing applications that require network connectivity checks and optimizations.
+
+## Features
+- **Scan for Wi-Fi Networks**: Discover all available Wi-Fi networks in the vicinity.
+- **Connect to Wi-Fi**: Easily connect to a selected Wi-Fi network.
+- **Retrieve Network Information**: Get detailed information about the connected network, such as SSID, BSSID, and signal strength.
+- **Platform Support**: Works on both Android and iOS with platform-specific configurations.
+
+The `wifi_hunter` package is a versatile solution for any Flutter developer looking to enhance their app's networking capabilities.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `wifi_hunter` package, follow these steps:
+
+### Step 1: Add Dependency
+Add the `wifi_hunter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  wifi_hunter: ^latest_version
+```
+
+Replace `^latest_version` with the latest version of the package.
+
+### Step 2: Platform-Specific Configuration
+
+#### Android
+1. Open `android/app/build.gradle` and ensure you have the following permissions:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Minimum SDK version
+    }
+}
+```
+
+2. Add the following permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+#### iOS
+1. Open `ios/Runner/Info.plist` and add the following keys to request location permissions:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to scan for Wi-Fi networks.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to scan for Wi-Fi networks.</string>
+```
+
+### Step 3: Import the Package
+In your Dart file, import the package:
+
+```dart
+import 'package:wifi_hunter/wifi_hunter.dart';
+```
+
+### Step 4: Request Permissions
+Before scanning for networks, ensure you have the necessary permissions. You can use the `permission_handler` package to manage permissions effectively.
+
+### Step 5: Initialize and Use
+You can now initialize the `wifi_hunter` package and start scanning for networks. 
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Request permissions here
+  runApp(MyApp());
+}
+```
+
+This setup will prepare your Flutter application to utilize the `wifi_hunter` package effectively.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:wifi_hunter/wifi_hunter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize the WifiHunter package
+  await WifiHunter.initialize();
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'WiFi Hunter',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: WifiHomePage(),
+    );
+  }
+}
+
+class WifiHomePage extends StatefulWidget {
+  @override
+  _WifiHomePageState createState() => _WifiHomePageState();
+}
+
+class _WifiHomePageState extends State<WifiHomePage> {
+  List<WifiNetwork> _networks = []; // List to hold scanned networks
+
+  @override
+  void initState() {
+    super.initState();
+    _scanForNetworks(); // Start scanning for networks on initialization
+  }
+
+  // Function to scan for available Wi-Fi networks
+  Future<void> _scanForNetworks() async {
+    try {
+      // Scan for networks
+      List<WifiNetwork> networks = await WifiHunter.scan();
+      setState(() {
+        _networks = networks; // Update the state with scanned networks
+      });
+    } catch (e) {
+      print("Error scanning for networks: $e");
+    }
+  }
+
+  // Function to connect to a selected Wi-Fi network
+  Future<void> _connectToNetwork(String ssid, String password) async {
+    try {
+      bool success = await WifiHunter.connect(ssid, password);
+      if (success) {
+        print("Connected to $ssid");
+      } else {
+        print("Failed to connect to $ssid");
+      }
+    } catch (e) {
+      print("Error connecting to network: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Available Wi-Fi Networks'),
+      ),
+      body: ListView.builder(
+        itemCount: _networks.length,
+        itemBuilder: (context, index) {
+          final network = _networks[index];
+          return ListTile(
+            title: Text(network.ssid), // Display the SSID of the network
+            subtitle: Text('Signal Strength: ${network.signalStrength} dBm'), // Display signal strength
+            trailing: ElevatedButton(
+              onPressed: () {
+                // Connect to the network when the button is pressed
+                _connectToNetwork(network.ssid, 'your_password_here');
+              },
+              child: Text('Connect'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, initializing the WifiHunter package.
+// 2. The RealFlutter widget is created, which sets up the MaterialApp.
+// 3. The WifiHomePage widget is displayed, which scans for available Wi-Fi networks.
+// 4. The scanned networks are displayed in a ListView, showing the SSID and signal strength.
+// 5. Users can connect to a network by pressing the "Connect" button, which triggers the connection process.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+In this blog, we explored the `wifi_hunter` Flutter package, detailing its features and providing a comprehensive tutorial on how to set it up and use it in your applications. The complete example demonstrated how to scan for available Wi-Fi networks and connect to them, with step-by-step comments explaining the application flow. This package is a valuable tool for any Flutter developer looking to enhance their app's networking capabilities.

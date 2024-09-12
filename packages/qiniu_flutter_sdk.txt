@@ -1,0 +1,201 @@
+<-- START_DESCRIPTION -->
+
+# Qiniu Flutter SDK Package
+================================
+
+The `qiniu_flutter_sdk` package is a Flutter wrapper for the Qiniu cloud storage service. It provides an easy-to-use interface for uploading and managing files on Qiniu's cloud storage platform.
+
+## When to Use This Package
+---------------------------
+
+This package is ideal for Flutter developers who need to integrate cloud storage capabilities into their applications. It's particularly useful for apps that require file uploads, such as image sharing, video streaming, or document management.
+
+## Features
+------------
+
+*   Upload files to Qiniu cloud storage
+*   Manage files on Qiniu cloud storage (e.g., delete, rename)
+*   Support for multiple upload protocols (e.g., HTTP, HTTPS)
+*   Automatic retry mechanism for failed uploads
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Qiniu Flutter SDK Package
+------------------------------------------
+
+## Step 1: Add the Package to Your Flutter Project
+------------------------------------------------
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  qiniu_flutter_sdk: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Step 2: Import the Package
+---------------------------
+
+Import the package in your Dart file:
+
+```dart
+import 'package:qiniu_flutter_sdk/qiniu_flutter_sdk.dart';
+```
+
+## Step 3: Initialize the Qiniu Client
+--------------------------------------
+
+Create a Qiniu client instance with your access key and secret key:
+
+```dart
+final qiniuClient = QiniuClient(
+  accessKey: 'YOUR_ACCESS_KEY',
+  secretKey: 'YOUR_SECRET_KEY',
+);
+```
+
+## Step 4: Configure the Upload Options (Optional)
+-------------------------------------------------
+
+You can customize the upload options, such as the upload protocol and retry mechanism:
+
+```dart
+final uploadOptions = UploadOptions(
+  protocol: UploadProtocol.https,
+  retryMax: 3,
+);
+```
+
+## Platform-Specific Details
+---------------------------
+
+### Android
+
+No additional configuration is required for Android.
+
+### iOS
+
+You need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+This allows the app to make HTTP requests to the Qiniu cloud storage service.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:qiniu_flutter_sdk/qiniu_flutter_sdk.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Qiniu Flutter SDK Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final qiniuClient = QiniuClient(
+    accessKey: 'YOUR_ACCESS_KEY',
+    secretKey: 'YOUR_SECRET_KEY',
+  );
+
+  final uploadOptions = UploadOptions(
+    protocol: UploadProtocol.https,
+    retryMax: 3,
+  );
+
+  String _uploadStatus = '';
+
+  void _uploadFile() async {
+    // Select a file to upload
+    final file = await FilePicker.platform.pickFile();
+
+    if (file != null) {
+      // Upload the file to Qiniu cloud storage
+      final uploadToken = await qiniuClient.getUploadToken(
+        bucket: 'YOUR_BUCKET_NAME',
+        key: file.path,
+      );
+
+      final uploadResult = await qiniuClient.uploadFile(
+        file.path,
+        uploadToken,
+        options: uploadOptions,
+      );
+
+      // Update the upload status
+      setState(() {
+        _uploadStatus = 'File uploaded successfully!';
+      });
+    } else {
+      // Update the upload status
+      setState(() {
+        _uploadStatus = 'No file selected.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Qiniu Flutter SDK Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _uploadFile,
+              child: Text('Upload File'),
+            ),
+            SizedBox(height: 20),
+            Text(_uploadStatus),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user clicks the "Upload File" button.
+// 2. The `_uploadFile` function is called, which selects a file to upload using the `FilePicker` package.
+// 3. If a file is selected, the function gets an upload token from the Qiniu cloud storage service using the `qiniuClient.getUploadToken` method.
+// 4. The function then uploads the file to Qiniu cloud storage using the `qiniuClient.uploadFile` method, passing in the upload token and file path.
+// 5. The upload status is updated based on the result of the upload operation.
+// 6. The updated upload status is displayed on the screen.
+
+```
+
+<-- END_MAIN -->

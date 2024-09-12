@@ -1,0 +1,178 @@
+```markdown
+<-- START_DESCRIPTION -->
+
+# Flutter Redux Navigation: A Comprehensive Overview
+
+The `flutter_redux_navigation` package is a powerful tool for managing navigation in Flutter applications using the Redux architecture. This package simplifies the process of handling navigation actions and state changes, making it easier to maintain a clean and scalable codebase.
+
+## When to Use `flutter_redux_navigation`
+
+This package is particularly useful in applications where:
+- You are already using Redux for state management.
+- You want to centralize navigation logic within your Redux store.
+- You need to handle complex navigation flows that depend on the application state.
+
+## Key Features
+
+- **Redux Integration**: Seamlessly integrates with the Redux architecture, allowing navigation actions to be dispatched like any other Redux action.
+- **Centralized Navigation Logic**: Keeps navigation logic within the Redux store, promoting a single source of truth for both state and navigation.
+- **Middleware Support**: Provides middleware to intercept and handle navigation actions, enabling advanced navigation scenarios.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up and Using `flutter_redux_navigation`
+
+In this tutorial, we will walk through the setup process for the `flutter_redux_navigation` package and demonstrate how to use it in a Flutter application.
+
+## Setup Process
+
+### Step 1: Add Dependency
+
+Add `flutter_redux_navigation` to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_redux_navigation: ^0.5.0
+```
+
+### Step 2: Configure for Android and iOS
+
+#### Android
+
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21
+    }
+}
+```
+
+#### iOS
+
+No specific configuration is required for iOS beyond the standard Flutter setup.
+
+### Step 3: Implement Redux Store
+
+Create a Redux store and include the `flutter_redux_navigation` middleware:
+
+```dart
+import 'package:flutter_redux_navigation/flutter_redux_navigation.dart';
+import 'package:redux/redux.dart';
+
+final store = Store<AppState>(
+  appReducer,
+  middleware: [NavigationMiddleware<AppState>()],
+);
+```
+
+### Step 4: Use the Package
+
+To navigate, dispatch a `NavigateToAction`:
+
+```dart
+store.dispatch(NavigateToAction.pushNamed('/nextPage'));
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_redux_navigation/flutter_redux_navigation.dart';
+import 'package:redux/redux.dart';
+
+// Define the application state
+class AppState {}
+
+// Define the reducer
+AppState appReducer(AppState state, dynamic action) {
+  return state;
+}
+
+void main() {
+  // Create the Redux store with navigation middleware
+  final store = Store<AppState>(
+    appReducer,
+    initialState: AppState(),
+    middleware: [NavigationMiddleware<AppState>()],
+  );
+
+  runApp(MyApp(store: store));
+}
+
+class MyApp extends StatelessWidget {
+  final Store<AppState> store;
+
+  MyApp({required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return StoreProvider<AppState>(
+      store: store,
+      child: MaterialApp(
+        navigatorKey: NavigatorHolder.navigatorKey,
+        home: HomeScreen(),
+        routes: {
+          '/nextPage': (context) => NextPage(),
+        },
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Home')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Dispatch a navigation action to move to the next page
+            StoreProvider.of<AppState>(context)
+                .dispatch(NavigateToAction.pushNamed('/nextPage'));
+          },
+          child: Text('Go to Next Page'),
+        ),
+      ),
+    );
+  }
+}
+
+class NextPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Next Page')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Dispatch a navigation action to pop the current page
+            StoreProvider.of<AppState>(context)
+                .dispatch(NavigateToAction.pop());
+          },
+          child: Text('Back to Home'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the `main` function, which initializes the Redux store with navigation middleware.
+// 2. `MyApp` is the root widget, which provides the Redux store to the widget tree using `StoreProvider`.
+// 3. `MaterialApp` is configured with a `navigatorKey` from `NavigatorHolder` to enable navigation actions.
+// 4. The `HomeScreen` widget displays a button that, when pressed, dispatches a `NavigateToAction` to navigate to `NextPage`.
+// 5. `NextPage` contains a button to dispatch a `NavigateToAction.pop()` action, returning the user to the `HomeScreen`.
+```
+
+<-- END_MAIN -->
+```

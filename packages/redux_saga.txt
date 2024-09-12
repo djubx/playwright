@@ -1,0 +1,175 @@
+<-- START_DESCRIPTION -->
+
+# Redux Saga Flutter Package
+==========================
+
+The `redux_saga` package is a Flutter implementation of the popular Redux Saga library, which is used to manage side effects in Redux applications. It provides a simple way to handle asynchronous operations, such as API calls, and integrates well with the Redux state management system.
+
+## When to Use Redux Saga
+
+Redux Saga is particularly useful when you need to handle complex asynchronous operations, such as:
+
+* API calls with multiple requests and responses
+* File uploads and downloads
+* Websocket connections
+* Background tasks
+
+## Features
+
+The `redux_saga` package provides the following features:
+
+* Support for asynchronous operations using the `call` effect
+* Support for parallel execution of tasks using the `all` effect
+* Support for cancellation of tasks using the `cancel` effect
+* Integration with the Redux state management system
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Redux Saga
+=====================
+
+To use the `redux_saga` package, you need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  redux_saga: ^0.10.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Creating a Saga
+
+A saga is a function that returns a generator that yields effects. To create a saga, you need to import the `redux_saga` package and use the `saga` function:
+
+```dart
+import 'package:redux_saga/redux_saga.dart';
+
+saga* mySaga() sync* {
+  // Yield effects here
+}
+```
+
+## Running a Saga
+
+To run a saga, you need to create a `SagaMiddleware` instance and pass it to the `run` method:
+
+```dart
+import 'package:redux_saga/redux_saga.dart';
+
+void main() {
+  final sagaMiddleware = SagaMiddleware();
+  sagaMiddleware.run(mySaga);
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+On Android, you need to add the following configuration to your `AndroidManifest.xml` file:
+
+```xml
+<application
+  ...
+  android:usesCleartextTraffic="true"
+  ...>
+</application>
+```
+
+This allows the app to make HTTP requests to the Redux Saga server.
+
+### iOS
+
+On iOS, you need to add the following configuration to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+This allows the app to make HTTP requests to the Redux Saga server.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:redux_saga/redux_saga.dart';
+
+// Create a Redux store
+final store = Store<int>(
+  (state, action) => state,
+  initialState: 0,
+);
+
+// Create a saga middleware
+final sagaMiddleware = SagaMiddleware();
+
+// Create a saga
+saga* mySaga() sync* {
+  // Yield a call effect to make an API request
+  final response = yield call(() => Future.delayed(Duration(seconds: 2), () => 'Hello, World!'));
+  print(response);
+
+  // Yield a put effect to dispatch an action
+  yield put(IncrementAction());
+}
+
+// Run the saga
+void main() {
+  sagaMiddleware.run(mySaga);
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Redux Saga Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Redux Saga Demo'),
+        ),
+        body: Center(
+          child: Text('Hello, World!'),
+        ),
+      ),
+    );
+  }
+}
+
+// Define an action
+class IncrementAction {}
+
+// Define a reducer
+int reducer(int state, dynamic action) {
+  if (action is IncrementAction) {
+    return state + 1;
+  }
+  return state;
+}
+
+// The app flow is as follows:
+// 1. The app starts and runs the saga using the saga middleware.
+// 2. The saga yields a call effect to make an API request.
+// 3. The API request is made and the response is received.
+// 4. The saga yields a put effect to dispatch an action.
+// 5. The action is dispatched and the reducer is called.
+// 6. The reducer updates the state and the app is re-rendered.
+
+// The final state of the app is:
+// {
+//   "state": 1
+// }
+```
+
+<-- END_MAIN -->

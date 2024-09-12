@@ -1,0 +1,260 @@
+<-- START_DESCRIPTION -->
+
+**dart_dash_otp Flutter Package: A Comprehensive Overview**
+===========================================================
+
+The `dart_dash_otp` package is a Flutter library that provides a simple and efficient way to implement one-time password (OTP) authentication in your Flutter applications. This package is ideal for developers who want to add an extra layer of security to their apps by verifying user phone numbers or emails via OTP.
+
+**Key Features:**
+
+*   Supports both SMS and email OTP verification
+*   Customizable OTP code length and expiration time
+*   Automatic OTP code resend after a specified interval
+*   Supports multiple platforms, including Android and iOS
+
+**When to Use:**
+
+*   When you want to verify user phone numbers or emails via OTP
+*   When you need to add an extra layer of security to your app's authentication process
+*   When you want a simple and efficient way to implement OTP authentication in your Flutter app
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setting Up and Using the dart_dash_otp Package**
+=====================================================
+
+### Step 1: Add the Package to Your pubspec.yaml File
+
+To use the `dart_dash_otp` package, you need to add it to your `pubspec.yaml` file. Open your `pubspec.yaml` file and add the following line under the `dependencies` section:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  dart_dash_otp: ^1.0.0
+```
+
+Then, run `flutter pub get` in your terminal to get the package.
+
+### Step 2: Import the Package in Your Dart File
+
+To use the package, you need to import it in your Dart file. Add the following line at the top of your Dart file:
+
+```dart
+import 'package:dart_dash_otp/dart_dash_otp.dart';
+```
+
+### Step 3: Create an Instance of the OTPController Class
+
+To use the package, you need to create an instance of the `OTPController` class. You can do this by calling the `OTPController` constructor and passing the required parameters:
+
+```dart
+OTPController _otpController = OTPController(
+  otpCodeLength: 6,
+  otpExpirationTime: 60,
+  otpResendInterval: 30,
+);
+```
+
+### Step 4: Send the OTP Code to the User
+
+To send the OTP code to the user, you can call the `sendOTP` method of the `OTPController` instance:
+
+```dart
+_otpController.sendOTP(
+  phoneNumber: '+1234567890',
+  email: 'user@example.com',
+);
+```
+
+### Step 5: Verify the OTP Code
+
+To verify the OTP code, you can call the `verifyOTP` method of the `OTPController` instance:
+
+```dart
+_otpController.verifyOTP(
+  otpCode: '123456',
+);
+```
+
+### Platform-Specific Details
+
+The `dart_dash_otp` package supports both Android and iOS platforms. However, there are some platform-specific details you need to be aware of:
+
+*   **Android:** On Android, the package uses the `SMSManager` class to send SMS messages. You need to add the `SEND_SMS` permission to your `AndroidManifest.xml` file:
+
+    ```xml
+<uses-permission android:name="android.permission.SEND_SMS" />
+```
+
+*   **iOS:** On iOS, the package uses the `MFMessageComposeViewController` class to send SMS messages. You need to add the `NSMessagingUsageDescription` key to your `Info.plist` file:
+
+    ```xml
+<key>NSMessagingUsageDescription</key>
+<string>This app needs access to the Messages app to send SMS messages.</string>
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dart_dash_otp/dart_dash_otp.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dart Dash OTP Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _formKey = GlobalKey<FormState>();
+  final _phoneNumberController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _otpCodeController = TextEditingController();
+
+  OTPController _otpController;
+
+  @override
+  void initState() {
+    super.initState();
+    _otpController = OTPController(
+      otpCodeLength: 6,
+      otpExpirationTime: 60,
+      otpResendInterval: 30,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dart Dash OTP Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _phoneNumberController,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter your phone number';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState.validate()) {
+                    await _otpController.sendOTP(
+                      phoneNumber: _phoneNumberController.text,
+                      email: _emailController.text,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('OTP code sent successfully'),
+                      ),
+                    );
+                  }
+                },
+                child: Text('Send OTP'),
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _otpCodeController,
+                decoration: InputDecoration(
+                  labelText: 'OTP Code',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter the OTP code';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState.validate()) {
+                    await _otpController.verifyOTP(
+                      otpCode: _otpCodeController.text,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('OTP code verified successfully'),
+                      ),
+                    );
+                  }
+                },
+                child: Text('Verify OTP'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user enters their phone number and email in the corresponding text fields.
+// 2. The user clicks the "Send OTP" button, which sends the OTP code to the user's phone number and email.
+// 3. The user receives the OTP code and enters it in the OTP code text field.
+// 4. The user clicks the "Verify OTP" button, which verifies the OTP code entered by the user.
+// 5. If the OTP code is correct, the application displays a success message to the user.
+
+// The OTPController class handles the sending and verification of the OTP code.
+// The OTP code is sent using the sendOTP method, which takes the user's phone number and email as parameters.
+// The OTP code is verified using the verifyOTP method, which takes the OTP code entered by the user as a parameter.
+
+// The application uses a form to validate the user's input and display error messages if necessary.
+// The form is validated using the _formKey.currentState.validate() method, which checks if the form fields are empty or not.
+// If the form fields are empty, the application displays an error message to the user.
+
+// The application uses the ScaffoldMessenger class to display snack bars to the user.
+// The snack bars are used to display success messages to the user when the OTP code is sent or verified successfully.
+```
+
+<-- END_MAIN -->
