@@ -1,0 +1,227 @@
+Here's a detailed technical blog on the `nhost_flutter_graphql` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Nhost Flutter GraphQL Package
+
+The `nhost_flutter_graphql` package is a powerful tool for Flutter developers looking to integrate GraphQL APIs with Nhost, a backend-as-a-service platform. This package simplifies the process of connecting your Flutter applications to Nhost's GraphQL API, allowing for seamless data management and real-time capabilities.
+
+## When to Use This Package
+
+You should consider using the `nhost_flutter_graphql` package when:
+- You need a backend solution that provides authentication, storage, and real-time capabilities.
+- You want to leverage GraphQL for efficient data fetching and manipulation.
+- You are building a Flutter application that requires a scalable and flexible backend.
+
+## Key Features
+
+- **GraphQL Client**: Provides a robust GraphQL client for making queries and mutations.
+- **Authentication**: Built-in support for user authentication and session management.
+- **Real-time Subscriptions**: Enables real-time data updates through GraphQL subscriptions.
+- **File Storage**: Simplifies file uploads and management with Nhost's storage capabilities.
+- **Type Safety**: Strongly typed queries and mutations enhance development efficiency and reduce runtime errors.
+
+With these features, the `nhost_flutter_graphql` package is an excellent choice for developers looking to build modern applications with a reliable backend.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Nhost Flutter GraphQL
+
+In this tutorial, we will walk through the setup process for the `nhost_flutter_graphql` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependencies
+
+First, add the `nhost_flutter_graphql` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  nhost_flutter_graphql: ^0.3.0 # Check for the latest version
+```
+
+## Step 2: Configure Nhost
+
+Before using the package, you need to set up an Nhost project:
+
+1. Go to the [Nhost website](https://nhost.io/) and create an account.
+2. Create a new project and note down your Nhost backend URL and the GraphQL endpoint.
+
+## Step 3: Initialize Nhost in Your App
+
+In your `main.dart` file, initialize the Nhost client. Here’s how to do it:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:nhost_flutter_graphql/nhost_flutter_graphql.dart';
+
+void main() {
+  // Initialize Nhost client with your backend URL
+  Nhost.initialize(
+    backendUrl: 'https://your-backend-url.nhost.app',
+  );
+  runApp(MyApp());
+}
+```
+
+## Step 4: Platform-Specific Configurations
+
+### Android
+
+For Android, ensure that you have the following permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+
+For iOS, you may need to add the following to your `Info.plist` to allow network requests:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+## Step 5: Using the Package
+
+You can now use the `nhost_flutter_graphql` package to perform queries and mutations. Here’s a simple example of how to fetch data:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:nhost_flutter_graphql/nhost_flutter_graphql.dart';
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Nhost GraphQL Example')),
+      body: Center(
+        child: FutureBuilder(
+          future: Nhost.graphqlClient.query('''
+            query {
+              users {
+                id
+                email
+              }
+            }
+          '''),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+            final users = snapshot.data['data']['users'];
+            return ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(users[index]['email']),
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+This example demonstrates how to set up a simple Flutter application that fetches user data from the Nhost backend using GraphQL.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Nhost Flutter GraphQL Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:nhost_flutter_graphql/nhost_flutter_graphql.dart';
+
+void main() {
+  // Initialize Nhost client with your backend URL
+  Nhost.initialize(
+    backendUrl: 'https://your-backend-url.nhost.app',
+  );
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Nhost GraphQL Example')),
+      body: Center(
+        child: FutureBuilder(
+          // Perform a GraphQL query to fetch users
+          future: Nhost.graphqlClient.query('''
+            query {
+              users {
+                id
+                email
+              }
+            }
+          '''),
+          builder: (context, snapshot) {
+            // Show loading indicator while waiting for data
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            // Handle errors if any occur during the query
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+            // Extract user data from the response
+            final users = snapshot.data['data']['users'];
+            // Display the list of users
+            return ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(users[index]['email']),
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes the Nhost client with the backend URL.
+// 2. The RealFlutter class is the root widget of the application.
+// 3. The HomeScreen widget is displayed, which contains a FutureBuilder.
+// 4. The FutureBuilder executes a GraphQL query to fetch user data.
+// 5. While waiting for the data, a loading indicator is shown.
+// 6. If an error occurs, it is displayed on the screen.
+// 7. Once the data is fetched, it is displayed in a ListView, showing the email of each user.
+```
+<!-- END_MAIN -->
+
+In this blog, we covered the `nhost_flutter_graphql` package, including its features, setup process, and a complete example application. This package provides a robust solution for integrating GraphQL with Flutter, making it easier to manage data and user authentication in your applications.

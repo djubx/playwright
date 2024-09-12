@@ -1,0 +1,232 @@
+Here's a detailed technical blog on the `flutter_ios_voip_kit` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Flutter iOS VoIP Kit
+
+The `flutter_ios_voip_kit` package is a powerful tool for Flutter developers looking to implement Voice over IP (VoIP) functionalities in their applications. This package provides a seamless way to integrate VoIP capabilities, allowing developers to create applications that can handle voice calls over the internet. 
+
+## When to Use This Package
+
+You should consider using the `flutter_ios_voip_kit` package when:
+- You are developing a Flutter application that requires real-time voice communication.
+- You need to implement features like call notifications, call management, and background execution for VoIP calls.
+- You want to leverage native iOS capabilities for VoIP without diving deep into Swift or Objective-C.
+
+## Features
+
+- **Push Notifications**: Supports VoIP push notifications to wake up your app for incoming calls.
+- **Call Management**: Provides APIs to manage call states, including incoming, outgoing, and ongoing calls.
+- **Background Execution**: Allows your app to run in the background to handle VoIP calls.
+- **Custom Call UI**: You can create a custom user interface for your VoIP calls, enhancing user experience.
+
+With these features, the `flutter_ios_voip_kit` package is an excellent choice for developers looking to build robust VoIP applications in Flutter.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up flutter_ios_voip_kit
+
+In this tutorial, we will walk through the setup process for the `flutter_ios_voip_kit` package and explain how to use it effectively in your Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the `flutter_ios_voip_kit` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_ios_voip_kit: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package.
+
+## Step 2: iOS Configuration
+
+### 2.1 Update Info.plist
+
+You need to configure your iOS project to support VoIP. Open your `Info.plist` file and add the following keys:
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>voip</string>
+</array>
+<key>NSVoIPUsageDescription</key>
+<string>We need access to VoIP services for making calls.</string>
+```
+
+### 2.2 Enable Push Notifications
+
+To receive VoIP push notifications, you must enable push notifications in your Xcode project settings. Go to your project settings, select your app target, and enable the "Push Notifications" capability.
+
+## Step 3: Android Configuration
+
+For Android, you will need to set up Firebase Cloud Messaging (FCM) to handle push notifications. Follow these steps:
+
+1. Add the Firebase dependencies to your `android/app/build.gradle` file:
+
+```groovy
+dependencies {
+    implementation 'com.google.firebase:firebase-messaging:latest_version'
+}
+```
+
+2. Configure your `AndroidManifest.xml` to include the necessary permissions:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+```
+
+3. Set up a service to handle incoming messages.
+
+## Step 4: Using the Package
+
+Now that you have configured your project, you can start using the `flutter_ios_voip_kit` package in your application. Here’s a simple example of how to initialize the package and handle incoming calls.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_ios_voip_kit/flutter_ios_voip_kit.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CallScreen(),
+    );
+  }
+}
+
+class CallScreen extends StatefulWidget {
+  @override
+  _CallScreenState createState() => _CallScreenState();
+}
+
+class _CallScreenState extends State<CallScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the VoIP kit
+    FlutterIosVoipKit.initialize();
+    
+    // Listen for incoming calls
+    FlutterIosVoipKit.onIncomingCall.listen((call) {
+      // Handle incoming call
+      print('Incoming call from: ${call.callerId}');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('VoIP Call Example')),
+      body: Center(child: Text('Waiting for calls...')),
+    );
+  }
+}
+```
+
+In this example, we initialize the VoIP kit and listen for incoming calls. When a call is received, we print the caller's ID.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: VoIP Application
+
+Below is a complete example of a Flutter application that demonstrates the key features of the `flutter_ios_voip_kit` package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_ios_voip_kit/flutter_ios_voip_kit.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CallScreen(),
+    );
+  }
+}
+
+class CallScreen extends StatefulWidget {
+  @override
+  _CallScreenState createState() => _CallScreenState();
+}
+
+class _CallScreenState extends State<CallScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the VoIP kit
+    FlutterIosVoipKit.initialize();
+    
+    // Listen for incoming calls
+    FlutterIosVoipKit.onIncomingCall.listen((call) {
+      // Handle incoming call
+      print('Incoming call from: ${call.callerId}');
+      // Show a dialog or notification for the incoming call
+      _showIncomingCallDialog(call);
+    });
+  }
+
+  void _showIncomingCallDialog(Call call) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Incoming Call'),
+          content: Text('Call from: ${call.callerId}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Accept the call
+                FlutterIosVoipKit.acceptCall(call);
+                Navigator.of(context).pop();
+              },
+              child: Text('Accept'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Reject the call
+                FlutterIosVoipKit.rejectCall(call);
+                Navigator.of(context).pop();
+              },
+              child: Text('Reject'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('VoIP Call Example')),
+      body: Center(child: Text('Waiting for calls...')),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts and initializes the VoIP kit.
+// 2. It listens for incoming calls using the onIncomingCall stream.
+// 3. When an incoming call is detected, a dialog is shown to the user with options to accept or reject the call.
+// 4. If the user accepts the call, the acceptCall method is called; if rejected, the rejectCall method is called.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog, we explored the `flutter_ios_voip_kit` package, detailing its features and providing a comprehensive tutorial on how to set it up for both iOS and Android. We also presented a complete example of a Flutter application that demonstrates how to handle incoming VoIP calls. The application flow is straightforward: it initializes the VoIP kit, listens for incoming calls, and provides the user with options to accept or reject calls through a dialog interface. This package is a valuable tool for any Flutter developer looking to implement VoIP functionalities in their applications.

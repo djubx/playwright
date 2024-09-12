@@ -1,0 +1,221 @@
+Here's a detailed technical blog on the "angel3_orm_mysql" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Angel3 ORM MySQL Flutter Package
+
+The **angel3_orm_mysql** package is a powerful Object-Relational Mapping (ORM) tool designed for Flutter applications that need to interact with MySQL databases. This package simplifies database operations by allowing developers to work with Dart objects instead of writing raw SQL queries. It is particularly useful for applications that require complex data interactions, such as CRUD operations, relationships, and migrations.
+
+## When to Use This Package
+
+You should consider using the **angel3_orm_mysql** package in scenarios such as:
+
+- Building applications that require persistent data storage with MySQL.
+- When you want to abstract database interactions and reduce boilerplate code.
+- If your application needs to manage complex data relationships and perform migrations easily.
+
+## Features
+
+- **Easy Setup**: Quick integration with Flutter applications.
+- **Type Safety**: Strongly typed models that reduce runtime errors.
+- **Migrations**: Built-in support for database migrations.
+- **Relationships**: Support for one-to-one, one-to-many, and many-to-many relationships.
+- **Query Builder**: A fluent API for building complex queries without writing raw SQL.
+
+With these features, the **angel3_orm_mysql** package provides a robust solution for managing MySQL databases in Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Angel3 ORM MySQL
+
+In this tutorial, we will walk through the setup process for the **angel3_orm_mysql** package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the **angel3_orm_mysql** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  angel3_orm_mysql: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/angel3_orm_mysql).
+
+## Step 2: Configure MySQL Database
+
+### For Android
+
+1. Open your `android/app/build.gradle` file.
+2. Ensure you have the following permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### For iOS
+
+1. Open your `ios/Runner/Info.plist` file.
+2. Add the following lines to allow network access:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Initialize the Database Connection
+
+In your Flutter application, you need to initialize the database connection. Here’s how you can do it:
+
+```dart
+import 'package:angel3_orm_mysql/angel3_orm_mysql.dart';
+
+void main() async {
+  // Initialize the database connection
+  final db = MySqlDatabase('mysql://user:password@localhost:3306/database_name');
+  await db.connect();
+}
+```
+
+Replace `user`, `password`, `localhost`, and `database_name` with your MySQL credentials.
+
+## Step 4: Create Models
+
+Define your data models using the ORM features. For example:
+
+```dart
+import 'package:angel3_orm_mysql/angel3_orm_mysql.dart';
+
+class User extends Model {
+  @Column(primaryKey: true)
+  int id;
+
+  String name;
+  String email;
+
+  User({this.id, this.name, this.email});
+}
+```
+
+## Step 5: Perform CRUD Operations
+
+You can now perform CRUD operations using the ORM methods. Here’s an example of creating a new user:
+
+```dart
+final user = User(name: 'John Doe', email: 'john@example.com');
+await db.insert(user);
+```
+
+You can also read, update, and delete users using similar methods.
+
+With these steps, you have successfully set up and started using the **angel3_orm_mysql** package in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Angel3 ORM MySQL
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:angel3_orm_mysql/angel3_orm_mysql.dart';
+
+// Define the User model
+class User extends Model {
+  @Column(primaryKey: true) // Marking id as primary key
+  int id;
+
+  String name; // User's name
+  String email; // User's email
+
+  User({this.id, this.name, this.email}); // Constructor
+}
+
+void main() async {
+  // Initialize the Flutter app
+  runApp(MyApp());
+}
+
+// Main application widget
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Angel3 ORM MySQL Example',
+      home: UserListScreen(), // Set the home screen to UserListScreen
+    );
+  }
+}
+
+// Screen to display the list of users
+class UserListScreen extends StatefulWidget {
+  @override
+  _UserListScreenState createState() => _UserListScreenState();
+}
+
+class _UserListScreenState extends State<UserListScreen> {
+  List<User> users = []; // List to hold users
+  final db = MySqlDatabase('mysql://user:password@localhost:3306/database_name'); // Database connection
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers(); // Load users when the screen initializes
+  }
+
+  // Load users from the database
+  Future<void> _loadUsers() async {
+    await db.connect(); // Connect to the database
+    users = await db.find(User); // Fetch users from the database
+    setState(() {}); // Update the UI
+  }
+
+  // Add a new user
+  Future<void> _addUser() async {
+    final newUser = User(name: 'New User', email: 'newuser@example.com'); // Create a new user
+    await db.insert(newUser); // Insert the new user into the database
+    _loadUsers(); // Reload users to update the list
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('User List'), // App bar title
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add), // Add button
+            onPressed: _addUser, // Call _addUser when pressed
+          ),
+        ],
+      ),
+      body: ListView.builder(
+        itemCount: users.length, // Number of users
+        itemBuilder: (context, index) {
+          final user = users[index]; // Get user at the current index
+          return ListTile(
+            title: Text(user.name), // Display user's name
+            subtitle: Text(user.email), // Display user's email
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+// The application starts by initializing the Flutter app and connecting to the MySQL database.
+// The User model is defined with id, name, and email fields.
+// The UserListScreen is the main screen that displays a list of users.
+// When the screen initializes, it connects to the database and fetches the list of users.
+// The _loadUsers method is responsible for loading users from the database and updating the UI.
+// The _addUser method allows adding a new user to the database and refreshing the user list.
+// The UI consists of an AppBar with an add button and a ListView to display the users.
+// Each user is displayed as a ListTile with their name and email.
+
+<!-- END_MAIN --> 
+
+This blog provides a comprehensive overview of the **angel3_orm_mysql** package, guiding you through its setup, usage, and a complete example to help you get started with integrating MySQL in your Flutter applications.

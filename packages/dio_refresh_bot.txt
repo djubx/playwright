@@ -1,0 +1,310 @@
+Here's a detailed technical blog on the "dio_refresh_bot" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# dio_refresh_bot Flutter Package
+
+The `dio_refresh_bot` package is a powerful tool for managing API requests in Flutter applications. It is built on top of the popular `dio` HTTP client, providing additional features that simplify the process of handling token refreshes and error management. This package is particularly useful in applications that require secure API access, where tokens may expire and need to be refreshed seamlessly.
+
+## When to Use dio_refresh_bot
+
+You should consider using `dio_refresh_bot` in scenarios such as:
+
+- **Authentication**: When your application interacts with APIs that require authentication tokens that may expire.
+- **Error Handling**: To manage API errors gracefully, especially when dealing with 401 Unauthorized responses.
+- **Token Refresh Logic**: To implement automatic token refresh logic without cluttering your codebase.
+
+## Features
+
+- **Automatic Token Refresh**: Automatically refreshes tokens when they expire, reducing the need for manual intervention.
+- **Error Handling**: Provides a structured way to handle API errors, particularly for authentication-related issues.
+- **Customizable**: Allows developers to customize the behavior of the refresh logic and error handling.
+
+By leveraging the `dio_refresh_bot` package, developers can create more robust and user-friendly applications that handle API interactions efficiently.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up dio_refresh_bot
+
+In this tutorial, we will walk through the setup process for the `dio_refresh_bot` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependencies
+
+First, add the `dio` and `dio_refresh_bot` packages to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.0.0
+  dio_refresh_bot: ^1.0.0
+```
+
+Run `flutter pub get` to install the packages.
+
+## Step 2: Configure dio_refresh_bot
+
+Next, you need to configure the `dio_refresh_bot` in your application. This involves creating a custom `Dio` instance and setting up the refresh logic.
+
+### Android Configuration
+
+For Android, ensure that you have the necessary permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS Configuration
+
+For iOS, you may need to add the following to your `Info.plist` to allow network requests:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Implementing the Package
+
+Here’s how to implement the `dio_refresh_bot` in your Flutter application:
+
+1. Create a new class that extends `RealFlutter` and configure the `Dio` instance.
+2. Implement the token refresh logic.
+3. Use the configured `Dio` instance for making API calls.
+
+### Example Implementation
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:dio_refresh_bot/dio_refresh_bot.dart';
+
+class RealFlutter {
+  final Dio _dio;
+
+  RealFlutter() : _dio = Dio() {
+    // Initialize dio_refresh_bot
+    final refreshBot = DioRefreshBot(
+      dio: _dio,
+      refreshToken: _refreshToken,
+      onRefresh: _onRefresh,
+    );
+
+    // Add the refresh bot interceptor
+    _dio.interceptors.add(refreshBot);
+  }
+
+  Future<void> _refreshToken() async {
+    // Logic to refresh the token
+    // This should return the new token
+  }
+
+  Future<void> _onRefresh(String newToken) async {
+    // Logic to handle the new token
+    // This could involve saving the token to secure storage
+  }
+
+  Future<Response> fetchData(String endpoint) async {
+    // Example API call
+    return await _dio.get(endpoint);
+  }
+}
+```
+
+In this example, we create a `RealFlutter` class that initializes a `Dio` instance and sets up the `dio_refresh_bot`. The `_refreshToken` method contains the logic to refresh the token, while `_onRefresh` handles the new token.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of dio_refresh_bot
+
+Here’s a complete example of a Flutter application using the `dio_refresh_bot` package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:dio_refresh_bot/dio_refresh_bot.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dio Refresh Bot Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final Dio _dio = Dio();
+  String _data = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize dio_refresh_bot
+    final refreshBot = DioRefreshBot(
+      dio: _dio,
+      refreshToken: _refreshToken,
+      onRefresh: _onRefresh,
+    );
+
+    // Add the refresh bot interceptor
+    _dio.interceptors.add(refreshBot);
+  }
+
+  Future<void> _refreshToken() async {
+    // Simulate a token refresh
+    await Future.delayed(Duration(seconds: 1));
+    return 'new_token'; // Return the new token
+  }
+
+  Future<void> _onRefresh(String newToken) async {
+    // Handle the new token (e.g., save it)
+    print('New token received: $newToken');
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final response = await _dio.get('https://api.example.com/data');
+      setState(() {
+        _data = response.data.toString();
+      });
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dio Refresh Bot Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Fetched Data: $_data'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _fetchData,
+              child: Text('Fetch Data'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Application Flow Explanation
+
+```dart
+// The main function starts the Flutter application.
+// The MyApp widget is the root of the application.
+void main() {
+  runApp(MyApp());
+}
+
+// MyApp is a StatelessWidget that builds the MaterialApp.
+// It sets the title and home screen of the app.
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dio Refresh Bot Example',
+      home: HomeScreen(), // HomeScreen is the main screen of the app.
+    );
+  }
+}
+
+// HomeScreen is a StatefulWidget that manages the state of the UI.
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+// _HomeScreenState contains the logic for fetching data and managing the Dio instance.
+class _HomeScreenState extends State<HomeScreen> {
+  final Dio _dio = Dio(); // Create a Dio instance.
+  String _data = ''; // Variable to hold fetched data.
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize dio_refresh_bot with the Dio instance.
+    final refreshBot = DioRefreshBot(
+      dio: _dio,
+      refreshToken: _refreshToken, // Method to refresh the token.
+      onRefresh: _onRefresh, // Method to handle the new token.
+    );
+
+    // Add the refresh bot interceptor to the Dio instance.
+    _dio.interceptors.add(refreshBot);
+  }
+
+  // Method to refresh the token.
+  Future<void> _refreshToken() async {
+    await Future.delayed(Duration(seconds: 1)); // Simulate network delay.
+    return 'new_token'; // Return the new token.
+  }
+
+  // Method to handle the new token.
+  Future<void> _onRefresh(String newToken) async {
+    print('New token received: $newToken'); // Log the new token.
+  }
+
+  // Method to fetch data from the API.
+  Future<void> _fetchData() async {
+    try {
+      final response = await _dio.get('https://api.example.com/data'); // Make API call.
+      setState(() {
+        _data = response.data.toString(); // Update the UI with fetched data.
+      });
+    } catch (e) {
+      print('Error fetching data: $e'); // Handle errors.
+    }
+  }
+
+  // Build method to create the UI.
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dio Refresh Bot Example'), // App bar title.
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Fetched Data: $_data'), // Display fetched data.
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _fetchData, // Fetch data when button is pressed.
+              child: Text('Fetch Data'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Summary
+
+In this example, we created a simple Flutter application that demonstrates how to use the `dio_refresh_bot` package. The application initializes a `Dio` instance with the refresh bot interceptor, which handles token refresh logic. When the user presses the "Fetch Data" button, the app makes an API call to fetch data, and if the token is expired, it automatically refreshes it. The application flow is clearly defined through comments, making it easy to understand how each part interacts with the others.
+
+<!-- END_MAIN -->

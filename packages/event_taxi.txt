@@ -1,0 +1,200 @@
+Here's a detailed technical blog on the "event_taxi" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Event Taxi Flutter Package
+
+The **event_taxi** package is a powerful tool for managing event-driven communication in Flutter applications. It provides a simple and efficient way to implement a publish-subscribe pattern, allowing different parts of your application to communicate without tight coupling. This is particularly useful in large applications where components need to interact but should remain independent.
+
+## When to Use Event Taxi
+
+You should consider using the **event_taxi** package in scenarios such as:
+
+- **Decoupled Communication**: When you want to allow different parts of your application to communicate without direct references to each other.
+- **Event Handling**: When you need to handle events that can occur at various points in your application, such as user interactions, data updates, or system notifications.
+- **State Management**: When you want to manage state changes across different widgets without relying on a single state management solution.
+
+## Features
+
+- **Lightweight**: The package is lightweight and easy to integrate into existing projects.
+- **Flexible**: Supports multiple event types and allows for custom event classes.
+- **Asynchronous**: Built to handle asynchronous events, making it suitable for modern Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Event Taxi
+
+## Step 1: Adding Dependency
+
+To get started with the **event_taxi** package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  event_taxi: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Importing the Package
+
+In your Dart files, import the package:
+
+```dart
+import 'package:event_taxi/event_taxi.dart';
+```
+
+## Step 3: Creating Event Classes
+
+You can create custom event classes that extend `EventTaxi`. For example:
+
+```dart
+class MyCustomEvent implements EventTaxi {
+  final String message;
+
+  MyCustomEvent(this.message);
+}
+```
+
+## Step 4: Publishing Events
+
+To publish an event, use the `EventTaxi` instance:
+
+```dart
+EventTaxi().fire(MyCustomEvent("Hello from Event Taxi!"));
+```
+
+## Step 5: Subscribing to Events
+
+To listen for events, you can subscribe to them in your widgets:
+
+```dart
+EventTaxi().subscribe<MyCustomEvent>((event) {
+  print(event.message);
+});
+```
+
+## Platform-Specific Details
+
+### Android
+
+Ensure that your Android project is set up to use Kotlin if you are using any Kotlin-specific features. Update your `android/app/build.gradle` file to include:
+
+```groovy
+android {
+    ...
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+```
+
+### iOS
+
+For iOS, ensure that your deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 6: Optimizations
+
+- **Event Filtering**: You can filter events based on specific criteria to reduce unnecessary processing.
+- **Unsubscribing**: Always unsubscribe from events when they are no longer needed to prevent memory leaks.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Event Taxi
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:event_taxi/event_taxi.dart';
+
+// Custom event class to hold the message
+class MyCustomEvent implements EventTaxi {
+  final String message;
+
+  MyCustomEvent(this.message);
+}
+
+// Main application class
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Event Taxi Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _message = "No message received yet.";
+
+  @override
+  void initState() {
+    super.initState();
+    // Subscribe to MyCustomEvent
+    EventTaxi().subscribe<MyCustomEvent>((event) {
+      setState(() {
+        _message = event.message; // Update the message when event is received
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    // Unsubscribe from events to prevent memory leaks
+    EventTaxi().unsubscribe<MyCustomEvent>();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Event Taxi Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_message), // Display the received message
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Publish a new event when the button is pressed
+                EventTaxi().fire(MyCustomEvent("Hello from Event Taxi!"));
+              },
+              child: Text('Send Event'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the MyApp class, which sets up the MaterialApp.
+// 2. The HomeScreen widget is displayed, which initializes a message variable.
+// 3. In the initState method, the HomeScreen subscribes to MyCustomEvent.
+// 4. When the button is pressed, a new MyCustomEvent is published with a message.
+// 5. The subscribed listener updates the _message variable, which triggers a UI rebuild.
+// 6. The new message is displayed on the screen.
+// 7. When the HomeScreen is disposed, it unsubscribes from the event to prevent memory leaks.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the **event_taxi** Flutter package, detailing its purpose, setup, and usage through a complete example. The application flow demonstrates how to effectively use the package to manage events in a Flutter application, ensuring a clean and decoupled architecture.

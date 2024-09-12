@@ -1,0 +1,203 @@
+Here's a detailed technical blog on the "fhir_at_rest" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# fhir_at_rest Flutter Package
+
+The `fhir_at_rest` package is a powerful tool designed for Flutter developers who need to work with FHIR (Fast Healthcare Interoperability Resources) data in a local storage context. This package allows developers to easily manage FHIR resources in a Flutter application, enabling offline capabilities and efficient data handling.
+
+## When to Use This Package
+
+You should consider using the `fhir_at_rest` package in scenarios such as:
+
+- **Healthcare Applications**: When building applications that require storing and retrieving healthcare data, such as patient records, medication lists, or appointment schedules.
+- **Offline Functionality**: If your application needs to function without a constant internet connection, this package allows you to store FHIR resources locally and sync them when connectivity is available.
+- **Data Management**: For applications that need to manage complex data structures defined by FHIR standards, this package simplifies the process of CRUD (Create, Read, Update, Delete) operations.
+
+## Features
+
+- **Local Storage**: Efficiently store FHIR resources using SQLite or other local databases.
+- **CRUD Operations**: Simplified methods for creating, reading, updating, and deleting FHIR resources.
+- **FHIR Resource Support**: Supports a wide range of FHIR resources, making it versatile for various healthcare applications.
+- **Data Synchronization**: Ability to sync local data with remote FHIR servers when online.
+
+By leveraging the `fhir_at_rest` package, developers can create robust healthcare applications that adhere to FHIR standards while providing a seamless user experience.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using fhir_at_rest
+
+In this tutorial, we will walk through the setup process for the `fhir_at_rest` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `fhir_at_rest` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  fhir_at_rest: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure that the `minSdkVersion` is set to at least 21:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+2. Ensure that you have the necessary permissions in `AndroidManifest.xml` if your app requires internet access or other features.
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add the following permissions if your app requires internet access:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Using the Package
+
+Now that we have set up the package, let's see how to use it in our Flutter application.
+
+1. Import the package in your Dart file:
+
+   ```dart
+   import 'package:fhir_at_rest/fhir_at_rest.dart';
+   ```
+
+2. Initialize the `RealFlutter` class to manage FHIR resources.
+
+3. Use the provided methods to perform CRUD operations on FHIR resources.
+
+By following these steps, you can effectively integrate the `fhir_at_rest` package into your Flutter application and start managing FHIR data locally.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of fhir_at_rest
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:fhir_at_rest/fhir_at_rest.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'FHIR at Rest Example',
+      home: FhirHome(),
+    );
+  }
+}
+
+class FhirHome extends StatefulWidget {
+  @override
+  _FhirHomeState createState() => _FhirHomeState();
+}
+
+class _FhirHomeState extends State<FhirHome> {
+  // Create an instance of the FHIR database
+  final FhirDatabase _fhirDatabase = FhirDatabase();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the database
+    _fhirDatabase.init();
+  }
+
+  // Function to add a new patient resource
+  void _addPatient() async {
+    // Create a new patient resource
+    final patient = Patient(
+      id: Id('123'),
+      name: [HumanName(use: 'official', text: 'John Doe')],
+      gender: Code('male'),
+      birthDate: FhirDateTime('1980-01-01'),
+    );
+
+    // Save the patient resource to the database
+    await _fhirDatabase.saveResource(patient);
+    setState(() {});
+  }
+
+  // Function to fetch all patients
+  Future<List<Patient>> _fetchPatients() async {
+    return await _fhirDatabase.getResources<Patient>();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('FHIR at Rest Example'),
+      ),
+      body: FutureBuilder<List<Patient>>(
+        future: _fetchPatients(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final patients = snapshot.data ?? [];
+            return ListView.builder(
+              itemCount: patients.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(patients[index].name?.first.text ?? 'Unknown'),
+                );
+              },
+            );
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addPatient,
+        tooltip: 'Add Patient',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. The RealFlutter widget builds a MaterialApp with a title and home set to FhirHome.
+// 3. In the FhirHome widget, we initialize the FhirDatabase instance in initState.
+// 4. The _addPatient function creates a new Patient resource and saves it to the database.
+// 5. The _fetchPatients function retrieves all Patient resources from the database.
+// 6. The build method uses a FutureBuilder to display the list of patients.
+// 7. When the floating action button is pressed, a new patient is added to the database.
+```
+
+// The application flow is as follows:
+// - The app initializes and displays a list of patients stored in the local database.
+// - When the user taps the floating action button, a new patient is created and added to the database.
+// - The list of patients is updated to reflect the newly added patient, demonstrating the CRUD functionality of the `fhir_at_rest` package.
+
+<!-- END_MAIN --> 
+
+This blog provides a comprehensive overview of the `fhir_at_rest` package, guiding you through its features, setup, and a complete example of its usage in a Flutter application.

@@ -1,0 +1,228 @@
+Here's a detailed technical blog on the "stellar_flutter_sdk" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Stellar Flutter SDK
+
+The **stellar_flutter_sdk** is a powerful Flutter package designed to facilitate the integration of Stellar blockchain functionalities into Flutter applications. This package allows developers to interact with the Stellar network, enabling features such as creating and managing Stellar accounts, sending and receiving payments, and querying the Stellar blockchain.
+
+## When to Use This Package
+
+You should consider using the **stellar_flutter_sdk** when:
+- You are developing a mobile application that requires blockchain functionalities, specifically with the Stellar network.
+- You need to implement features like cryptocurrency transactions, account management, or asset issuance.
+- You want to leverage the Stellar network's fast transaction speeds and low fees for your application.
+
+## Key Features
+- **Account Management**: Create, manage, and retrieve Stellar accounts.
+- **Transaction Handling**: Send and receive payments seamlessly.
+- **Asset Management**: Issue and manage custom assets on the Stellar network.
+- **Network Interaction**: Query the Stellar blockchain for account balances, transaction history, and more.
+
+The **stellar_flutter_sdk** provides a comprehensive set of tools to build robust applications that utilize the Stellar blockchain, making it an excellent choice for developers looking to integrate blockchain technology into their Flutter apps.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Stellar Flutter SDK
+
+In this tutorial, we will walk through the setup process for the **stellar_flutter_sdk** and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the **stellar_flutter_sdk** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  stellar_flutter_sdk: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/stellar_flutter_sdk).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure that the `minSdkVersion` is set to at least 21:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+2. Add internet permissions in `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add the following to allow network requests:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Using the Package
+
+Now that we have set up the package, let's see how to use it in our Flutter application.
+
+1. Import the package in your Dart file:
+
+   ```dart
+   import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+   ```
+
+2. Initialize the Stellar SDK and create a new account:
+
+   ```dart
+   void createAccount() async {
+       // Create a new key pair
+       KeyPair keyPair = KeyPair.random();
+       String publicKey = keyPair.accountId;
+       String secretKey = keyPair.secret;
+
+       // Create a new account on the Stellar network
+       final server = StellarSDK.getTestNetServer();
+       await server.accounts.createAccount(publicKey, secretKey);
+       print('Account created: $publicKey');
+   }
+   ```
+
+3. Send a payment:
+
+   ```dart
+   void sendPayment(String destination, String amount) async {
+       final server = StellarSDK.getTestNetServer();
+       final sourceKeyPair = KeyPair.fromSecret('YOUR_SECRET_KEY');
+
+       // Create a transaction
+       Transaction transaction = TransactionBuilder(
+           sourceKeyPair: sourceKeyPair,
+           network: Network.testnet,
+       )
+       .addOperation(
+           PaymentOperationBuilder(destination, Asset.native(), amount).build(),
+       )
+       .build();
+
+       // Sign the transaction
+       transaction.sign(sourceKeyPair);
+
+       // Submit the transaction
+       try {
+           final response = await server.submitTransaction(transaction);
+           print('Payment successful: ${response.hash}');
+       } catch (e) {
+           print('Payment failed: $e');
+       }
+   }
+   ```
+
+This setup allows you to create accounts and send payments on the Stellar network using the **stellar_flutter_sdk**.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Stellar Flutter SDK in Action
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Stellar Flutter SDK Demo',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Stellar SDK Demo'),
+        ),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              createAccount();
+            },
+            child: Text('Create Account'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Function to create a new Stellar account
+  void createAccount() async {
+    // Generate a new key pair
+    KeyPair keyPair = KeyPair.random();
+    String publicKey = keyPair.accountId;
+    String secretKey = keyPair.secret;
+
+    // Initialize the Stellar test network server
+    final server = StellarSDK.getTestNetServer();
+
+    // Create a new account on the Stellar network
+    await server.accounts.createAccount(publicKey, secretKey);
+    print('Account created: $publicKey');
+
+    // After account creation, you can send a payment
+    sendPayment(publicKey, '10'); // Sending 10 lumens to the new account
+  }
+
+  // Function to send a payment to a specified destination
+  void sendPayment(String destination, String amount) async {
+    // Initialize the Stellar test network server
+    final server = StellarSDK.getTestNetServer();
+    final sourceKeyPair = KeyPair.fromSecret('YOUR_SECRET_KEY'); // Replace with your secret key
+
+    // Create a transaction to send payment
+    Transaction transaction = TransactionBuilder(
+      sourceKeyPair: sourceKeyPair,
+      network: Network.testnet,
+    )
+    .addOperation(
+      PaymentOperationBuilder(destination, Asset.native(), amount).build(),
+    )
+    .build();
+
+    // Sign the transaction with the source key pair
+    transaction.sign(sourceKeyPair);
+
+    // Submit the transaction to the Stellar network
+    try {
+      final response = await server.submitTransaction(transaction);
+      print('Payment successful: ${response.hash}');
+    } catch (e) {
+      print('Payment failed: $e');
+    }
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and displays a button to create a Stellar account.
+// 2. When the button is pressed, the createAccount function is called.
+// 3. A new key pair is generated, and a new account is created on the Stellar test network.
+// 4. After the account is created, the sendPayment function is called to send 10 lumens to the new account.
+// 5. A transaction is built, signed, and submitted to the Stellar network.
+// 6. The result of the payment transaction is printed to the console.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the **stellar_flutter_sdk** package, detailing its features, setup process, and providing a complete example of how to use it in a Flutter application. The code demonstrates how to create a Stellar account and send payments, showcasing the package's capabilities in a practical context.

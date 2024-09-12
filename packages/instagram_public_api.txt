@@ -1,0 +1,219 @@
+Here's a detailed technical blog on the `instagram_public_api` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Instagram Public API Flutter Package
+
+The `instagram_public_api` Flutter package is a powerful tool that allows developers to interact with Instagram's public API seamlessly. This package is particularly useful for applications that require access to Instagram's public data, such as user profiles, media, and hashtags. 
+
+## When to Use This Package
+You might consider using the `instagram_public_api` package in scenarios such as:
+- Building a social media aggregator that displays posts from various platforms, including Instagram.
+- Creating a marketing tool that analyzes Instagram posts and user engagement.
+- Developing a personal project that showcases your Instagram feed or specific hashtags.
+
+## Features
+- **User Profile Access**: Retrieve public user profiles and their media.
+- **Media Retrieval**: Access images, videos, and other media types associated with a user.
+- **Hashtag Search**: Search for posts associated with specific hashtags.
+- **Easy Integration**: Simple setup and usage within Flutter applications.
+
+The package abstracts the complexities of making HTTP requests and parsing JSON responses, allowing developers to focus on building their applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Instagram Public API Package
+
+## Step 1: Add Dependency
+To get started, add the `instagram_public_api` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  instagram_public_api: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Configure for Android
+For Android, ensure that you have the necessary permissions in your `AndroidManifest.xml` file:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <application
+        android:label="Your App"
+        android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="YOUR_ADMOB_APP_ID"/>
+    </application>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>
+```
+
+## Step 3: Configure for iOS
+For iOS, you need to add the following permissions in your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to display images.</string>
+```
+
+## Step 4: Using the Package
+Now that you have configured your project, you can start using the `instagram_public_api` package in your Flutter application. Here’s a simple example of how to fetch a user’s profile and their media.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:instagram_public_api/instagram_public_api.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Instagram API Demo',
+      home: InstagramHome(),
+    );
+  }
+}
+
+class InstagramHome extends StatefulWidget {
+  @override
+  _InstagramHomeState createState() => _InstagramHomeState();
+}
+
+class _InstagramHomeState extends State<InstagramHome> {
+  String userId = 'your_user_id'; // Replace with a valid user ID
+  UserProfile? userProfile;
+  List<Media>? userMedia;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserProfile();
+  }
+
+  // Fetch user profile and media
+  void fetchUserProfile() async {
+    try {
+      userProfile = await InstagramPublicApi.getUserProfile(userId);
+      userMedia = await InstagramPublicApi.getUserMedia(userId);
+      setState(() {});
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Instagram Profile')),
+      body: userProfile == null
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Text('User: ${userProfile!.username}'),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: userMedia?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      return Image.network(userMedia![index].imageUrl);
+                    },
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Instagram Public API Usage
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:instagram_public_api/instagram_public_api.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Instagram API Demo',
+      home: InstagramHome(),
+    );
+  }
+}
+
+class InstagramHome extends StatefulWidget {
+  @override
+  _InstagramHomeState createState() => _InstagramHomeState();
+}
+
+class _InstagramHomeState extends State<InstagramHome> {
+  String userId = 'your_user_id'; // Replace with a valid user ID
+  UserProfile? userProfile; // Variable to hold user profile data
+  List<Media>? userMedia; // Variable to hold user media data
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserProfile(); // Fetch user profile when the widget is initialized
+  }
+
+  // Function to fetch user profile and media
+  void fetchUserProfile() async {
+    try {
+      // Fetch user profile using the Instagram API
+      userProfile = await InstagramPublicApi.getUserProfile(userId);
+      // Fetch user media using the Instagram API
+      userMedia = await InstagramPublicApi.getUserMedia(userId);
+      setState(() {}); // Update the UI with the fetched data
+    } catch (e) {
+      print('Error fetching data: $e'); // Print error if fetching fails
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Instagram Profile')), // App bar title
+      body: userProfile == null // Check if user profile is null
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator
+          : Column(
+              children: [
+                Text('User: ${userProfile!.username}'), // Display username
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: userMedia?.length ?? 0, // Get media count
+                    itemBuilder: (context, index) {
+                      return Image.network(userMedia![index].imageUrl); // Display media images
+                    },
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which sets up the MaterialApp.
+// 2. The InstagramHome widget is created, which is a stateful widget.
+// 3. In the _InstagramHomeState class, the userId is defined, and userProfile and userMedia variables are initialized.
+// 4. The fetchUserProfile method is called in initState to retrieve the user's profile and media.
+// 5. If the userProfile is null, a loading indicator is displayed.
+// 6. Once the data is fetched, the UI is updated to show the username and a list of media images.
+// 7. The ListView.builder is used to display the media images in a scrollable list.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provides a comprehensive overview of the `instagram_public_api` Flutter package, including its features, setup instructions, and a complete example. By following the tutorial and example provided, developers can easily integrate Instagram's public API into their Flutter applications, enabling them to access and display Instagram data effectively.

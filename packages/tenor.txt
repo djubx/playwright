@@ -1,0 +1,183 @@
+Here's a detailed technical blog on the "tenor" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Tenor Flutter Package
+
+The **Tenor** Flutter package is a powerful tool that allows developers to integrate GIFs and stickers into their Flutter applications seamlessly. It provides access to the Tenor API, which hosts a vast library of GIFs that can be searched and displayed in your app. This package is particularly useful for applications that require rich media content, such as messaging apps, social media platforms, or any app that benefits from visual expression.
+
+## When to Use the Tenor Package
+- **Messaging Applications**: Enhance user interaction by allowing users to send GIFs in chats.
+- **Social Media Apps**: Enable users to share GIFs easily within their posts or comments.
+- **Entertainment Apps**: Provide users with a fun way to express emotions through GIFs.
+
+## Features
+- **Search Functionality**: Users can search for GIFs based on keywords.
+- **Trending GIFs**: Access to trending GIFs to keep content fresh and engaging.
+- **Customizable Display**: Options to customize how GIFs are displayed in your app.
+
+The Tenor package simplifies the process of integrating GIFs into your Flutter applications, making it a valuable addition for developers looking to enhance user experience with rich media content.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Tenor Package
+
+## Step 1: Adding the Dependency
+To get started, you need to add the Tenor package to your Flutter project. Open your `pubspec.yaml` file and add the following line under dependencies:
+
+```yaml
+dependencies:
+  tenor: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Then, run the following command to install the package:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+1. Open `android/app/build.gradle`.
+2. Ensure that the `minSdkVersion` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS
+1. Open `ios/Runner/Info.plist`.
+2. Add the following permissions to allow internet access:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Tenor Package
+Now that you have set up the package, you can start using it in your Flutter application. Below is a simple example of how to implement a GIF search feature using the Tenor package.
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:tenor/tenor.dart';
+```
+
+2. Initialize the Tenor client and create a search function:
+
+```dart
+final tenor = Tenor(apiKey: 'YOUR_TENOR_API_KEY'); // Replace with your Tenor API key
+
+Future<List<Gif>> searchGifs(String query) async {
+  final response = await tenor.search(query);
+  return response.results;
+}
+```
+
+3. Display the GIFs in a ListView or GridView as per your app's design.
+
+This setup allows you to search and display GIFs from the Tenor API, providing a rich media experience for your users.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Using the Tenor Package in a Flutter App
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:tenor/tenor.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Tenor GIF Search',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: GifSearchScreen(),
+    );
+  }
+}
+
+class GifSearchScreen extends StatefulWidget {
+  @override
+  _GifSearchScreenState createState() => _GifSearchScreenState();
+}
+
+class _GifSearchScreenState extends State<GifSearchScreen> {
+  final TextEditingController _controller = TextEditingController();
+  List<Gif> _gifs = []; // List to hold the fetched GIFs
+
+  // Function to search for GIFs using the Tenor API
+  Future<void> _searchGifs() async {
+    final tenor = Tenor(apiKey: 'YOUR_TENOR_API_KEY'); // Initialize Tenor with your API key
+    final response = await tenor.search(_controller.text); // Search for GIFs based on user input
+    setState(() {
+      _gifs = response.results; // Update the state with the fetched GIFs
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Search GIFs')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Search for GIFs',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: _searchGifs, // Trigger the search when the button is pressed
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _gifs.isEmpty
+                ? Center(child: Text('No GIFs found.'))
+                : GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, // Number of columns in the grid
+                    ),
+                    itemCount: _gifs.length,
+                    itemBuilder: (context, index) {
+                      return Image.network(_gifs[index].media[0].gif.url); // Display the GIF
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter sets up the MaterialApp with a title and theme, and specifies GifSearchScreen as the home widget.
+// 3. GifSearchScreen is a stateful widget that manages the search functionality.
+// 4. The user can input a search term in the TextField, and upon pressing the search icon, the _searchGifs function is called.
+// 5. _searchGifs initializes the Tenor client, performs a search using the user's input, and updates the state with the results.
+// 6. The results are displayed in a GridView, showing the GIFs fetched from the Tenor API.
+```
+
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the Tenor Flutter package, including its features, setup instructions, and a complete example application. The application allows users to search for GIFs and displays them in a grid format, demonstrating the package's capabilities effectively.

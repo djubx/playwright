@@ -1,0 +1,214 @@
+Here's a detailed technical blog on the "rx_command" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Overview of the `rx_command` Flutter Package
+
+The `rx_command` package is a powerful tool for managing commands in Flutter applications, particularly those that require reactive programming patterns. It allows developers to create commands that can be executed, canceled, and observed, making it easier to handle asynchronous operations and user interactions in a clean and efficient manner.
+
+## When to Use `rx_command`
+
+You should consider using the `rx_command` package in scenarios such as:
+
+- **Asynchronous Operations**: When you need to perform tasks that involve network calls, file I/O, or any other asynchronous operations.
+- **User Interactions**: When you want to manage user inputs, such as button clicks, in a reactive manner.
+- **State Management**: When you need to manage the state of your application based on the results of commands.
+
+## Key Features
+
+- **Reactive Commands**: Create commands that can be observed for changes in their execution state.
+- **Cancellation Support**: Easily cancel ongoing commands to prevent unnecessary processing.
+- **Error Handling**: Built-in mechanisms for handling errors that occur during command execution.
+- **Integration with Streams**: Commands can be easily integrated with Dart streams for more complex reactive programming scenarios.
+
+By leveraging the `rx_command` package, developers can create more maintainable and responsive Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `rx_command`
+
+## Step 1: Adding the Dependency
+
+To get started with the `rx_command` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  rx_command: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, you may need to update your `ios/Podfile` to ensure compatibility with the latest iOS versions:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Using `rx_command`
+
+Here’s how to use the `rx_command` package in your Flutter application:
+
+1. **Import the Package**:
+
+   ```dart
+   import 'package:rx_command/rx_command.dart';
+   ```
+
+2. **Create a Command**:
+
+   You can create a command using the `RxCommand.createAsync` method. This method takes a function that returns a `Future`.
+
+   ```dart
+   final fetchDataCommand = RxCommand.createAsync<String, String>((input) async {
+       // Simulate a network call
+       await Future.delayed(Duration(seconds: 2));
+       return 'Fetched data: $input';
+   });
+   ```
+
+3. **Observing Command Execution**:
+
+   You can observe the command's execution state using the `result` and `isExecuting` properties.
+
+   ```dart
+   fetchDataCommand.result.listen((data) {
+       print(data); // Handle the fetched data
+   });
+
+   fetchDataCommand.isExecuting.listen((isExecuting) {
+       print('Is executing: $isExecuting');
+   });
+   ```
+
+4. **Executing the Command**:
+
+   To execute the command, simply call it with the required input:
+
+   ```dart
+   fetchDataCommand('Hello World');
+   ```
+
+By following these steps, you can effectively integrate the `rx_command` package into your Flutter application, enabling reactive command handling.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `rx_command`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:rx_command/rx_command.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Rx Command Example',
+      home: CommandExample(),
+    );
+  }
+}
+
+class CommandExample extends StatefulWidget {
+  @override
+  _CommandExampleState createState() => _CommandExampleState();
+}
+
+class _CommandExampleState extends State<CommandExample> {
+  // Step 1: Create a command to fetch data
+  final fetchDataCommand = RxCommand.createAsync<String, String>((input) async {
+    // Simulate a network call with a delay
+    await Future.delayed(Duration(seconds: 2));
+    return 'Fetched data: $input';
+  });
+
+  String result = ''; // To store the result of the command
+  bool isLoading = false; // To track loading state
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Step 2: Listen to the command's result
+    fetchDataCommand.result.listen((data) {
+      setState(() {
+        result = data; // Update the result when data is fetched
+        isLoading = false; // Set loading to false
+      });
+    });
+
+    // Step 3: Listen to the command's execution state
+    fetchDataCommand.isExecuting.listen((executing) {
+      setState(() {
+        isLoading = executing; // Update loading state
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Rx Command Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Step 4: Display loading indicator if command is executing
+            if (isLoading) CircularProgressIndicator(),
+            SizedBox(height: 20),
+            // Step 5: Display the result of the command
+            Text(result.isNotEmpty ? result : 'No data fetched'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Step 6: Execute the command with input
+                isLoading = true; // Set loading to true before execution
+                fetchDataCommand('Hello World'); // Execute command
+              },
+              child: Text('Fetch Data'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Step 7: Application Flow Explanation
+// 1. The application starts and displays a button to fetch data.
+// 2. When the button is pressed, the fetchDataCommand is executed with the input 'Hello World'.
+// 3. The command simulates a network call with a 2-second delay.
+// 4. While the command is executing, a loading indicator is shown.
+// 5. Once the data is fetched, the result is displayed on the screen.
+// 6. The loading indicator is hidden, and the fetched data is shown.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the `rx_command` Flutter package, detailing its features, setup process, and providing a complete example. The application flow demonstrates how to manage asynchronous operations and user interactions effectively using reactive programming principles. By integrating `rx_command`, developers can create more responsive and maintainable Flutter applications.

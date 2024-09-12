@@ -1,0 +1,170 @@
+Here's a detailed technical blog on the `direct_caller_sim_choice` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Direct Caller Sim Choice Flutter Package
+
+The `direct_caller_sim_choice` Flutter package is designed to facilitate the selection of SIM cards for making calls on devices that support dual SIM functionality. This package is particularly useful for applications that require users to choose between multiple SIM cards for initiating calls, enhancing user experience by providing a seamless way to manage SIM preferences.
+
+## When to Use This Package
+
+You should consider using the `direct_caller_sim_choice` package in scenarios such as:
+
+- **Dual SIM Management Apps**: If you are developing an app that needs to manage calls from multiple SIM cards, this package simplifies the process.
+- **Telecommunication Applications**: For apps that provide telecommunication services, allowing users to select their preferred SIM for calls can be a significant feature.
+- **User-Centric Applications**: Any application that prioritizes user preferences and customization can benefit from this package.
+
+## Features
+
+- **SIM Selection**: Allows users to choose which SIM card to use for making calls.
+- **Platform Compatibility**: Works seamlessly on both Android and iOS devices with dual SIM capabilities.
+- **Easy Integration**: Simple API that can be integrated into existing Flutter applications with minimal effort.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Direct Caller Sim Choice Package
+
+## Step 1: Adding the Dependency
+
+To get started, add the `direct_caller_sim_choice` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  direct_caller_sim_choice: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `AndroidManifest.xml` located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions to allow the app to make calls:
+
+```xml
+<uses-permission android:name="android.permission.CALL_PHONE"/>
+<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+```
+
+### iOS Configuration
+
+1. Open `Info.plist` located at `ios/Runner/Info.plist`.
+2. Add the following keys to request permission for making calls:
+
+```xml
+<key>NSContactsUsageDescription</key>
+<string>This app requires access to contacts to make calls.</string>
+<key>NSPhoneUsageDescription</key>
+<string>This app requires access to make phone calls.</string>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can use it in your Flutter application. Here’s a simple example of how to implement the SIM selection feature.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Direct Caller Sim Choice
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Direct Caller SIM Choice',
+      home: SimChoiceScreen(),
+    );
+  }
+}
+
+class SimChoiceScreen extends StatefulWidget {
+  @override
+  _SimChoiceScreenState createState() => _SimChoiceScreenState();
+}
+
+class _SimChoiceScreenState extends State<SimChoiceScreen> {
+  List<SimCard> _simCards = []; // List to hold available SIM cards
+  String _selectedSim; // Variable to hold the selected SIM card
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSimCards(); // Load available SIM cards on initialization
+  }
+
+  // Function to load available SIM cards
+  Future<void> _loadSimCards() async {
+    try {
+      _simCards = await DirectCallerSimChoice.getSimCards(); // Fetch SIM cards
+      setState(() {}); // Update the UI
+    } catch (e) {
+      print("Error loading SIM cards: $e"); // Handle errors
+    }
+  }
+
+  // Function to make a call using the selected SIM card
+  void _makeCall(String phoneNumber) {
+    if (_selectedSim != null) {
+      DirectCallerSimChoice.makeCall(phoneNumber, _selectedSim); // Make the call
+    } else {
+      print("Please select a SIM card first."); // Prompt user to select a SIM
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Select SIM Card'),
+      ),
+      body: Column(
+        children: [
+          // Dropdown to select SIM card
+          DropdownButton<String>(
+            hint: Text('Select SIM Card'),
+            value: _selectedSim,
+            onChanged: (String newValue) {
+              setState(() {
+                _selectedSim = newValue; // Update selected SIM
+              });
+            },
+            items: _simCards.map<DropdownMenuItem<String>>((SimCard sim) {
+              return DropdownMenuItem<String>(
+                value: sim.simSlot,
+                child: Text(sim.displayName), // Display SIM card name
+              );
+            }).toList(),
+          ),
+          // Button to make a call
+          ElevatedButton(
+            onPressed: () => _makeCall('1234567890'), // Example phone number
+            child: Text('Make Call'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and a home screen (SimChoiceScreen).
+// 3. SimChoiceScreen initializes by loading available SIM cards using _loadSimCards().
+// 4. The user can select a SIM card from a dropdown menu populated with available SIMs.
+// 5. When the user presses the "Make Call" button, the app checks if a SIM is selected.
+// 6. If a SIM is selected, it initiates a call to the specified phone number using the selected SIM.
+// 7. If no SIM is selected, it prompts the user to select one.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the `direct_caller_sim_choice` Flutter package, detailing its features, setup process, and providing a complete example of its usage. This package enhances the user experience by allowing seamless management of dual SIM functionalities in Flutter applications.

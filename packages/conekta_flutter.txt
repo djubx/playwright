@@ -1,0 +1,223 @@
+Here's a detailed technical blog on the `conekta_flutter` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Conekta Flutter Package
+
+The `conekta_flutter` package is a powerful tool for integrating payment processing into Flutter applications. It allows developers to easily handle payments through Conekta, a payment gateway that supports various payment methods, including credit cards, cash payments, and more. This package is particularly useful for developers looking to implement a seamless payment experience in their mobile applications.
+
+## When to Use This Package
+
+You should consider using the `conekta_flutter` package when:
+- You are developing a Flutter application that requires payment processing.
+- You want to support multiple payment methods, including credit cards and cash.
+- You need a reliable and secure way to handle transactions in your app.
+
+## Features
+
+- **Multiple Payment Methods**: Supports credit cards, cash payments, and more.
+- **Easy Integration**: Simple setup process for both Android and iOS platforms.
+- **Secure Transactions**: Ensures that all payment data is handled securely.
+- **Customizable UI**: Allows developers to customize the payment interface to match their app's design.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Conekta Flutter
+
+In this tutorial, we will walk through the setup process for the `conekta_flutter` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `conekta_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  conekta_flutter: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Add the following permissions and metadata in your `AndroidManifest.xml` file:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <application>
+        ...
+        <meta-data
+            android:name="CONEKTA_PUBLIC_KEY"
+            android:value="your_public_key_here" />
+    </application>
+</manifest>
+```
+
+2. **Gradle Configuration**: Ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS Configuration
+
+1. **Update Info.plist**: Add the following keys to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+2. **CocoaPods**: Ensure you have the latest version of CocoaPods installed and run `pod install` in the `ios` directory.
+
+## Step 3: Initialize Conekta
+
+In your main Dart file, initialize the Conekta SDK:
+
+```dart
+import 'package:conekta_flutter/conekta_flutter.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  ConektaFlutter.init('your_public_key_here');
+  runApp(MyApp());
+}
+```
+
+## Step 4: Using Conekta in Your App
+
+You can now use the Conekta package to handle payments. Here’s a simple example of how to create a payment method and process a payment.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Conekta Payment Integration
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:conekta_flutter/conekta_flutter.dart';
+
+void main() {
+  // Initialize the Conekta SDK with your public key
+  WidgetsFlutterBinding.ensureInitialized();
+  ConektaFlutter.init('your_public_key_here');
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Conekta Flutter Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PaymentScreen(),
+    );
+  }
+}
+
+class PaymentScreen extends StatefulWidget {
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  // Controller for the card number input
+  final TextEditingController _cardNumberController = TextEditingController();
+  // Controller for the card expiration date input
+  final TextEditingController _expiryDateController = TextEditingController();
+  // Controller for the card CVC input
+  final TextEditingController _cvcController = TextEditingController();
+
+  // Function to handle payment processing
+  void _processPayment() async {
+    // Create a token using the card details
+    try {
+      final token = await ConektaFlutter.createToken(
+        card: {
+          'number': _cardNumberController.text,
+          'exp_month': _expiryDateController.text.split('/')[0],
+          'exp_year': _expiryDateController.text.split('/')[1],
+          'cvc': _cvcController.text,
+        },
+      );
+
+      // Process the payment with the generated token
+      // Here you would typically send the token to your server for processing
+      print('Payment Token: $token');
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment Successful!')),
+      );
+    } catch (e) {
+      // Handle errors
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment Failed!')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Conekta Payment'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _cardNumberController,
+              decoration: InputDecoration(labelText: 'Card Number'),
+            ),
+            TextField(
+              controller: _expiryDateController,
+              decoration: InputDecoration(labelText: 'Expiry Date (MM/YY)'),
+            ),
+            TextField(
+              controller: _cvcController,
+              decoration: InputDecoration(labelText: 'CVC'),
+              obscureText: true,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _processPayment,
+              child: Text('Pay Now'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+```dart
+// The above code demonstrates a simple Flutter application that integrates the Conekta payment processing system.
+// 
+// 1. **Initialization**: The Conekta SDK is initialized with a public key in the `main` function.
+// 2. **UI Setup**: The `PaymentScreen` widget contains text fields for the user to input their card details (number, expiry date, and CVC).
+// 3. **Payment Processing**: When the user clicks the "Pay Now" button, the `_processPayment` function is called.
+//    - This function creates a token using the card details provided by the user.
+//    - If successful, it prints the token and shows a success message. If there's an error, it catches the exception and shows a failure message.
+// 
+// This example provides a basic structure for integrating Conekta payments into a Flutter application, allowing for further customization and expansion as needed.
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the `conekta_flutter` package, including its features, setup instructions, and a complete example of how to implement it in a Flutter application.

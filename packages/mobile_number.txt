@@ -1,0 +1,225 @@
+Here's a detailed technical blog on the "mobile_number" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Mobile Number Flutter Package
+
+The **mobile_number** Flutter package is a powerful tool designed to facilitate the validation and formatting of mobile phone numbers in Flutter applications. It provides a simple and efficient way to handle phone numbers, ensuring that they conform to international standards and formats.
+
+## When to Use This Package
+
+You should consider using the **mobile_number** package in scenarios such as:
+
+- **User Registration**: When users need to input their phone numbers during sign-up, this package can validate the format and ensure it's a valid number.
+- **Contact Management**: If your app involves managing contacts, this package can help format and validate phone numbers for consistency.
+- **Messaging Applications**: For apps that send SMS or make calls, ensuring the phone number is valid is crucial.
+
+## Features
+
+- **Validation**: Check if a phone number is valid based on the country code.
+- **Formatting**: Format phone numbers into a standard format for display.
+- **International Support**: Handle phone numbers from various countries with ease.
+- **Easy Integration**: Simple API that integrates seamlessly with Flutter applications.
+
+By leveraging the **mobile_number** package, developers can enhance user experience by ensuring that phone numbers are correctly formatted and validated before submission.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Mobile Number Package
+
+## Step 1: Adding the Dependency
+
+To get started, you need to add the **mobile_number** package to your Flutter project. Open your `pubspec.yaml` file and add the following line under dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  mobile_number: ^0.3.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `AndroidManifest.xml` file has the necessary permissions to access the internet if you plan to validate numbers against an online service. Add the following line inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+
+For iOS, you may need to add permissions in the `Info.plist` file if you are using features that require internet access. Add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Below is a simple example of how to validate and format a mobile number.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:mobile_number/mobile_number.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Mobile Number Example')),
+        body: MobileNumberForm(),
+      ),
+    );
+  }
+}
+
+class MobileNumberForm extends StatefulWidget {
+  @override
+  _MobileNumberFormState createState() => _MobileNumberFormState();
+}
+
+class _MobileNumberFormState extends State<MobileNumberForm> {
+  final TextEditingController _controller = TextEditingController();
+  String _formattedNumber = '';
+  String _errorMessage = '';
+
+  void _validateNumber() async {
+    // Get the mobile number from the controller
+    String mobileNumber = _controller.text;
+
+    // Validate the mobile number
+    bool isValid = await MobileNumberUtil.isValidPhoneNumber(mobileNumber);
+
+    if (isValid) {
+      // Format the number if valid
+      String formatted = await MobileNumberUtil.formatAsInternational(mobileNumber);
+      setState(() {
+        _formattedNumber = formatted;
+        _errorMessage = '';
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Invalid mobile number';
+        _formattedNumber = '';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          controller: _controller,
+          decoration: InputDecoration(labelText: 'Enter mobile number'),
+        ),
+        ElevatedButton(
+          onPressed: _validateNumber,
+          child: Text('Validate Number'),
+        ),
+        if (_formattedNumber.isNotEmpty) Text('Formatted Number: $_formattedNumber'),
+        if (_errorMessage.isNotEmpty) Text(_errorMessage, style: TextStyle(color: Colors.red)),
+      ],
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Mobile Number Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:mobile_number/mobile_number.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Mobile Number Example')),
+        body: MobileNumberForm(),
+      ),
+    );
+  }
+}
+
+class MobileNumberForm extends StatefulWidget {
+  @override
+  _MobileNumberFormState createState() => _MobileNumberFormState();
+}
+
+class _MobileNumberFormState extends State<MobileNumberForm> {
+  final TextEditingController _controller = TextEditingController(); // Controller for the text field
+  String _formattedNumber = ''; // Variable to hold the formatted number
+  String _errorMessage = ''; // Variable to hold error messages
+
+  void _validateNumber() async {
+    // Get the mobile number from the controller
+    String mobileNumber = _controller.text;
+
+    // Validate the mobile number
+    bool isValid = await MobileNumberUtil.isValidPhoneNumber(mobileNumber);
+
+    if (isValid) {
+      // Format the number if valid
+      String formatted = await MobileNumberUtil.formatAsInternational(mobileNumber);
+      setState(() {
+        _formattedNumber = formatted; // Update the formatted number
+        _errorMessage = ''; // Clear any previous error messages
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Invalid mobile number'; // Set error message
+        _formattedNumber = ''; // Clear formatted number
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          controller: _controller, // Bind the controller to the text field
+          decoration: InputDecoration(labelText: 'Enter mobile number'), // Label for the text field
+        ),
+        ElevatedButton(
+          onPressed: _validateNumber, // Call validate function on button press
+          child: Text('Validate Number'), // Button text
+        ),
+        if (_formattedNumber.isNotEmpty) 
+          Text('Formatted Number: $_formattedNumber'), // Display formatted number if available
+        if (_errorMessage.isNotEmpty) 
+          Text(_errorMessage, style: TextStyle(color: Colors.red)), // Display error message if any
+      ],
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which sets up the MaterialApp and the main UI.
+// 2. The MobileNumberForm widget is created, which contains a text field for user input and a button to validate the number.
+// 3. When the user enters a number and presses the button, the _validateNumber function is called.
+// 4. This function checks if the entered number is valid using the MobileNumberUtil.isValidPhoneNumber method.
+// 5. If valid, it formats the number using MobileNumberUtil.formatAsInternational and updates the UI.
+// 6. If invalid, it sets an error message that is displayed to the user.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provides a comprehensive overview of the **mobile_number** Flutter package, including its features, setup instructions, and a complete example. By following the tutorial and understanding the code flow, developers can effectively integrate mobile number validation and formatting into their Flutter applications.

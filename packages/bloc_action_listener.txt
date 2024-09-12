@@ -1,0 +1,195 @@
+Here's a detailed technical blog on the `bloc_action_listener` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `bloc_action_listener` package is a powerful tool for Flutter developers that enhances the way actions are handled in applications using the BLoC (Business Logic Component) pattern. This package allows developers to listen for specific actions dispatched from the BLoC and respond accordingly, making it easier to manage side effects and UI updates based on state changes.
+
+## When to Use
+
+You should consider using the `bloc_action_listener` package in scenarios where:
+- You need to perform side effects in response to specific actions dispatched in your BLoC.
+- You want to decouple your UI from the business logic, allowing for cleaner and more maintainable code.
+- You are building complex applications where multiple UI components need to react to the same actions.
+
+## Features
+- **Action Listening**: Listen for specific actions dispatched from the BLoC.
+- **Separation of Concerns**: Keeps UI code clean and focused on presentation.
+- **Flexibility**: Allows for multiple listeners to respond to the same action.
+- **Integration with BLoC**: Works seamlessly with the BLoC pattern, enhancing its capabilities.
+
+By leveraging the `bloc_action_listener`, developers can create more responsive and maintainable Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `bloc_action_listener` package, follow these steps:
+
+1. **Add Dependency**: Open your `pubspec.yaml` file and add the package under dependencies:
+
+   ```yaml
+   dependencies:
+     flutter:
+       sdk: flutter
+     bloc_action_listener: ^latest_version
+   ```
+
+   Replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/bloc_action_listener).
+
+2. **Install Packages**: Run the following command in your terminal to install the new dependency:
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Platform-Specific Configuration**:
+   - **Android**: Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21.
+   - **iOS**: Open `ios/Runner.xcworkspace` in Xcode and ensure that your deployment target is set to at least 10.0.
+
+4. **Import the Package**: In your Dart files where you want to use the package, import it:
+
+   ```dart
+   import 'package:bloc_action_listener/bloc_action_listener.dart';
+   ```
+
+## Using the Package
+
+To use the `bloc_action_listener`, follow these steps:
+
+1. **Create a BLoC**: Define your BLoC class and the actions you want to listen for.
+
+   ```dart
+   import 'package:flutter_bloc/flutter_bloc.dart';
+
+   class MyBloc extends Bloc<MyEvent, MyState> {
+     MyBloc() : super(MyInitialState());
+
+     @override
+     Stream<MyState> mapEventToState(MyEvent event) async* {
+       if (event is MyActionEvent) {
+         // Handle action
+         yield MyActionState();
+       }
+     }
+   }
+   ```
+
+2. **Set Up the Listener**: Use the `BlocActionListener` widget to listen for specific actions in your UI.
+
+   ```dart
+   BlocActionListener<MyEvent, MyState>(
+     action: MyActionEvent(),
+     listener: (context, state) {
+       // Perform side effect based on state
+       if (state is MyActionState) {
+         // Show a snackbar or navigate
+       }
+     },
+     child: MyWidget(),
+   );
+   ```
+
+3. **Integrate with Your UI**: Wrap your widgets with the `BlocProvider` and `BlocActionListener` to ensure they can access the BLoC and respond to actions.
+
+By following these steps, you can effectively integrate the `bloc_action_listener` package into your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:bloc_action_listener/bloc_action_listener.dart';
+
+// Define the events for the BLoC
+abstract class MyEvent {}
+
+class MyActionEvent extends MyEvent {}
+
+// Define the states for the BLoC
+abstract class MyState {}
+
+class MyInitialState extends MyState {}
+
+class MyActionState extends MyState {}
+
+// Create the BLoC class
+class MyBloc extends Bloc<MyEvent, MyState> {
+  MyBloc() : super(MyInitialState());
+
+  @override
+  Stream<MyState> mapEventToState(MyEvent event) async* {
+    if (event is MyActionEvent) {
+      // Emit a new state when the action event is received
+      yield MyActionState();
+    }
+  }
+}
+
+// Main application widget
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Bloc Action Listener Example',
+      home: BlocProvider(
+        create: (context) => MyBloc(),
+        child: MyHomePage(),
+      ),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Bloc Action Listener Example'),
+      ),
+      body: Center(
+        child: BlocActionListener<MyEvent, MyState>(
+          action: MyActionEvent(),
+          listener: (context, state) {
+            // Check if the state is MyActionState and show a snackbar
+            if (state is MyActionState) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Action was triggered!')),
+              );
+            }
+          },
+          child: ElevatedButton(
+            onPressed: () {
+              // Dispatch the action event when the button is pressed
+              context.read<MyBloc>().add(MyActionEvent());
+            },
+            child: Text('Trigger Action'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The MyHomePage widget is wrapped in a BlocProvider, providing access to MyBloc.
+// 3. Inside MyHomePage, a BlocActionListener listens for MyActionEvent.
+// 4. When the button is pressed, MyActionEvent is dispatched to the BLoC.
+// 5. The BLoC processes the event and emits MyActionState.
+// 6. The listener detects the new state and shows a snackbar indicating the action was triggered.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the `bloc_action_listener` package, detailing its purpose, setup, and usage in a complete Flutter application. The provided example demonstrates how to effectively listen for actions and respond to them, enhancing the interactivity and responsiveness of your Flutter apps.

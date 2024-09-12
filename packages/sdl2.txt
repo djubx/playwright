@@ -1,0 +1,180 @@
+<-- START_DESCRIPTION -->
+
+# Introduction to sdl2 Flutter Package
+=====================================
+
+The sdl2 package is a Dart wrapper for the SDL (Simple DirectMedia Layer) library, which is a cross-platform development library designed for writing games and other high-performance applications. The sdl2 package allows Flutter developers to leverage the power of SDL in their applications.
+
+## When to Use sdl2
+------------------
+
+The sdl2 package is ideal for applications that require:
+
+*   Low-level access to graphics and input devices
+*   High-performance rendering and event handling
+*   Cross-platform compatibility
+
+## Features of sdl2
+------------------
+
+The sdl2 package provides a wide range of features, including:
+
+*   Graphics rendering using SDL's 2D rendering API
+*   Input event handling for keyboard, mouse, and touch events
+*   Audio playback using SDL's audio API
+*   Support for various image formats, including PNG and JPEG
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up sdl2 in Your Flutter Project
+==========================================
+
+To use the sdl2 package in your Flutter project, follow these steps:
+
+### Step 1: Add the sdl2 Package to Your pubspec.yaml File
+
+```yml
+dependencies:
+  sdl2: ^2.3.1
+```
+
+### Step 2: Import the sdl2 Package in Your Dart File
+
+```dart
+import 'package:sdl2/sdl2.dart';
+```
+
+### Step 3: Initialize the SDL Library
+
+```dart
+void main() {
+  sdlInit(SDL_INIT_VIDEO);
+}
+```
+
+### Platform-Specific Details
+
+#### Android
+
+To use sdl2 on Android, you need to add the following configuration to your `AndroidManifest.xml` file:
+
+```xml
+<application
+  ...
+  android:hardwareAccelerated="true"
+  ...
+>
+```
+
+#### iOS
+
+To use sdl2 on iOS, you need to add the following configuration to your `Info.plist` file:
+
+```xml
+<key>UIRequiredDeviceCapabilities</key>
+<array>
+  <string>opengles-2</string>
+</array>
+```
+
+### Required Configurations and Optimizations
+
+To optimize the performance of your sdl2 application, you can use the following configurations:
+
+*   Use the `SDL_RENDERER_ACCELERATED` flag when creating a renderer to enable hardware acceleration.
+*   Use the `SDL_TEXTUREACCESS_STREAMING` flag when creating a texture to enable streaming texture access.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sdl2/sdl2.dart';
+
+void main() {
+  // Initialize the SDL library
+  sdlInit(SDL_INIT_VIDEO);
+
+  // Create a window
+  final window = sdlCreateWindow(
+    'SDL2 Example',
+    SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED,
+    800,
+    600,
+    SDL_WINDOW_SHOWN,
+  );
+
+  // Create a renderer
+  final renderer = sdlCreateRenderer(
+    window,
+    -1,
+    SDL_RENDERER_ACCELERATED,
+  );
+
+  // Create a texture
+  final texture = sdlCreateTexture(
+    renderer,
+    SDL_PIXELFORMAT_RGBA8888,
+    SDL_TEXTUREACCESS_STREAMING,
+    800,
+    600,
+  );
+
+  // Main loop
+  bool running = true;
+  while (running) {
+    // Handle events
+    final event = sdlPollEvent();
+    if (event != null) {
+      if (event.type == SDL_QUIT) {
+        running = false;
+      }
+    }
+
+    // Clear the renderer
+    sdlSetRenderDrawColor(renderer, 255, 255, 255, 255);
+    sdlRenderClear(renderer);
+
+    // Draw a rectangle
+    sdlSetRenderDrawColor(renderer, 255, 0, 0, 255);
+    final rect = sdlRect(100, 100, 200, 200);
+    sdlRenderFillRect(renderer, rect);
+
+    // Update the texture
+    final pixels = Uint32List(800 * 600);
+    for (var i = 0; i < pixels.length; i++) {
+      pixels[i] = 0xFF000000;
+    }
+    sdlUpdateTexture(texture, null, pixels, 800 * 4);
+
+    // Draw the texture
+    sdlRenderCopy(renderer, texture, null, null);
+
+    // Present the renderer
+    sdlRenderPresent(renderer);
+
+    // Delay to control the frame rate
+    sdlDelay(1000 ~/ 60);
+  }
+
+  // Clean up
+  sdlDestroyTexture(texture);
+  sdlDestroyRenderer(renderer);
+  sdlDestroyWindow(window);
+  sdlQuit();
+}
+
+// The application flow is as follows:
+// 1. Initialize the SDL library.
+// 2. Create a window and a renderer.
+// 3. Create a texture.
+// 4. Enter the main loop, where we handle events, clear the renderer, draw a rectangle, update the texture, draw the texture, and present the renderer.
+// 5. Delay to control the frame rate.
+// 6. Clean up by destroying the texture, renderer, and window, and quitting the SDL library.
+```
+
+<-- END_MAIN -->

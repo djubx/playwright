@@ -1,0 +1,179 @@
+Here’s a detailed technical blog on the `picovoice_flutter` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Picovoice Flutter Package
+
+The `picovoice_flutter` package is a powerful tool for integrating voice recognition capabilities into Flutter applications. It leverages Picovoice's advanced speech recognition technology, allowing developers to create applications that can understand and respond to voice commands. This package is particularly useful in scenarios where hands-free operation is desired, such as in smart home applications, voice assistants, and accessibility tools.
+
+## When to Use This Package
+
+- **Voice-Activated Applications**: If you're building an app that requires voice commands, such as a virtual assistant or a smart home controller, this package is ideal.
+- **Accessibility Features**: For applications aimed at users with disabilities, voice recognition can enhance usability.
+- **Hands-Free Control**: In scenarios where users cannot interact with the screen, voice commands provide an alternative method of control.
+
+## Features
+
+- **Offline Processing**: Unlike many voice recognition services that require an internet connection, `picovoice_flutter` can process voice commands offline, ensuring privacy and reducing latency.
+- **Custom Wake Words**: Developers can define custom wake words, allowing for personalized user experiences.
+- **Multi-Language Support**: The package supports multiple languages, making it versatile for global applications.
+- **Lightweight and Fast**: Designed to be efficient, it consumes minimal resources, making it suitable for mobile devices.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Picovoice Flutter
+
+## Step 1: Adding the Dependency
+
+To get started, add the `picovoice_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  picovoice_flutter: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Permissions**: Open `AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **Gradle Configuration**: Ensure your `minSdkVersion` is set to at least 21 in `android/app/build.gradle`:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+### iOS Configuration
+
+1. **Permissions**: Open `Info.plist` and add the following keys to request microphone access:
+
+   ```xml
+   <key>NSMicrophoneUsageDescription</key>
+   <string>This app requires access to the microphone for voice recognition.</string>
+   ```
+
+2. **Deployment Target**: Ensure your deployment target is set to at least iOS 11.0 in your `ios/Podfile`:
+
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+## Step 3: Using the Package
+
+Now that the package is set up, you can start using it in your Flutter application. Below is a simple example of how to implement voice recognition.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Voice Recognition with Picovoice
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:picovoice_flutter/picovoice_flutter.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Declare a variable to hold the Picovoice instance
+  late Picovoice _picovoice;
+  String _status = "Press the button to start listening";
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Picovoice with the desired parameters
+    _initializePicovoice();
+  }
+
+  Future<void> _initializePicovoice() async {
+    // Create a Picovoice instance with a custom wake word
+    _picovoice = await Picovoice.create(
+      accessKey: 'YOUR_ACCESS_KEY', // Replace with your Picovoice access key
+      wakeWord: 'picovoice', // Custom wake word
+      onWakeWord: _onWakeWordDetected, // Callback for wake word detection
+      onCommand: _onCommandDetected, // Callback for command detection
+    );
+  }
+
+  void _onWakeWordDetected() {
+    // Update the status when the wake word is detected
+    setState(() {
+      _status = "Wake word detected! Listening for commands...";
+    });
+  }
+
+  void _onCommandDetected(String command) {
+    // Update the status with the detected command
+    setState(() {
+      _status = "Command detected: $command";
+    });
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the Picovoice instance when the widget is removed
+    _picovoice.stop();
+    _picovoice.release();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text("Picovoice Flutter Example")),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(_status), // Display the current status
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  // Start listening for the wake word
+                  _picovoice.start();
+                },
+                child: Text("Start Listening"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application using the Picovoice package.
+// 
+// 1. **Initialization**: The `Picovoice` instance is created in the `initState` method, where we specify the access key and the wake word.
+// 2. **Callbacks**: The `_onWakeWordDetected` and `_onCommandDetected` methods are defined to handle events when the wake word is detected and when a command is recognized, respectively.
+// 3. **UI**: The UI consists of a text display for the current status and a button to start listening for voice commands.
+// 4. **Disposal**: The `dispose` method ensures that resources are released when the widget is removed from the widget tree.
+// 5. **Flow**: When the user presses the "Start Listening" button, the app begins listening for the specified wake word. Upon detection, it updates the status and listens for commands, which are also displayed in the UI.
+
+<!-- END_MAIN -->
+
+In summary, the `picovoice_flutter` package provides a robust solution for integrating voice recognition into Flutter applications. By following the setup and implementation steps outlined above, developers can create interactive and voice-responsive applications that enhance user experience.

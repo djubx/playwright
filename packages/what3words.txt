@@ -1,0 +1,204 @@
+Here's a detailed technical blog on the "what3words" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# What3words Flutter Package
+
+The **what3words** Flutter package provides a simple way to integrate the what3words geocoding service into your Flutter applications. What3words is a geocoding system that divides the world into a grid of 3m x 3m squares, each identified by a unique combination of three words. This makes it easier to communicate precise locations without the need for complex coordinates.
+
+## When to Use This Package
+- **Location Sharing**: When you want users to share their location easily without using traditional GPS coordinates.
+- **Delivery Services**: For applications that require precise delivery locations, such as food delivery or logistics.
+- **Event Planning**: To help users find specific locations for events, meetups, or gatherings.
+
+## Features
+- **Geocoding**: Convert what3words addresses into GPS coordinates.
+- **Reverse Geocoding**: Convert GPS coordinates back into what3words addresses.
+- **Easy Integration**: Simple API for seamless integration into Flutter applications.
+- **Cross-Platform Support**: Works on both Android and iOS.
+
+The package is designed to be user-friendly and efficient, making it a great choice for developers looking to enhance their applications with location-based services.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the What3words Flutter Package
+
+## Step 1: Add Dependency
+To get started, add the `what3words` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  what3words: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+1. Open `android/app/build.gradle` and ensure you have the following permissions:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Add the following permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following keys for location access:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to provide better services.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to provide better services.</string>
+```
+
+## Step 3: Initialize the Package
+In your main Dart file, import the package and initialize it:
+
+```dart
+import 'package:what3words/what3words.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
+}
+```
+
+## Step 4: Using the Package
+You can now use the package to convert between what3words addresses and GPS coordinates. Here’s a simple example of how to use the package:
+
+```dart
+// Example of using the what3words package
+void getCoordinates() async {
+  final w3w = What3WordsV3('YOUR_API_KEY'); // Replace with your API key
+  final result = await w3w.convertToCoordinates('apple.banana.orange');
+  print(result); // Outputs the coordinates
+}
+```
+
+Make sure to replace `'YOUR_API_KEY'` with your actual what3words API key.
+
+With these steps, you should be able to integrate the what3words package into your Flutter application successfully.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of What3words Flutter Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:what3words/what3words.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'What3words Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _w3wAddress = '';
+  String _coordinates = '';
+
+  // Function to convert what3words address to coordinates
+  void _convertToCoordinates() async {
+    final w3w = What3WordsV3('YOUR_API_KEY'); // Replace with your API key
+    try {
+      final result = await w3w.convertToCoordinates(_w3wAddress);
+      setState(() {
+        _coordinates = 'Lat: ${result.coordinates.lat}, Lng: ${result.coordinates.lng}';
+      });
+    } catch (e) {
+      setState(() {
+        _coordinates = 'Error: $e';
+      });
+    }
+  }
+
+  // Function to convert coordinates to what3words address
+  void _convertToW3W() async {
+    final w3w = What3WordsV3('YOUR_API_KEY'); // Replace with your API key
+    try {
+      final result = await w3w.convertTo3Words(51.520847, -0.195521); // Example coordinates
+      setState(() {
+        _w3wAddress = result.words;
+      });
+    } catch (e) {
+      setState(() {
+        _w3wAddress = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('What3words Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(labelText: 'Enter what3words address'),
+              onChanged: (value) {
+                _w3wAddress = value;
+              },
+            ),
+            ElevatedButton(
+              onPressed: _convertToCoordinates,
+              child: Text('Convert to Coordinates'),
+            ),
+            Text(_coordinates),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _convertToW3W,
+              child: Text('Convert to what3words'),
+            ),
+            Text(_w3wAddress),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. The RealFlutter widget builds a MaterialApp with a title and a home screen.
+// 3. The HomeScreen widget contains a stateful widget that manages the what3words address and coordinates.
+// 4. Users can input a what3words address in the text field.
+// 5. When the "Convert to Coordinates" button is pressed, the app calls the _convertToCoordinates function.
+// 6. This function uses the what3words API to convert the address to coordinates and updates the UI with the result.
+// 7. Similarly, the "Convert to what3words" button calls the _convertToW3W function, which converts predefined coordinates back to a what3words address.
+// 8. The results are displayed on the screen, allowing users to see both conversions.
+```
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the what3words Flutter package, including its features, setup instructions, and a complete example application. By following the steps outlined, developers can easily integrate this powerful geocoding service into their Flutter applications.

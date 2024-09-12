@@ -1,0 +1,192 @@
+<-- START_DESCRIPTION -->
+
+# Floor Generator Flutter Package
+=====================================
+
+The `floor_generator` package is a powerful tool for generating boilerplate code for Flutter applications using the Floor persistence library. Floor is a SQLite ORM (Object-Relational Mapping) system that allows you to interact with your SQLite database using Dart objects.
+
+### When to Use
+
+The `floor_generator` package is useful when you want to generate the boilerplate code for your Floor entities, DAOs (Data Access Objects), and database classes. This package saves you time and effort by automatically generating the necessary code for you.
+
+### Features
+
+* Generates boilerplate code for Floor entities, DAOs, and database classes
+* Supports complex data types and relationships
+* Customizable code generation using templates
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Floor Generator Package
+=============================================
+
+To use the `floor_generator` package, you need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  floor_generator: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Platform-Specific Configurations
+
+For Android, you need to add the following configuration to your `android/app/build.gradle` file:
+
+```groovy
+android {
+    // ...
+    defaultConfig {
+        // ...
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+    }
+}
+```
+
+For iOS, you don't need any additional configurations.
+
+### Generating Code
+
+To generate the boilerplate code, you need to create a `floor_generator_config.yaml` file in the root of your project:
+
+```yml
+entities:
+  - lib/entities/user.dart
+  - lib/entities/post.dart
+daos:
+  - lib/daos/user_dao.dart
+  - lib/daos/post_dao.dart
+database:
+  - lib/database.dart
+```
+
+Then, run the following command to generate the code:
+
+```bash
+flutter pub run floor_generator:generate
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+// main.dart
+import 'package:flutter/material.dart';
+import 'package:floor/floor.dart';
+import 'package:floor_generator/floor_generator.dart';
+
+// Define the entity classes
+@Entity(tableName: 'users')
+class User {
+  @PrimaryKey(autoGenerate: true)
+  int id;
+
+  String name;
+
+  User({this.id, this.name});
+}
+
+@Entity(tableName: 'posts')
+class Post {
+  @PrimaryKey(autoGenerate: true)
+  int id;
+
+  String title;
+
+  String content;
+
+  Post({this.id, this.title, this.content});
+}
+
+// Define the DAO classes
+@dao
+abstract class UserDao {
+  @Query('SELECT * FROM users')
+  Future<List<User>> getAllUsers();
+}
+
+@dao
+abstract class PostDao {
+  @Query('SELECT * FROM posts')
+  Future<List<Post>> getAllPosts();
+}
+
+// Define the database class
+@database(version: 1, entities: [User, Post])
+abstract class AppDatabase extends FloorDatabase {
+  UserDao get userDao => _userDao;
+
+  PostDao get postDao => _postDao;
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Create the database instance
+  AppDatabase _database;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDatabase();
+  }
+
+  _initDatabase() async {
+    _database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Floor Generator Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _getAllUsers,
+              child: Text('Get All Users'),
+            ),
+            ElevatedButton(
+              onPressed: _getAllPosts,
+              child: Text('Get All Posts'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _getAllUsers() async {
+    final users = await _database.userDao.getAllUsers();
+    print(users);
+  }
+
+  _getAllPosts() async {
+    final posts = await _database.postDao.getAllPosts();
+    print(posts);
+  }
+}
+
+// The application flow:
+// 1. The `RealFlutter` widget is created and the `_initDatabase` method is called to initialize the database instance.
+// 2. The `_initDatabase` method creates the database instance using the `FloorAppDatabase` class.
+// 3. The `build` method returns the UI widgets, including two buttons to get all users and posts.
+// 4. When the buttons are pressed, the `_getAllUsers` and `_getAllPosts` methods are called to retrieve the data from the database using the DAO classes.
+// 5. The retrieved data is printed to the console.
+
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,192 @@
+Here's a detailed technical blog on the "disposer" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Disposer Flutter Package
+
+The **Disposer** package is a powerful tool for managing the lifecycle of resources in Flutter applications. It provides a simple and effective way to handle the disposal of objects, ensuring that resources are released when they are no longer needed. This is particularly useful in scenarios where you have multiple streams, controllers, or other resources that need to be cleaned up to prevent memory leaks.
+
+## When to Use Disposer
+
+You should consider using the Disposer package in the following scenarios:
+
+- **Stream Management**: When you are using streams in your application, it's crucial to close them properly to avoid memory leaks.
+- **Controller Management**: If you are using controllers (like `TextEditingController`, `AnimationController`, etc.), Disposer can help manage their lifecycle.
+- **Complex Widgets**: In complex widgets where multiple resources are created and need to be disposed of, Disposer simplifies the process.
+
+## Features
+
+- **Automatic Disposal**: Automatically disposes of resources when they are no longer needed.
+- **Easy Integration**: Simple to integrate into existing Flutter applications.
+- **Custom Disposal Logic**: Allows for custom disposal logic if needed.
+
+By using the Disposer package, you can ensure that your Flutter applications are efficient and free from memory leaks.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Disposer Package
+
+## Step 1: Adding the Dependency
+
+To get started with the Disposer package, you need to add it to your `pubspec.yaml` file. Open your `pubspec.yaml` and add the following line under dependencies:
+
+```yaml
+dependencies:
+  disposer: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Basic Setup
+
+### Importing the Package
+
+In your Dart file, import the Disposer package:
+
+```dart
+import 'package:disposer/disposer.dart';
+```
+
+### Using Disposer in Your Widget
+
+You can use the Disposer package in your Flutter widget by creating an instance of the `Disposer` class. Here’s a simple example:
+
+```dart
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final Disposer _disposer = Disposer();
+
+  @override
+  void initState() {
+    super.initState();
+    // Add resources to be disposed of
+    _disposer.add(StreamController<int>());
+  }
+
+  @override
+  void dispose() {
+    // Dispose of all resources
+    _disposer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Disposer Example')),
+      body: Center(child: Text('Using Disposer Package')),
+    );
+  }
+}
+```
+
+### Platform-Specific Details
+
+#### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+#### iOS
+
+For iOS, make sure to enable Swift support in your project settings if you are using any Swift code alongside Flutter.
+
+## Step 3: Optimizations
+
+- **Use `add` Method**: Always use the `add` method to register resources that need to be disposed of.
+- **Custom Disposal Logic**: If you have specific disposal logic, you can override the `dispose` method in your widget.
+
+By following these steps, you can effectively set up and use the Disposer package in your Flutter applications.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the Disposer Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:disposer/disposer.dart';
+import 'dart:async';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Create an instance of Disposer to manage resources
+  final Disposer _disposer = Disposer();
+  StreamController<int> _controller; // Stream controller for demonstration
+  int _counter = 0; // Counter to demonstrate stream updates
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the StreamController
+    _controller = StreamController<int>();
+    // Add the StreamController to the disposer
+    _disposer.add(_controller);
+    
+    // Simulate a stream of integers
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      _counter++;
+      _controller.sink.add(_counter); // Add counter value to the stream
+    });
+  }
+
+  @override
+  void dispose() {
+    // Dispose of all resources managed by Disposer
+    _disposer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Disposer Example')),
+      body: Center(
+        child: StreamBuilder<int>(
+          stream: _controller.stream, // Listen to the stream
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Text('Counter: ${snapshot.data}'); // Display the counter value
+            } else {
+              return CircularProgressIndicator(); // Show loading indicator
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The RealFlutter widget is created, and its state is managed by _RealFlutterState.
+// 2. In initState, a StreamController is initialized and added to the Disposer instance.
+// 3. A Timer is set up to increment a counter every second and add the value to the stream.
+// 4. The build method returns a Scaffold with a StreamBuilder that listens to the stream.
+// 5. When the stream emits a new value, the StreamBuilder updates the UI to display the current counter.
+// 6. When the widget is disposed, the Disposer instance cleans up the StreamController, preventing memory leaks.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we explored the Disposer package, its setup, and a complete example demonstrating its usage. By following the steps outlined, you can effectively manage resources in your Flutter applications, ensuring they run smoothly and efficiently.

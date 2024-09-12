@@ -1,0 +1,211 @@
+Here's a detailed technical blog on the "device_info_x" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Device Info X Flutter Package
+
+The `device_info_x` package is a powerful tool for Flutter developers that allows you to retrieve detailed information about the device on which your application is running. This package is particularly useful for applications that need to adapt their behavior based on the device's specifications, such as screen size, operating system version, and hardware capabilities.
+
+## When to Use This Package
+
+You might want to use the `device_info_x` package in scenarios such as:
+- **Analytics**: Collecting device information for analytics purposes to understand your user base better.
+- **Feature Flags**: Enabling or disabling features based on device capabilities (e.g., certain features may only be available on newer devices).
+- **UI Adjustments**: Modifying the user interface based on screen size or resolution.
+
+## Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Detailed Device Information**: Provides access to various device properties, including:
+  - Device model
+  - Operating system version
+  - Manufacturer
+  - Unique device ID
+- **Easy Integration**: Simple setup and usage within your Flutter application.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Device Info X
+
+## Step 1: Adding the Dependency
+
+To get started, you need to add the `device_info_x` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  device_info_x: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+1. **Permissions**: Ensure that your `AndroidManifest.xml` file includes the necessary permissions. For basic device information, no special permissions are required, but if you plan to access sensitive information, you may need to add permissions like `READ_PHONE_STATE`.
+
+2. **Gradle Configuration**: Make sure your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+1. **Permissions**: For iOS, you may need to add permissions in your `Info.plist` file if you are accessing sensitive information. For example:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>This app requires access to the camera.</string>
+```
+
+2. **Deployment Target**: Ensure your iOS deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Using the Package
+
+Now that you have set up the package, you can start using it in your Flutter application. Here’s a simple example of how to retrieve and display device information.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:device_info_x/device_info_x.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Device Info Example')),
+        body: DeviceInfoWidget(),
+      ),
+    );
+  }
+}
+
+class DeviceInfoWidget extends StatefulWidget {
+  @override
+  _DeviceInfoWidgetState createState() => _DeviceInfoWidgetState();
+}
+
+class _DeviceInfoWidgetState extends State<DeviceInfoWidget> {
+  String _deviceInfo = 'Fetching device info...';
+
+  @override
+  void initState() {
+    super.initState();
+    _getDeviceInfo();
+  }
+
+  Future<void> _getDeviceInfo() async {
+    // Get device information
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String deviceDetails;
+
+    // Check platform and get device info accordingly
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      deviceDetails = 'Android ${androidInfo.version.release}, Model: ${androidInfo.model}';
+    } else {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      deviceDetails = 'iOS ${iosInfo.utsname.release}, Model: ${iosInfo.utsname.machine}';
+    }
+
+    // Update the state with device information
+    setState(() {
+      _deviceInfo = deviceDetails;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(_deviceInfo),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Device Info X
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:device_info_x/device_info_x.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Device Info Example')),
+        body: DeviceInfoWidget(),
+      ),
+    );
+  }
+}
+
+class DeviceInfoWidget extends StatefulWidget {
+  @override
+  _DeviceInfoWidgetState createState() => _DeviceInfoWidgetState();
+}
+
+class _DeviceInfoWidgetState extends State<DeviceInfoWidget> {
+  String _deviceInfo = 'Fetching device info...'; // Initial message
+
+  @override
+  void initState() {
+    super.initState();
+    _getDeviceInfo(); // Call the method to fetch device info
+  }
+
+  Future<void> _getDeviceInfo() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin(); // Create an instance of DeviceInfoPlugin
+    String deviceDetails; // Variable to hold device details
+
+    // Check platform and get device info accordingly
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      // If the platform is Android
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo; // Fetch Android device info
+      deviceDetails = 'Android ${androidInfo.version.release}, Model: ${androidInfo.model}'; // Format device details
+    } else {
+      // If the platform is iOS
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo; // Fetch iOS device info
+      deviceDetails = 'iOS ${iosInfo.utsname.release}, Model: ${iosInfo.utsname.machine}'; // Format device details
+    }
+
+    // Update the state with device information
+    setState(() {
+      _deviceInfo = deviceDetails; // Update the displayed device info
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(_deviceInfo), // Display the device info
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which sets up the MaterialApp and Scaffold.
+// 2. The DeviceInfoWidget is created, which is a StatefulWidget.
+// 3. In the _DeviceInfoWidgetState, the initState method is called, triggering the _getDeviceInfo method.
+// 4. The _getDeviceInfo method checks the platform (Android or iOS) and retrieves the corresponding device information.
+// 5. The device information is formatted and stored in the _deviceInfo variable.
+// 6. The state is updated, causing the UI to rebuild and display the device information on the screen.
+```
+<!-- END_MAIN -->
+
+In summary, the `device_info_x` package provides a straightforward way to access device-specific information in Flutter applications. By following the setup and usage instructions outlined above, you can easily integrate this package into your projects and enhance your app's functionality based on the device's characteristics.

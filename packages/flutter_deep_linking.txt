@@ -1,0 +1,210 @@
+Here's a detailed technical blog on the `flutter_deep_linking` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Flutter Deep Linking Package: Overview
+
+The `flutter_deep_linking` package is a powerful tool for Flutter developers looking to implement deep linking in their applications. Deep linking allows users to navigate directly to specific content within an app, enhancing user experience and engagement. This package simplifies the process of handling deep links across both Android and iOS platforms.
+
+## When to Use This Package
+
+- **User Engagement**: If you want to drive user engagement by allowing users to share specific content or features within your app.
+- **Marketing Campaigns**: When running marketing campaigns that require users to be directed to specific app content.
+- **Onboarding**: To provide a seamless onboarding experience by directing users to specific screens based on their entry point.
+
+## Features
+
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Easy Configuration**: Simple setup process with clear documentation.
+- **Custom URL Schemes**: Supports custom URL schemes for deep linking.
+- **Dynamic Links**: Ability to handle dynamic links that can change based on the context.
+
+By leveraging the `flutter_deep_linking` package, developers can create a more intuitive and user-friendly experience, making it easier for users to access the content they want.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Flutter Deep Linking Package: Setup Tutorial
+
+In this tutorial, we will walk through the setup process for the `flutter_deep_linking` package and demonstrate how to use it effectively in your Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the `flutter_deep_linking` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_deep_linking: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package.
+
+## Step 2: Configure for Android
+
+1. **Update AndroidManifest.xml**: Open your `AndroidManifest.xml` file located in `android/app/src/main/AndroidManifest.xml` and add the following intent filter inside the `<activity>` tag:
+
+   ```xml
+   <intent-filter>
+       <action android:name="android.intent.action.VIEW" />
+       <category android:name="android.intent.category.DEFAULT" />
+       <category android:name="android.intent.category.BROWSABLE" />
+       <data android:scheme="your_scheme" android:host="your_host" />
+   </intent-filter>
+   ```
+
+   Replace `your_scheme` and `your_host` with your desired values.
+
+2. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml` if your app requires them.
+
+## Step 3: Configure for iOS
+
+1. **Update Info.plist**: Open your `Info.plist` file located in `ios/Runner/Info.plist` and add the following:
+
+   ```xml
+   <key>CFBundleURLTypes</key>
+   <array>
+       <dict>
+           <key>CFBundleURLSchemes</key>
+           <array>
+               <string>your_scheme</string>
+           </array>
+       </dict>
+   </array>
+   ```
+
+   Again, replace `your_scheme` with your desired scheme.
+
+2. **Handle Incoming Links**: Ensure your app can handle incoming links by implementing the necessary logic in your Flutter code.
+
+## Step 4: Using the Package
+
+Now that we have configured the package, we can use it in our Flutter application. Here’s how to set up deep linking in your app:
+
+1. **Import the Package**:
+
+   ```dart
+   import 'package:flutter_deep_linking/flutter_deep_linking.dart';
+   ```
+
+2. **Initialize Deep Linking**:
+
+   In your main application file, initialize the deep linking functionality:
+
+   ```dart
+   void main() {
+       runApp(MyApp());
+       DeepLinking.init();
+   }
+   ```
+
+3. **Listen for Links**:
+
+   You can listen for incoming links and navigate to the appropriate screen based on the link:
+
+   ```dart
+   DeepLinking.onLinkReceived.listen((String link) {
+       // Handle the incoming link
+       // Navigate to the appropriate screen based on the link
+   });
+   ```
+
+With these steps, you have successfully set up deep linking in your Flutter application using the `flutter_deep_linking` package.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Flutter Deep Linking Package: Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_deep_linking/flutter_deep_linking.dart';
+
+void main() {
+  runApp(RealFlutter());
+  // Initialize the deep linking functionality
+  DeepLinking.init();
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Deep Linking Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home Screen'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Simulate a deep link
+            DeepLinking.sendLink('your_scheme://details?id=1');
+          },
+          child: Text('Go to Details'),
+        ),
+      ),
+    );
+  }
+}
+
+class DetailsScreen extends StatelessWidget {
+  final String id;
+
+  DetailsScreen({required this.id});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Details Screen'),
+      ),
+      body: Center(
+        child: Text('Details for item $id'),
+      ),
+    );
+  }
+}
+
+// Listen for incoming deep links
+DeepLinking.onLinkReceived.listen((String link) {
+  // Parse the link to extract the id
+  final uri = Uri.parse(link);
+  if (uri.pathSegments.length > 1) {
+    final id = uri.queryParameters['id'];
+    // Navigate to the DetailsScreen with the extracted id
+    Navigator.push(
+      navigatorKey.currentContext!,
+      MaterialPageRoute(
+        builder: (context) => DetailsScreen(id: id!),
+      ),
+    );
+  }
+});
+
+// Explanation of the application flow:
+// 1. The app starts with the HomeScreen.
+// 2. When the user taps the "Go to Details" button, a simulated deep link is sent.
+// 3. The app listens for incoming deep links using the `onLinkReceived` stream.
+// 4. When a deep link is received, it parses the link to extract the item id.
+// 5. The app navigates to the DetailsScreen, displaying the details for the specified item.
+```
+
+// The application flow is as follows:
+// 1. The app initializes and displays the HomeScreen.
+// 2. The user can tap a button to simulate sending a deep link.
+// 3. The app listens for incoming deep links and processes them.
+// 4. Upon receiving a link, it extracts the item id and navigates to the DetailsScreen.
+// 5. The DetailsScreen displays the relevant information based on the id received from the deep link.
+
+<!-- END_MAIN --> 
+
+This blog provides a comprehensive overview of the `flutter_deep_linking` package, including its features, setup instructions, and a complete example demonstrating its usage.

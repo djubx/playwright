@@ -1,0 +1,225 @@
+Here's a detailed technical blog on the "glassfy_flutter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Glassfy Flutter Package
+
+The **glassfy_flutter** package is a powerful tool designed for integrating in-app purchases and subscriptions into Flutter applications. It provides a seamless way to manage user subscriptions, handle payments, and track user entitlements across both Android and iOS platforms. 
+
+## When to Use Glassfy
+
+You should consider using the **glassfy_flutter** package when:
+- You want to implement in-app purchases in your Flutter application.
+- You need to manage subscriptions and user entitlements effectively.
+- You are looking for a solution that simplifies the complexities of handling in-app purchases across multiple platforms.
+
+## Key Features
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Subscription Management**: Easily manage user subscriptions and entitlements.
+- **User-Friendly API**: Provides a simple and intuitive API for developers.
+- **Analytics Integration**: Track user behavior and subscription metrics.
+
+With these features, **glassfy_flutter** makes it easier for developers to implement and manage in-app purchases, enhancing the monetization potential of their applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Glassfy Flutter
+
+In this tutorial, we will walk through the setup process for the **glassfy_flutter** package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the **glassfy_flutter** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  glassfy_flutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/glassfy_flutter).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Add the necessary permissions and metadata in your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+
+```xml
+<manifest>
+    <application>
+        ...
+        <meta-data
+            android:name="glassfy.apiKey"
+            android:value="YOUR_GLASSFY_API_KEY" />
+    </application>
+</manifest>
+```
+
+2. **Gradle Configuration**: Ensure your `build.gradle` file is set up correctly. You may need to add the Glassfy SDK dependency.
+
+### iOS Configuration
+
+1. **Update Info.plist**: Add the required keys in your `Info.plist` file located at `ios/Runner/Info.plist`.
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>glassfy.apiKey</key>
+<string>YOUR_GLASSFY_API_KEY</string>
+```
+
+2. **CocoaPods**: Ensure you have the latest version of CocoaPods installed and run `pod install` in the `ios` directory.
+
+## Step 3: Initialize Glassfy
+
+In your main application file, initialize the Glassfy SDK:
+
+```dart
+import 'package:glassfy_flutter/glassfy_flutter.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Glassfy.initialize("YOUR_GLASSFY_API_KEY");
+  runApp(MyApp());
+}
+```
+
+## Step 4: Using Glassfy
+
+You can now use the Glassfy API to manage subscriptions and purchases. Here’s a simple example of how to fetch products and handle purchases.
+
+```dart
+// Fetch available products
+List<Product> products = await Glassfy.getProducts();
+```
+
+This will allow you to display available products to your users and handle their purchases accordingly.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Glassfy Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:glassfy_flutter/glassfy_flutter.dart';
+
+void main() {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Glassfy with your API key
+  Glassfy.initialize("YOUR_GLASSFY_API_KEY");
+  
+  // Run the main application
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Glassfy Flutter Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Product> _products = []; // List to hold available products
+  String _purchaseStatus = ""; // Variable to hold purchase status
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts(); // Fetch products on initialization
+  }
+
+  // Function to fetch available products
+  Future<void> _fetchProducts() async {
+    try {
+      // Fetch products from Glassfy
+      List<Product> products = await Glassfy.getProducts();
+      setState(() {
+        _products = products; // Update the state with fetched products
+      });
+    } catch (e) {
+      // Handle any errors that occur during product fetching
+      setState(() {
+        _purchaseStatus = "Error fetching products: $e";
+      });
+    }
+  }
+
+  // Function to handle product purchase
+  Future<void> _purchaseProduct(Product product) async {
+    try {
+      // Initiate the purchase process
+      PurchaseResult result = await Glassfy.purchase(product);
+      setState(() {
+        _purchaseStatus = "Purchase successful: ${result.status}"; // Update purchase status
+      });
+    } catch (e) {
+      // Handle any errors that occur during purchase
+      setState(() {
+        _purchaseStatus = "Purchase failed: $e";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Glassfy Flutter Example'),
+      ),
+      body: Column(
+        children: [
+          // Display the purchase status
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(_purchaseStatus),
+          ),
+          // List of available products
+          Expanded(
+            child: ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                final product = _products[index];
+                return ListTile(
+                  title: Text(product.name), // Display product name
+                  subtitle: Text(product.price), // Display product price
+                  onTap: () => _purchaseProduct(product), // Handle product tap
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application using the Glassfy package.
+// 1. The application initializes the Glassfy SDK with an API key.
+// 2. It fetches available products from Glassfy and displays them in a list.
+// 3. When a user taps on a product, it initiates the purchase process.
+// 4. The purchase status is displayed at the top of the screen, indicating success or failure.
+// 5. Error handling is included to manage any issues during product fetching or purchasing.
+
+In summary, this application flow allows users to view available in-app products and make purchases seamlessly, leveraging the capabilities of the Glassfy Flutter package.
+<!-- END_MAIN -->

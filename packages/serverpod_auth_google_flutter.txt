@@ -1,0 +1,205 @@
+Here's a detailed technical blog on the `serverpod_auth_google_flutter` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# serverpod_auth_google_flutter Package Overview
+
+The `serverpod_auth_google_flutter` package is a powerful tool for integrating Google authentication into Flutter applications. It simplifies the process of authenticating users via their Google accounts, allowing developers to focus on building their applications rather than dealing with the complexities of authentication protocols.
+
+## When to Use This Package
+
+This package is particularly useful in scenarios where:
+- You want to provide users with a seamless login experience using their Google accounts.
+- Your application requires user authentication to access certain features or data.
+- You are building a cross-platform application and want to maintain a consistent authentication flow on both Android and iOS.
+
+## Features
+
+- **Easy Integration**: The package provides a straightforward API for integrating Google authentication into your Flutter app.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Secure Authentication**: Utilizes OAuth 2.0 for secure user authentication.
+- **User Information Access**: After authentication, you can easily access user information such as email and profile picture.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up serverpod_auth_google_flutter
+
+In this tutorial, we will walk through the setup process for the `serverpod_auth_google_flutter` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  serverpod_auth_google_flutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package.
+
+## Step 2: Configure Google Cloud Console
+
+### For Android
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Navigate to **APIs & Services > Credentials**.
+4. Click on **Create Credentials** and select **OAuth 2.0 Client IDs**.
+5. Configure the consent screen and add your app's package name and SHA-1 certificate fingerprint.
+6. Save the generated Client ID.
+
+### For iOS
+
+1. In the same project, navigate to **APIs & Services > Credentials**.
+2. Create another OAuth 2.0 Client ID for iOS.
+3. Set the bundle identifier to match your Flutter app's bundle identifier.
+4. Save the generated Client ID.
+
+## Step 3: Platform-Specific Configuration
+
+### Android
+
+1. Open `android/app/build.gradle` and add the following to the `defaultConfig` section:
+
+```groovy
+manifestPlaceholders = [
+    'appAuthRedirectScheme': 'your.package.name'
+]
+```
+
+Replace `your.package.name` with your actual package name.
+
+2. Ensure you have the necessary permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+    </array>
+  </dict>
+</array>
+```
+
+Replace `YOUR_CLIENT_ID` with your actual iOS Client ID.
+
+## Step 4: Using the Package
+
+Now that we have set up the package, we can use it in our Flutter application. Below is a complete example demonstrating how to implement Google authentication.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of serverpod_auth_google_flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:serverpod_auth_google_flutter/serverpod_auth_google_flutter.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Google Auth Example',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: AuthHomePage(),
+    );
+  }
+}
+
+class AuthHomePage extends StatefulWidget {
+  @override
+  _AuthHomePageState createState() => _AuthHomePageState();
+}
+
+class _AuthHomePageState extends State<AuthHomePage> {
+  String? _userEmail;
+
+  // Function to handle Google Sign-In
+  Future<void> _signInWithGoogle() async {
+    try {
+      // Initiate Google Sign-In
+      final user = await ServerpodAuthGoogleFlutter.signIn();
+      setState(() {
+        _userEmail = user?.email; // Store user email after sign-in
+      });
+    } catch (e) {
+      // Handle error
+      print('Error signing in: $e');
+    }
+  }
+
+  // Function to handle Sign-Out
+  Future<void> _signOut() async {
+    await ServerpodAuthGoogleFlutter.signOut();
+    setState(() {
+      _userEmail = null; // Clear user email on sign-out
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Google Auth Example'),
+      ),
+      body: Center(
+        child: _userEmail == null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('You are not signed in.'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _signInWithGoogle,
+                    child: Text('Sign in with Google'),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Signed in as: $_userEmail'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _signOut,
+                    child: Text('Sign out'),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and theme, setting AuthHomePage as the home.
+// 3. AuthHomePage maintains the user's email state and provides methods for signing in and out.
+// 4. When the user taps the "Sign in with Google" button, _signInWithGoogle is called.
+// 5. This method uses the ServerpodAuthGoogleFlutter package to initiate Google Sign-In.
+// 6. Upon successful sign-in, the user's email is displayed, and the option to sign out is provided.
+// 7. If the user taps "Sign out," the _signOut method is called, clearing the user's email and updating the UI.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the `serverpod_auth_google_flutter` package, detailing its features, setup process, and providing a complete example of its implementation in a Flutter application. This package streamlines the Google authentication process, making it easier for developers to integrate secure login features into their apps.

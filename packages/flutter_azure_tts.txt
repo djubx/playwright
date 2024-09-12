@@ -1,0 +1,259 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Azure Text-to-Speech (TTS) Package
+=============================================
+
+The `flutter_azure_tts` package is a Flutter wrapper for the Azure Cognitive Services Text-to-Speech API. It allows developers to synthesize text into natural-sounding speech in a variety of languages and voices.
+
+## When to Use This Package
+---------------------------
+
+This package is ideal for applications that require text-to-speech functionality, such as:
+
+* Audiobooks and podcasts
+* Language learning apps
+* Accessibility features for visually impaired users
+* Voice assistants and chatbots
+
+## Features
+------------
+
+* Synthesize text into speech in over 100 languages and 200 voices
+* Support for SSML (Speech Synthesis Markup Language) for fine-grained control over speech synthesis
+* Adjustable speech rate, pitch, and volume
+* Support for streaming audio output
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_azure_tts` package, follow these steps:
+
+### Step 1: Add the Package to Your Flutter Project
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter_azure_tts: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:flutter_azure_tts/flutter_azure_tts.dart';
+```
+### Step 3: Set Up Azure Cognitive Services
+
+Create an Azure Cognitive Services account and obtain a subscription key. Then, create a `AzureTts` instance with your subscription key:
+```dart
+AzureTts azureTts = AzureTts(
+  subscriptionKey: 'YOUR_SUBSCRIPTION_KEY',
+  region: 'YOUR_REGION',
+);
+```
+### Step 4: Synthesize Text to Speech
+
+Use the `synthesize` method to convert text to speech:
+```dart
+azureTts.synthesize(
+  text: 'Hello, world!',
+  voice: 'en-US-JessaRUS',
+  rate: 1.0,
+  pitch: 1.0,
+  volume: 1.0,
+).then((audioData) {
+  // Play the audio data
+});
+```
+### Platform-Specific Details
+
+* On Android, add the following permission to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+* On iOS, add the following line to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_azure_tts/flutter_azure_tts.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Azure TTS Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  AzureTts _azureTts;
+  String _text = 'Hello, world!';
+  String _voice = 'en-US-JessaRUS';
+  double _rate = 1.0;
+  double _pitch = 1.0;
+  double _volume = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _azureTts = AzureTts(
+      subscriptionKey: 'YOUR_SUBSCRIPTION_KEY',
+      region: 'YOUR_REGION',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Azure TTS Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Text:',
+              style: TextStyle(fontSize: 24),
+            ),
+            TextField(
+              controller: TextEditingController(text: _text),
+              onChanged: (text) {
+                setState(() {
+                  _text = text;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Voice:',
+              style: TextStyle(fontSize: 24),
+            ),
+            DropdownButton<String>(
+              value: _voice,
+              onChanged: (voice) {
+                setState(() {
+                  _voice = voice;
+                });
+              },
+              items: [
+                DropdownMenuItem(
+                  child: Text('en-US-JessaRUS'),
+                  value: 'en-US-JessaRUS',
+                ),
+                DropdownMenuItem(
+                  child: Text('en-US-GuyRUS'),
+                  value: 'en-US-GuyRUS',
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Rate:',
+              style: TextStyle(fontSize: 24),
+            ),
+            Slider(
+              value: _rate,
+              min: 0.5,
+              max: 2.0,
+              divisions: 10,
+              label: _rate.toStringAsFixed(1),
+              onChanged: (rate) {
+                setState(() {
+                  _rate = rate;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Pitch:',
+              style: TextStyle(fontSize: 24),
+            ),
+            Slider(
+              value: _pitch,
+              min: 0.5,
+              max: 2.0,
+              divisions: 10,
+              label: _pitch.toStringAsFixed(1),
+              onChanged: (pitch) {
+                setState(() {
+                  _pitch = pitch;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Volume:',
+              style: TextStyle(fontSize: 24),
+            ),
+            Slider(
+              value: _volume,
+              min: 0.5,
+              max: 2.0,
+              divisions: 10,
+              label: _volume.toStringAsFixed(1),
+              onChanged: (volume) {
+                setState(() {
+                  _volume = volume;
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _azureTts.synthesize(
+                  text: _text,
+                  voice: _voice,
+                  rate: _rate,
+                  pitch: _pitch,
+                  volume: _volume,
+                ).then((audioData) {
+                  // Play the audio data
+                });
+              },
+              child: Text('Synthesize'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The app starts by initializing the AzureTts instance with the subscription key and region.
+// The user can then input the text, select the voice, and adjust the rate, pitch, and volume.
+// When the user clicks the "Synthesize" button, the app calls the synthesize method of the AzureTts instance.
+// The synthesize method converts the text to speech using the selected voice and settings.
+// The resulting audio data is then played back to the user.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,237 @@
+Here's a detailed technical blog on the `leancode_cubit_utils` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# leancode_cubit_utils Flutter Package
+
+The `leancode_cubit_utils` package is a powerful utility library designed to enhance the development experience when using the Cubit state management solution in Flutter applications. It provides a set of tools and extensions that simplify common tasks, improve code readability, and promote best practices in state management.
+
+## When to Use This Package
+
+You should consider using `leancode_cubit_utils` when:
+- You are building a Flutter application that requires state management using Cubit.
+- You want to streamline your codebase with utility functions that reduce boilerplate.
+- You need to implement common patterns like loading states, error handling, and data fetching in a more efficient way.
+
+## Key Features
+
+- **State Management Utilities**: Simplifies the implementation of loading and error states.
+- **Error Handling**: Provides a structured way to handle errors in your application.
+- **Data Fetching**: Streamlines the process of fetching data and updating the UI accordingly.
+- **Testing Utilities**: Offers tools to facilitate testing of Cubit classes.
+
+By leveraging these features, developers can create more maintainable and scalable applications with less effort.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using leancode_cubit_utils
+
+In this tutorial, we will walk through the setup process for the `leancode_cubit_utils` package and demonstrate how to use it effectively in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `leancode_cubit_utils` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  leancode_cubit_utils: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/leancode_cubit_utils).
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS
+
+For iOS, ensure that your `ios/Podfile` is configured to use at least iOS 10.0:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Using the Package
+
+Now that we have set up the package, let's create a simple Cubit class using `leancode_cubit_utils`. 
+
+### Example Cubit Class
+
+```dart
+import 'package:bloc/bloc.dart';
+import 'package:leancode_cubit_utils/leancode_cubit_utils.dart';
+
+class RealFlutterCubit extends Cubit<LoadingState<String>> {
+  RealFlutterCubit() : super(LoadingState.initial());
+
+  Future<void> fetchData() async {
+    emit(LoadingState.loading());
+    try {
+      // Simulate a network call
+      await Future.delayed(Duration(seconds: 2));
+      emit(LoadingState.success("Data fetched successfully!"));
+    } catch (e) {
+      emit(LoadingState.error("Failed to fetch data: $e"));
+    }
+  }
+}
+```
+
+In this example, we create a `RealFlutterCubit` that manages a loading state. The `fetchData` method simulates a network call and updates the state accordingly.
+
+## Step 4: Integrating with the UI
+
+You can now use this Cubit in your Flutter UI. Here’s a simple example of how to integrate it:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: BlocProvider(
+        create: (context) => RealFlutterCubit(),
+        child: RealFlutterHome(),
+      ),
+    );
+  }
+}
+
+class RealFlutterHome extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Cubit Utils Example')),
+      body: Center(
+        child: BlocBuilder<RealFlutterCubit, LoadingState<String>>(
+          builder: (context, state) {
+            if (state.isLoading) {
+              return CircularProgressIndicator();
+            } else if (state.hasError) {
+              return Text(state.errorMessage!);
+            } else if (state.hasData) {
+              return Text(state.data!);
+            }
+            return Text('Press the button to fetch data.');
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.read<RealFlutterCubit>().fetchData();
+        },
+        child: Icon(Icons.download),
+      ),
+    );
+  }
+}
+```
+
+In this UI, we use `BlocBuilder` to listen for state changes and update the UI accordingly.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of leancode_cubit_utils
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:leancode_cubit_utils/leancode_cubit_utils.dart';
+
+// Define the Cubit class that manages loading states
+class RealFlutterCubit extends Cubit<LoadingState<String>> {
+  RealFlutterCubit() : super(LoadingState.initial());
+
+  // Method to fetch data
+  Future<void> fetchData() async {
+    emit(LoadingState.loading()); // Emit loading state
+    try {
+      // Simulate a network call with a delay
+      await Future.delayed(Duration(seconds: 2));
+      emit(LoadingState.success("Data fetched successfully!")); // Emit success state
+    } catch (e) {
+      emit(LoadingState.error("Failed to fetch data: $e")); // Emit error state
+    }
+  }
+}
+
+// Main application widget
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: BlocProvider(
+        create: (context) => RealFlutterCubit(), // Provide the Cubit
+        child: RealFlutterHome(), // Home widget
+      ),
+    );
+  }
+}
+
+// Home widget that displays the UI
+class RealFlutterHome extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Cubit Utils Example')), // App bar title
+      body: Center(
+        child: BlocBuilder<RealFlutterCubit, LoadingState<String>>(
+          builder: (context, state) {
+            // Check the current state and display accordingly
+            if (state.isLoading) {
+              return CircularProgressIndicator(); // Show loading indicator
+            } else if (state.hasError) {
+              return Text(state.errorMessage!); // Show error message
+            } else if (state.hasData) {
+              return Text(state.data!); // Show fetched data
+            }
+            return Text('Press the button to fetch data.'); // Default message
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.read<RealFlutterCubit>().fetchData(); // Trigger data fetch
+        },
+        child: Icon(Icons.download), // Button icon
+      ),
+    );
+  }
+}
+
+// Entry point of the application
+void main() {
+  runApp(RealFlutterApp()); // Run the application
+}
+
+/*
+Application Flow Explanation:
+1. The application starts with the `main` function, which runs the `RealFlutterApp`.
+2. The `RealFlutterApp` sets up a `BlocProvider` that provides an instance of `RealFlutterCubit` to the widget tree.
+3. The `RealFlutterHome` widget builds the UI, which includes a button to fetch data and a display area for the current state.
+4. When the button is pressed, it calls the `fetchData` method in the `RealFlutterCubit`.
+5. The `fetchData` method emits a loading state, simulates a network call, and then emits either a success or error state based on the outcome.
+6. The `BlocBuilder` listens for state changes and rebuilds the UI accordingly, showing a loading indicator, error message, or fetched data.
+*/
+```
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the `leancode_cubit_utils` package, including its features, setup instructions, and a complete example demonstrating its usage in a Flutter application. By following the steps outlined, developers can effectively implement state management in their applications, enhancing both functionality and user experience.

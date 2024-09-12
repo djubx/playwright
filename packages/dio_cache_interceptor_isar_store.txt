@@ -1,0 +1,169 @@
+<-- START_DESCRIPTION -->
+
+# dio_cache_interceptor_isar_store Package Overview
+=====================================================
+
+The `dio_cache_interceptor_isar_store` package is a caching solution for Flutter applications that use the Dio HTTP client. It provides a simple and efficient way to cache HTTP responses, reducing the number of requests made to the server and improving app performance.
+
+### When to Use This Package
+
+This package is ideal for applications that:
+
+* Make frequent requests to the same API endpoints
+* Need to reduce the load on the server
+* Want to improve app performance by caching responses
+
+### Features
+
+* Caches HTTP responses using the Isar database
+* Supports GET, POST, PUT, and DELETE requests
+* Allows for customizable cache expiration times
+* Provides a simple and easy-to-use API
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+==========================
+
+To use the `dio_cache_interceptor_isar_store` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec.yaml File
+
+```yml
+dependencies:
+  dio_cache_interceptor_isar_store: ^1.0.0
+```
+
+### Step 2: Import the Package
+
+```dart
+import 'package:dio_cache_interceptor_isar_store/dio_cache_interceptor_isar_store.dart';
+```
+
+### Step 3: Initialize the Cache Store
+
+```dart
+void main() async {
+  await IsarCacheStore.initialize();
+  runApp(MyApp());
+}
+```
+
+### Step 4: Create a Dio Instance with the Cache Interceptor
+
+```dart
+Dio dio = Dio();
+dio.interceptors.add(CacheInterceptor(store: IsarCacheStore()));
+```
+
+### Platform-Specific Details
+
+* Android: No additional configuration is required.
+* iOS: You need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+### Optimizations
+
+* You can customize the cache expiration time by passing a `CacheOptions` object to the `CacheInterceptor` constructor:
+
+```dart
+CacheInterceptor(store: IsarCacheStore(), options: CacheOptions(maxAge: 3600)) // 1 hour
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor_isar_store/dio_cache_interceptor_isar_store.dart';
+
+void main() async {
+  await IsarCacheStore.initialize();
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Dio Cache Interceptor Isar Store Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final Dio _dio = Dio();
+  final IsarCacheStore _cacheStore = IsarCacheStore();
+
+  @override
+  void initState() {
+    super.initState();
+    _dio.interceptors.add(CacheInterceptor(store: _cacheStore));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Dio Cache Interceptor Isar Store Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _makeRequest,
+              child: Text('Make Request'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _clearCache,
+              child: Text('Clear Cache'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _makeRequest() async {
+    // Make a GET request to the API endpoint
+    Response response = await _dio.get('https://jsonplaceholder.typicode.com/todos/1');
+    print(response.data);
+  }
+
+  _clearCache() async {
+    // Clear the cache store
+    await _cacheStore.clear();
+    print('Cache cleared');
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and the `IsarCacheStore` is initialized.
+// 2. The user clicks the "Make Request" button, which makes a GET request to the API endpoint using the `Dio` instance with the `CacheInterceptor`.
+// 3. The `CacheInterceptor` checks if the response is cached in the `IsarCacheStore`. If it is, it returns the cached response. If not, it makes the request to the API endpoint and caches the response.
+// 4. The user clicks the "Clear Cache" button, which clears the `IsarCacheStore`.
+// 5. The user clicks the "Make Request" button again, which makes a new request to the API endpoint since the cache has been cleared.
+
+// In summary, the `dio_cache_interceptor_isar_store` package provides a simple and efficient way to cache HTTP responses in Flutter applications using the `Dio` HTTP client and the `Isar` database.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,230 @@
+Here's a detailed technical blog on the "phoenix_socket" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Phoenix Socket Flutter Package
+
+The **phoenix_socket** package is a Flutter client for the Phoenix Channels, which allows real-time communication between clients and servers. It is particularly useful for applications that require live updates, such as chat applications, collaborative tools, or any app that benefits from real-time data synchronization.
+
+## When to Use This Package
+You should consider using the **phoenix_socket** package when:
+- You need to implement real-time features in your Flutter application.
+- Your application requires a WebSocket connection to communicate with a Phoenix backend.
+- You want to leverage the power of channels for broadcasting messages to multiple clients.
+
+## Features
+- **Real-time Communication**: Establishes a WebSocket connection for real-time data exchange.
+- **Channel Support**: Allows joining and leaving channels, enabling group communication.
+- **Message Handling**: Provides a straightforward way to send and receive messages.
+- **Presence Tracking**: Supports presence features to track online users in channels.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Phoenix Socket Package
+
+## Step 1: Add Dependency
+To get started, add the **phoenix_socket** package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  phoenix_socket: ^0.1.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android
+1. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+### iOS
+1. Open your `ios/Runner/Info.plist` file and add the following to allow WebSocket connections:
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Step 3: Basic Usage
+Now, let's set up a simple connection to a Phoenix server.
+
+### Import the Package
+In your Dart file, import the package:
+```dart
+import 'package:phoenix_socket/phoenix_socket.dart';
+```
+
+### Create a Phoenix Socket
+You can create a socket and connect to your Phoenix server as follows:
+
+```dart
+void main() {
+  final socket = PhoenixSocket('ws://your-phoenix-server/socket/websocket');
+  socket.connect();
+}
+```
+
+### Joining a Channel
+To join a channel, you can do the following:
+
+```dart
+final channel = socket.channel('room:lobby');
+channel.join().receive('ok', (response) {
+  print('Successfully joined the channel');
+}).receive('error', (response) {
+  print('Failed to join the channel');
+});
+```
+
+### Sending and Receiving Messages
+You can send messages to the channel and listen for incoming messages:
+
+```dart
+channel.on('new_msg', (payload) {
+  print('New message: ${payload['body']}');
+});
+
+// Sending a message
+channel.push('new_msg', {'body': 'Hello, world!'});
+```
+
+## Step 4: Optimizations
+- **Error Handling**: Implement robust error handling for connection issues.
+- **Reconnect Logic**: Consider adding logic to handle reconnections automatically.
+
+With these steps, you should be able to set up and use the **phoenix_socket** package in your Flutter application effectively.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the Phoenix Socket Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Phoenix Socket Example',
+      home: ChatScreen(),
+    );
+  }
+}
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  late PhoenixSocket socket; // Declare the socket
+  late PhoenixChannel channel; // Declare the channel
+  final TextEditingController _controller = TextEditingController(); // Controller for text input
+  List<String> messages = []; // List to hold messages
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the socket and connect to the server
+    socket = PhoenixSocket('ws://your-phoenix-server/socket/websocket');
+    socket.connect();
+
+    // Join the channel
+    channel = socket.channel('room:lobby');
+    channel.join().receive('ok', (response) {
+      print('Successfully joined the channel');
+    }).receive('error', (response) {
+      print('Failed to join the channel');
+    });
+
+    // Listen for new messages
+    channel.on('new_msg', (payload) {
+      setState(() {
+        messages.add(payload['body']); // Add new message to the list
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    channel.leave(); // Leave the channel when disposing
+    socket.disconnect(); // Disconnect the socket
+    super.dispose();
+  }
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      // Push the new message to the channel
+      channel.push('new_msg', {'body': _controller.text});
+      _controller.clear(); // Clear the input field
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Chat Room')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(title: Text(messages[index])); // Display messages
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller, // Bind the controller
+                    decoration: InputDecoration(labelText: 'Send a message'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: _sendMessage, // Send message on button press
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The ChatScreen widget is created, initializing the PhoenixSocket and connecting to the server.
+// 3. A channel is joined, and the app listens for incoming messages.
+// 4. When a new message is received, it updates the messages list and rebuilds the UI.
+// 5. Users can type a message in the TextField and send it by pressing the send button.
+// 6. The message is pushed to the channel, and the input field is cleared for the next message.
+// 7. When the ChatScreen is disposed, the channel is left, and the socket is disconnected to clean up resources.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the **phoenix_socket** package, including its features, setup instructions, and a complete example of a chat application. This should provide a solid foundation for implementing real-time features in your Flutter applications using Phoenix Channels.
