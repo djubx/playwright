@@ -1,0 +1,211 @@
+<-- START_DESCRIPTION -->
+
+# Drago USB Printer Flutter Package
+=====================================
+
+The `drago_usb_printer` Flutter package provides a simple and efficient way to print documents and images from your Flutter application using a USB printer. This package is ideal for applications that require printing receipts, invoices, or other documents on the go.
+
+### Features
+
+*   Supports printing documents and images
+*   Compatible with USB printers
+*   Easy to use and integrate into your Flutter application
+*   Supports multiple paper sizes and orientations
+
+### When to Use
+
+This package is perfect for applications that require printing documents or images using a USB printer. Some examples include:
+
+*   Point of Sale (POS) applications
+*   Inventory management applications
+*   Document scanning and printing applications
+*   Photo printing applications
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the Drago USB Printer Package
+===========================================================
+
+### Step 1: Add the Package to Your Flutter Project
+
+To use the `drago_usb_printer` package, you need to add it to your Flutter project. Open your `pubspec.yaml` file and add the following line under the `dependencies` section:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  drago_usb_printer: ^1.0.0
+```
+
+Then, run `flutter pub get` in your terminal to get the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:drago_usb_printer/drago_usb_printer.dart';
+```
+
+### Step 3: Initialize the Printer
+
+Before you can start printing, you need to initialize the printer. You can do this by calling the `init` method:
+
+```dart
+Future<void> initPrinter() async {
+  await DragoUsbPrinter.init();
+}
+```
+
+### Step 4: Connect to the Printer
+
+To connect to the printer, you need to call the `connect` method and pass the USB device:
+
+```dart
+Future<void> connectToPrinter() async {
+  final devices = await DragoUsbPrinter.getDevices();
+  if (devices.isNotEmpty) {
+    await DragoUsbPrinter.connect(devices[0]);
+  }
+}
+```
+
+### Step 5: Print a Document
+
+To print a document, you can use the `print` method:
+
+```dart
+Future<void> printDocument() async {
+  final document = await rootBundle.load('assets/document.pdf');
+  await DragoUsbPrinter.print(document);
+}
+```
+
+### Platform-Specific Details
+
+#### Android
+
+To use the `drago_usb_printer` package on Android, you need to add the following permissions to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.USB_PERMISSION" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```
+
+You also need to register the USB broadcast receiver in your `AndroidManifest.xml` file:
+
+```xml
+<receiver android:name="com.drago.DragoUsbPrinter$UsbReceiver">
+  <intent-filter>
+    <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+    <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
+  </intent-filter>
+</receiver>
+```
+
+#### iOS
+
+To use the `drago_usb_printer` package on iOS, you need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>UIFileSharingEnabled</key>
+<true/>
+<key>UISupportsDocumentBrowser</key>
+<true/>
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:drago_usb_printer/drago_usb_printer.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Drago USB Printer Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    initPrinter();
+  }
+
+  Future<void> initPrinter() async {
+    // Initialize the printer
+    await DragoUsbPrinter.init();
+  }
+
+  Future<void> connectToPrinter() async {
+    // Get the list of available USB devices
+    final devices = await DragoUsbPrinter.getDevices();
+    if (devices.isNotEmpty) {
+      // Connect to the first device
+      await DragoUsbPrinter.connect(devices[0]);
+    }
+  }
+
+  Future<void> printDocument() async {
+    // Load the document from assets
+    final document = await rootBundle.load('assets/document.pdf');
+    // Print the document
+    await DragoUsbPrinter.print(document);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Drago USB Printer Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: connectToPrinter,
+              child: Text('Connect to Printer'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: printDocument,
+              child: Text('Print Document'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The app initializes the printer when it starts.
+// 2. The user clicks the "Connect to Printer" button to connect to the printer.
+// 3. The app gets the list of available USB devices and connects to the first device.
+// 4. The user clicks the "Print Document" button to print a document.
+// 5. The app loads the document from assets and prints it using the connected printer.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,189 @@
+<-- START_DESCRIPTION -->
+
+# Simple Result Flutter Package
+================================
+
+The `simple_result` Flutter package provides a simple way to handle asynchronous operations and display their results in a user-friendly manner. It allows you to wrap your widgets with a `SimpleResult` widget, which will automatically handle the loading, error, and success states of your asynchronous operations.
+
+## When to Use
+--------------
+
+You can use this package when you need to perform asynchronous operations, such as network requests, database queries, or file I/O operations, and you want to display the results in a user-friendly manner.
+
+## Features
+------------
+
+*   Handles loading, error, and success states of asynchronous operations
+*   Customizable loading and error widgets
+*   Supports retrying failed operations
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial
+==========
+
+## Setup
+--------
+
+To use the `simple_result` package, you need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  simple_result: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Basic Usage
+-------------
+
+To use the `SimpleResult` widget, you need to wrap your widget with it and provide a `Future` that performs the asynchronous operation:
+
+```dart
+SimpleResult(
+  future: myFuture,
+  builder: (context, result) {
+    if (result.isSuccess) {
+      return Text(result.value);
+    } else if (result.isError) {
+      return Text(result.error.toString());
+    } else {
+      return CircularProgressIndicator();
+    }
+  },
+)
+```
+
+## Customizing Loading and Error Widgets
+--------------------------------------
+
+You can customize the loading and error widgets by providing custom builders:
+
+```dart
+SimpleResult(
+  future: myFuture,
+  loadingBuilder: (context) {
+    return Text('Loading...');
+  },
+  errorBuilder: (context, error) {
+    return Text('Error: $error');
+  },
+  builder: (context, result) {
+    if (result.isSuccess) {
+      return Text(result.value);
+    } else {
+      return Container();
+    }
+  },
+)
+```
+
+## Retrying Failed Operations
+---------------------------
+
+You can retry failed operations by providing a `retry` callback:
+
+```dart
+SimpleResult(
+  future: myFuture,
+  retry: () {
+    return myFuture;
+  },
+  builder: (context, result) {
+    if (result.isSuccess) {
+      return Text(result.value);
+    } else if (result.isError) {
+      return Text(result.error.toString());
+    } else {
+      return CircularProgressIndicator();
+    }
+  },
+)
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:simple_result/simple_result.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Simple Result Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  Future<String> _myFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _myFuture = Future.delayed(Duration(seconds: 2), () {
+      return 'Hello, World!';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Simple Result Demo'),
+      ),
+      body: Center(
+        child: SimpleResult(
+          future: _myFuture,
+          builder: (context, result) {
+            // If the result is a success, display the value
+            if (result.isSuccess) {
+              return Text(result.value);
+            }
+            // If the result is an error, display the error message
+            else if (result.isError) {
+              return Text(result.error.toString());
+            }
+            // If the result is still loading, display a loading indicator
+            else {
+              return CircularProgressIndicator();
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and the `MyHomePage` widget is displayed.
+// 2. The `_myFuture` future is created and delayed for 2 seconds.
+// 3. The `SimpleResult` widget is displayed and waits for the `_myFuture` future to complete.
+// 4. When the `_myFuture` future completes, the `SimpleResult` widget displays the result.
+// 5. If the result is a success, the value is displayed.
+// 6. If the result is an error, the error message is displayed.
+// 7. If the result is still loading, a loading indicator is displayed.
+
+// This code demonstrates the basic usage of the `SimpleResult` widget and how it can be used to handle asynchronous operations in a user-friendly manner.
+
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,223 @@
+Here's a detailed technical blog on the "callkeep" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# CallKeep Flutter Package
+
+The **CallKeep** Flutter package is a powerful tool designed for managing VoIP (Voice over Internet Protocol) calls in Flutter applications. It provides a seamless way to integrate native call functionalities into your Flutter app, allowing you to handle incoming and outgoing calls, manage call states, and display call UI elements.
+
+## When to Use CallKeep
+
+You should consider using the CallKeep package when:
+- You are developing a VoIP application that requires call management features.
+- You need to integrate native call functionalities, such as displaying incoming call notifications, managing call states, and handling call actions.
+- You want to provide a better user experience by utilizing the native call UI on both Android and iOS platforms.
+
+## Features
+
+- **Incoming Call Management**: Display incoming call notifications and manage call actions.
+- **Outgoing Call Management**: Initiate outgoing calls and manage their states.
+- **Call State Handling**: Listen to call state changes and respond accordingly.
+- **Customizable UI**: Customize the call UI to match your application's design.
+- **Platform Support**: Works seamlessly on both Android and iOS.
+
+With these features, CallKeep allows developers to create robust VoIP applications that provide a native calling experience.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up CallKeep in Your Flutter Application
+
+In this tutorial, we will walk through the setup process for the CallKeep package and explain how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+First, add the CallKeep package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  callkeep: ^4.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Permissions**: Open your `AndroidManifest.xml` file and add the following permissions:
+
+```xml
+<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+<uses-permission android:name="android.permission.CALL_PHONE"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+```
+
+2. **Service Declaration**: Also, declare the CallKeep service in the same file:
+
+```xml
+<service android:name="com.wizpanda.callkeep.CallKeepService" android:permission="android.permission.BIND_JOB_SERVICE" android:exported="true"/>
+```
+
+### iOS Configuration
+
+1. **Info.plist**: Open your `Info.plist` file and add the following keys:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone for calls</string>
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>We need access to Bluetooth for calls</string>
+<key>UIBackgroundModes</key>
+<array>
+    <string>voip</string>
+</array>
+```
+
+2. **Capabilities**: Enable the "Background Modes" capability in your Xcode project and check "Voice over IP".
+
+## Step 3: Initialize CallKeep
+
+In your main Dart file, import the CallKeep package and initialize it:
+
+```dart
+import 'package:callkeep/callkeep.dart';
+
+void main() {
+  CallKeep.setup(<String, dynamic>{
+    'ios': {
+      'appName': 'Your App Name',
+    },
+    'android': {
+      'alertTitle': 'Permissions required',
+      'alertDescription': 'This application needs to access your phone accounts',
+      'cancelButton': 'Cancel',
+      'okButton': 'OK',
+    },
+  });
+}
+```
+
+## Step 4: Using CallKeep
+
+You can now use CallKeep to manage calls. Here’s a simple example of how to handle incoming and outgoing calls:
+
+```dart
+CallKeep.onCallReceived.listen((event) {
+  // Handle incoming call
+});
+
+CallKeep.onCallEnded.listen((event) {
+  // Handle call ended
+});
+```
+
+With these steps, you have successfully set up the CallKeep package in your Flutter application. You can now manage VoIP calls effectively.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of CallKeep in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:callkeep/callkeep.dart';
+
+void main() {
+  // Initialize CallKeep with necessary configurations
+  CallKeep.setup(<String, dynamic>{
+    'ios': {
+      'appName': 'RealFlutter',
+    },
+    'android': {
+      'alertTitle': 'Permissions required',
+      'alertDescription': 'This application needs to access your phone accounts',
+      'cancelButton': 'Cancel',
+      'okButton': 'OK',
+    },
+  });
+
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CallKeep Example',
+      home: CallScreen(),
+    );
+  }
+}
+
+class CallScreen extends StatefulWidget {
+  @override
+  _CallScreenState createState() => _CallScreenState();
+}
+
+class _CallScreenState extends State<CallScreen> {
+  // Call UUID to identify the call
+  String callUUID = '12345';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Listen for incoming calls
+    CallKeep.onCallReceived.listen((event) {
+      // Display incoming call UI
+      CallKeep.displayIncomingCall(callUUID, 'Caller Name', 'caller_number', false);
+    });
+
+    // Listen for call ended events
+    CallKeep.onCallEnded.listen((event) {
+      // Handle call ended
+      print('Call ended: ${event['callUUID']}');
+    });
+  }
+
+  // Function to start a call
+  void startCall() {
+    CallKeep.startCall(callUUID, 'Caller Name', 'caller_number', false);
+  }
+
+  // Function to end a call
+  void endCall() {
+    CallKeep.endCall(callUUID);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('CallKeep Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: startCall,
+              child: Text('Start Call'),
+            ),
+            ElevatedButton(
+              onPressed: endCall,
+              child: Text('End Call'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app initializes CallKeep with necessary configurations for both iOS and Android.
+// 2. The main screen (CallScreen) listens for incoming calls and displays the incoming call UI when a call is received.
+// 3. The user can start a call by pressing the "Start Call" button, which triggers the CallKeep.startCall method.
+// 4. The user can end the call by pressing the "End Call" button, which triggers the CallKeep.endCall method.
+// 5. The app also listens for call ended events and prints a message when a call ends.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the CallKeep Flutter package, including its description, setup tutorial, and a complete example. The example demonstrates how to manage VoIP calls effectively, providing a clear flow of how the application operates. By following these steps, you can integrate CallKeep into your Flutter application and enhance your VoIP capabilities.

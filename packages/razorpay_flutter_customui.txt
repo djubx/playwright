@@ -1,0 +1,265 @@
+Here's a detailed technical blog on the `razorpay_flutter_customui` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Razorpay Flutter Custom UI Package
+
+The `razorpay_flutter_customui` package is a powerful tool for integrating Razorpay's payment gateway into Flutter applications with a customizable user interface. This package allows developers to create a seamless payment experience tailored to their application's design and user experience requirements.
+
+## When to Use This Package
+
+You should consider using the `razorpay_flutter_customui` package when:
+- You need to integrate a payment gateway into your Flutter application.
+- You want to provide a customized payment experience that aligns with your app's branding.
+- You require support for multiple payment methods, including credit/debit cards, net banking, UPI, and wallets.
+
+## Features
+
+- **Customizable UI**: Allows developers to create a payment interface that matches their app's design.
+- **Multiple Payment Options**: Supports various payment methods, enhancing user convenience.
+- **Easy Integration**: Simplifies the process of integrating Razorpay into Flutter applications.
+- **Real-time Payment Status**: Provides updates on payment status, allowing for a responsive user experience.
+
+With these features, the `razorpay_flutter_customui` package is an excellent choice for developers looking to implement a robust payment solution in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up Razorpay Flutter Custom UI
+
+In this tutorial, we will walk through the setup process for the `razorpay_flutter_customui` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `razorpay_flutter_customui` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  razorpay_flutter_customui: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/razorpay_flutter_customui).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Add the following permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+2. Ensure your iOS deployment target is set to at least 10.0 in `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Initialize Razorpay
+
+In your Flutter application, you need to initialize Razorpay. Here’s how you can do it:
+
+```dart
+import 'package:razorpay_flutter_customui/razorpay_flutter_customui.dart';
+
+class RealFlutter {
+  Razorpay _razorpay;
+
+  void initRazorpay() {
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWallet);
+  }
+
+  void handlePaymentSuccess(PaymentSuccessResponse response) {
+    // Handle successful payment here
+  }
+
+  void handlePaymentError(PaymentFailureResponse response) {
+    // Handle payment failure here
+  }
+
+  void handleExternalWallet(ExternalWalletResponse response) {
+    // Handle external wallet here
+  }
+}
+```
+
+## Step 4: Create Payment Options
+
+You can create a payment option using the following code:
+
+```dart
+void openCheckout() async {
+  var options = {
+    'key': 'YOUR_RAZORPAY_KEY',
+    'amount': 100, // Amount in paise
+    'name': 'Your App Name',
+    'description': 'Payment for Order #1234',
+    'prefill': {
+      'contact': '9999999999',
+      'email': 'test@razorpay.com',
+    },
+    'external': {
+      'wallets': ['paytm']
+    }
+  };
+
+  try {
+    _razorpay.open(options);
+  } catch (e) {
+    print(e);
+  }
+}
+```
+
+## Step 5: Clean Up
+
+Don’t forget to dispose of the Razorpay instance when it’s no longer needed:
+
+```dart
+void dispose() {
+  _razorpay.clear();
+}
+```
+
+With these steps, you have successfully set up the `razorpay_flutter_customui` package in your Flutter application!
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Razorpay Flutter Custom UI
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:razorpay_flutter_customui/razorpay_flutter_customui.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  Razorpay _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+    initRazorpay(); // Initialize Razorpay
+  }
+
+  void initRazorpay() {
+    _razorpay = Razorpay();
+    // Set up event listeners for payment events
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWallet);
+  }
+
+  void handlePaymentSuccess(PaymentSuccessResponse response) {
+    // Handle successful payment here
+    print("Payment Successful: ${response.paymentId}");
+    // Show success message to the user
+  }
+
+  void handlePaymentError(PaymentFailureResponse response) {
+    // Handle payment failure here
+    print("Payment Failed: ${response.code} - ${response.message}");
+    // Show error message to the user
+  }
+
+  void handleExternalWallet(ExternalWalletResponse response) {
+    // Handle external wallet here
+    print("External Wallet: ${response.walletName}");
+  }
+
+  void openCheckout() async {
+    var options = {
+      'key': 'YOUR_RAZORPAY_KEY', // Replace with your Razorpay key
+      'amount': 100, // Amount in paise
+      'name': 'Your App Name',
+      'description': 'Payment for Order #1234',
+      'prefill': {
+        'contact': '9999999999',
+        'email': 'test@razorpay.com',
+      },
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+
+    try {
+      _razorpay.open(options); // Open Razorpay checkout
+    } catch (e) {
+      print(e); // Handle any errors
+    }
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear(); // Clean up Razorpay instance
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Razorpay Flutter Custom UI')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: openCheckout, // Trigger payment on button press
+            child: Text('Pay Now'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(RealFlutter()); // Run the app
+}
+```
+
+### Application Flow Explanation
+
+```
+// The application starts with the main function, which runs the RealFlutter widget.
+// In the RealFlutter widget, we initialize Razorpay in the initState method.
+// We set up event listeners for payment success, failure, and external wallet events.
+// When the user presses the "Pay Now" button, the openCheckout method is called.
+// This method prepares the payment options and opens the Razorpay checkout interface.
+// If the payment is successful, handlePaymentSuccess is called, where we can process the payment ID.
+// If the payment fails, handlePaymentError is called, allowing us to handle the error appropriately.
+// Finally, we clean up the Razorpay instance in the dispose method to prevent memory leaks.
+```
+
+In this example, we have demonstrated how to integrate the `razorpay_flutter_customui` package into a Flutter application, providing a complete flow from initialization to handling payment events. This setup allows for a customizable payment experience that can be tailored to fit the needs of your application.

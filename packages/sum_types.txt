@@ -1,0 +1,217 @@
+<-- START_DESCRIPTION -->
+
+**Introduction to sum_types Flutter Package**
+=============================================
+
+The `sum_types` package is a powerful tool for working with sum types in Flutter. Sum types, also known as tagged unions or variant types, are a way of representing a value that can be one of several different types. This package provides a simple and efficient way to work with sum types in Flutter, making it easier to write robust and maintainable code.
+
+**When to Use sum_types**
+-------------------------
+
+You should use `sum_types` when you need to represent a value that can be one of several different types. For example, you might use `sum_types` to represent a network response that can be either a success or a failure, or to represent a user's status as either online or offline.
+
+**Features of sum_types**
+-------------------------
+
+The `sum_types` package has several key features:
+
+*   **Simple and Efficient**: The `sum_types` package is designed to be simple and efficient, making it easy to use and understand.
+*   **Robust and Maintainable**: The `sum_types` package is designed to help you write robust and maintainable code, by making it easy to represent complex data types in a clear and concise way.
+*   **Flexible**: The `sum_types` package is highly flexible, allowing you to define your own custom sum types and use them in your code.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setting Up sum_types**
+-------------------------
+
+To use `sum_types` in your Flutter project, you'll need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  sum_types: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+**Using sum_types**
+-------------------
+
+To use `sum_types`, you'll need to import it into your Dart file:
+
+```dart
+import 'package:sum_types/sum_types.dart';
+```
+
+Then, you can define your own custom sum types using the `SumType` class:
+
+```dart
+class RealFlutter extends SumType {
+  const RealFlutter._();
+
+  const factory RealFlutter.success(String message) = _Success;
+  const factory RealFlutter.failure(String error) = _Failure;
+
+  T when<T>({
+    required T Function(String message) success,
+    required T Function(String error) failure,
+  }) =>
+      when(
+        success: success,
+        failure: failure,
+      );
+}
+
+class _Success extends RealFlutter {
+  const _Success(this.message);
+
+  final String message;
+
+  @override
+  T when<T>({
+    required T Function(String message) success,
+    required T Function(String error) failure,
+  }) =>
+      success(message);
+}
+
+class _Failure extends RealFlutter {
+  const _Failure(this.error);
+
+  final String error;
+
+  @override
+  T when<T>({
+    required T Function(String message) success,
+    required T Function(String error) failure,
+  }) =>
+      failure(error);
+}
+```
+
+In this example, we've defined a custom sum type called `RealFlutter` that can be either a success or a failure. We've also defined two factories, `success` and `failure`, that create instances of `RealFlutter` with the corresponding type.
+
+**Platform-Specific Details**
+-----------------------------
+
+The `sum_types` package works on all platforms supported by Flutter, including Android and iOS. However, you may need to configure your project settings to use the package on certain platforms.
+
+For example, on Android, you may need to add the following configuration to your `android/app/build.gradle` file:
+
+```groovy
+android {
+  // ...
+  buildTypes {
+    release {
+      // ...
+      ndk {
+        abiFilters "armeabi-v7l", "arm64-v8a", "x86", "x86_64"
+      }
+    }
+  }
+}
+```
+
+Similarly, on iOS, you may need to add the following configuration to your `ios/Podfile` file:
+
+```ruby
+target 'Runner' do
+  # ...
+  pod 'sum_types', :path => '../.symlinks/plugins/sum_types/ios'
+end
+```
+
+**Optimizations**
+-----------------
+
+To get the best performance out of the `sum_types` package, you can use the following optimizations:
+
+*   Use the `const` keyword to create compile-time constants whenever possible.
+*   Avoid using the `new` keyword to create instances of sum types. Instead, use the factories provided by the package.
+*   Use the `when` method to pattern-match on sum types, rather than using explicit type checks.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sum_types/sum_types.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sum Types Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  RealFlutter _result = RealFlutter.success('Initial success');
+
+  void _updateResult() {
+    setState(() {
+      _result = RealFlutter.failure('Error occurred');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sum Types Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _result.when(
+                success: (message) => 'Success: $message',
+                failure: (error) => 'Failure: $error',
+              ),
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _updateResult,
+              child: Text('Update Result'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user runs the app and sees the initial success message.
+// 2. The user clicks the "Update Result" button, which updates the result to a failure.
+// 3. The user sees the failure message displayed on the screen.
+// 4. The user can click the "Update Result" button again to update the result to a success.
+// 5. The user sees the success message displayed on the screen again.
+
+// The sum types package is used to represent the result as either a success or a failure.
+// The RealFlutter class is defined as a sum type with two cases: success and failure.
+// The _result variable is initialized to a success case with the message "Initial success".
+// The _updateResult function updates the _result variable to a failure case with the message "Error occurred".
+// The Text widget displays the result message using the when method to pattern-match on the sum type.
+// The ElevatedButton widget calls the _updateResult function when clicked.
+```
+
+<-- END_MAIN -->

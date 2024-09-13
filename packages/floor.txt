@@ -1,0 +1,233 @@
+<-- START_DESCRIPTION -->
+
+The "floor" Flutter package is a SQLite ORM (Object-Relational Mapping) library that simplifies the process of interacting with a SQLite database in Flutter applications. It provides a simple and intuitive API for defining database entities, performing CRUD (Create, Read, Update, Delete) operations, and executing queries.
+
+With floor, you can define your database schema using Dart classes, and the library will take care of creating and managing the underlying SQLite database. This approach allows you to focus on writing application logic instead of worrying about the complexities of database management.
+
+Some key features of the floor package include:
+
+*   Support for defining database entities using Dart classes
+*   Automatic creation and management of the SQLite database
+*   Simple and intuitive API for performing CRUD operations
+*   Support for executing queries and retrieving data
+
+When to use floor:
+
+*   When you need to store and manage data locally in your Flutter application
+*   When you want to simplify the process of interacting with a SQLite database
+*   When you need a robust and scalable solution for managing data in your application
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+To use the floor package in your Flutter application, follow these steps:
+
+1.  Add the floor package to your `pubspec.yaml` file:
+
+    ```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  floor: ^1.2.0
+```
+
+2.  Run `flutter pub get` to install the package.
+
+3.  Import the floor package in your Dart file:
+
+    ```dart
+import 'package:floor/floor.dart';
+```
+
+4.  Define your database entities using Dart classes. For example:
+
+    ```dart
+@Entity(tableName: 'users')
+class User {
+  @PrimaryKey(autoGenerate: true)
+  int id;
+
+  String name;
+
+  String email;
+
+  User({this.id, this.name, this.email});
+}
+```
+
+5.  Create a database class that extends the `FloorDatabase` class:
+
+    ```dart
+@Database(version: 1, entities: [User])
+abstract class AppDatabase extends FloorDatabase {
+  AppDatabase();
+
+  Stream<List<User>> getUsers() {
+    return select(User).watch();
+  }
+
+  Future<void> addUser(User user) async {
+    await into(User).insert(user);
+  }
+
+  Future<void> updateUser(User user) async {
+    await update(User).replace(user);
+  }
+
+  Future<void> deleteUser(User user) async {
+    await delete(User).delete(user);
+  }
+}
+```
+
+6.  Initialize the database in your application:
+
+    ```dart
+void main() async {
+  final database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  final userDao = database.userDao;
+
+  runApp(MyApp(userDao));
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:floor/floor.dart';
+import 'package:floor_example/database.dart';
+
+void main() async {
+  final database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  final userDao = database.userDao;
+
+  runApp(MyApp(userDao));
+}
+
+class MyApp extends StatelessWidget {
+  final UserDao userDao;
+
+  MyApp(this.userDao);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Floor Example',
+      home: MyHomePage(userDao),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  final UserDao userDao;
+
+  MyHomePage(this.userDao);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Floor Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter an email';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState.validate()) {
+                    final user = User(
+                      name: _nameController.text,
+                      email: _emailController.text,
+                    );
+                    await widget.userDao.addUser(user);
+                    _nameController.clear();
+                    _emailController.clear();
+                  }
+                },
+                child: Text('Add User'),
+              ),
+              SizedBox(height: 16),
+              StreamBuilder<List<User>>(
+                stream: widget.userDao.getUsers(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        final user = snapshot.data[index];
+                        return ListTile(
+                          title: Text(user.name),
+                          subtitle: Text(user.email),
+                        );
+                      },
+                    );
+                  } else {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and is presented with a form to enter their name and email.
+// 2. The user submits the form, which validates the input data.
+// 3. If the data is valid, a new User object is created and added to the database using the UserDao.
+// 4. The user is then added to the list of users, which is displayed below the form.
+// 5. The user can continue to add new users, and the list will update in real-time.
+// 6. The database is updated automatically whenever a new user is added.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,236 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Paystack Client Package
+=====================================
+
+The `flutter_paystack_client` package is a Flutter library that provides a simple and convenient way to integrate Paystack payment gateway into your Flutter application. Paystack is a popular payment gateway in Africa that allows users to make payments using their credit/debit cards, bank accounts, and other payment methods.
+
+## When to Use This Package
+---------------------------
+
+You can use this package in the following scenarios:
+
+* When you want to accept payments from users in your Flutter application.
+* When you want to integrate Paystack payment gateway into your Flutter application.
+* When you want a simple and convenient way to handle payments in your Flutter application.
+
+## Features
+------------
+
+The `flutter_paystack_client` package provides the following features:
+
+* Support for multiple payment methods, including credit/debit cards, bank accounts, and other payment methods.
+* Support for one-time payments and recurring payments.
+* Support for payment verification and validation.
+* Simple and convenient API for integrating Paystack payment gateway into your Flutter application.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_paystack_client` package, you need to add it to your Flutter project's `pubspec.yaml` file. Here's how to do it:
+
+1. Open your Flutter project's `pubspec.yaml` file.
+2. Add the following line to the `dependencies` section:
+```yml
+flutter_paystack_client: ^1.0.0
+```
+3. Run `flutter pub get` to get the package.
+
+## Platform-Specific Details
+---------------------------
+
+### Android
+
+To use the `flutter_paystack_client` package on Android, you need to add the following lines to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+```
+### iOS
+
+To use the `flutter_paystack_client` package on iOS, you need to add the following lines to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+## Required Configurations
+-------------------------
+
+To use the `flutter_paystack_client` package, you need to configure the following:
+
+* Your Paystack API key.
+* Your Paystack API secret.
+
+You can configure these by calling the `PaystackClient` constructor and passing in your API key and API secret:
+```dart
+PaystackClient paystackClient = PaystackClient(
+  apiKey: 'YOUR_API_KEY',
+  apiSecret: 'YOUR_API_SECRET',
+);
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_paystack_client/flutter_paystack_client.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Paystack Client Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  // Create a Paystack client instance
+  PaystackClient _paystackClient = PaystackClient(
+    apiKey: 'YOUR_API_KEY',
+    apiSecret: 'YOUR_API_SECRET',
+  );
+
+  // Define a payment method
+  PaymentMethod _paymentMethod = PaymentMethod.card;
+
+  // Define a payment amount
+  int _paymentAmount = 1000;
+
+  // Define a payment reference
+  String _paymentReference = 'payment-reference';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Paystack Client Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Display a payment method dropdown
+            DropdownButton<PaymentMethod>(
+              value: _paymentMethod,
+              onChanged: (PaymentMethod value) {
+                setState(() {
+                  _paymentMethod = value;
+                });
+              },
+              items: [
+                DropdownMenuItem<PaymentMethod>(
+                  value: PaymentMethod.card,
+                  child: Text('Card'),
+                ),
+                DropdownMenuItem<PaymentMethod>(
+                  value: PaymentMethod.bank,
+                  child: Text('Bank'),
+                ),
+              ],
+            ),
+
+            // Display a payment amount field
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Payment Amount',
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (String value) {
+                setState(() {
+                  _paymentAmount = int.parse(value);
+                });
+              },
+            ),
+
+            // Display a payment reference field
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Payment Reference',
+              ),
+              onChanged: (String value) {
+                setState(() {
+                  _paymentReference = value;
+                });
+              },
+            ),
+
+            // Display a pay button
+            ElevatedButton(
+              onPressed: () async {
+                // Create a payment request
+                PaymentRequest paymentRequest = PaymentRequest(
+                  amount: _paymentAmount,
+                  reference: _paymentReference,
+                  paymentMethod: _paymentMethod,
+                );
+
+                // Initialize the payment request
+                await _paystackClient.initializePaymentRequest(
+                  paymentRequest: paymentRequest,
+                );
+
+                // Verify the payment request
+                bool paymentVerified = await _paystackClient.verifyPaymentRequest(
+                  paymentRequest: paymentRequest,
+                );
+
+                if (paymentVerified) {
+                  // Display a payment successful message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Payment successful!'),
+                    ),
+                  );
+                } else {
+                  // Display a payment failed message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Payment failed!'),
+                    ),
+                  );
+                }
+              },
+              child: Text('Pay'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user selects a payment method from the dropdown.
+// 2. The user enters a payment amount and reference.
+// 3. The user clicks the pay button.
+// 4. The application creates a payment request using the selected payment method, amount, and reference.
+// 5. The application initializes the payment request using the Paystack client.
+// 6. The application verifies the payment request using the Paystack client.
+// 7. If the payment is verified, the application displays a payment successful message.
+// 8. If the payment is not verified, the application displays a payment failed message.
+
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,157 @@
+<-- START_DESCRIPTION -->
+
+# Angel3 GraphQL Flutter Package
+=====================================
+
+The `angel3_graphql` package is a powerful tool for building GraphQL APIs in Flutter applications. It provides a simple and intuitive way to define GraphQL schemas, resolvers, and queries, making it easy to integrate GraphQL into your Flutter app.
+
+### When to Use This Package
+
+This package is ideal for building complex, data-driven applications that require a robust and scalable API. It's particularly well-suited for applications that involve real-time data updates, such as live scores, stock prices, or social media feeds.
+
+### Features
+
+* Define GraphQL schemas and resolvers using a simple, intuitive API
+* Support for queries, mutations, and subscriptions
+* Automatic generation of GraphQL schema documentation
+* Integration with Flutter's built-in `http` package for easy API requests
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `angel3_graphql` package, you'll need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  angel3_graphql: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Platform-Specific Configurations
+
+#### Android
+
+No additional configurations are required for Android.
+
+#### iOS
+
+To use the package on iOS, you'll need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+This allows the app to make HTTP requests to any domain.
+
+### Basic Usage
+
+To use the package, you'll need to create a `GraphQLSchema` instance and define your resolvers:
+
+```dart
+import 'package:angel3_graphql/angel3_graphql.dart';
+
+class RealFlutter {
+  final GraphQLSchema _schema;
+
+  RealFlutter(this._schema);
+
+  Future<String> query(String query) async {
+    final result = await _schema.query(query);
+    return result.data.toString();
+  }
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:angel3_graphql/angel3_graphql.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'GraphQL Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final RealFlutter _realFlutter = RealFlutter(
+    GraphQLSchema(
+      queryType: objectType(
+        'Query',
+        fields: [
+          field(
+            'hello',
+            graphQLString,
+            resolve: (context) => 'Hello, World!',
+          ),
+        ],
+      ),
+    ),
+  );
+
+  String _result = '';
+
+  Future<void> _query() async {
+    final result = await _realFlutter.query('query { hello }');
+    setState(() {
+      _result = result;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('GraphQL Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_result),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _query,
+              child: Text('Query'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user presses the "Query" button, which calls the `_query` function.
+// 2. The `_query` function calls the `query` method on the `RealFlutter` instance, passing in the GraphQL query string.
+// 3. The `query` method uses the `GraphQLSchema` instance to execute the query and retrieve the result.
+// 4. The result is then passed back to the `_query` function, which updates the UI with the result.
+// 5. The UI is updated by calling `setState` and updating the `_result` variable.
+```
+
+<-- END_MAIN -->

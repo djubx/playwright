@@ -1,0 +1,200 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Google Places Package
+================================
+
+The `flutter_google_places` package is a Flutter library that provides a simple and efficient way to integrate Google Places API into your Flutter application. This package allows you to search for places, get place details, and even provide autocomplete suggestions.
+
+## When to Use This Package
+---------------------------
+
+You can use this package in various scenarios, such as:
+
+*   Building a location-based application that requires users to search for specific places.
+*   Providing autocomplete suggestions for places as users type.
+*   Getting detailed information about a specific place, including its address, phone number, and reviews.
+
+## Features
+------------
+
+The `flutter_google_places` package provides the following features:
+
+*   **Place Search**: Search for places based on a query string.
+*   **Place Details**: Get detailed information about a specific place.
+*   **Autocomplete**: Provide autocomplete suggestions for places as users type.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_google_places` package, follow these steps:
+
+### Step 1: Add the Package to Your `pubspec.yaml` File
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_google_places: ^0.3.0
+```
+
+### Step 2: Import the Package in Your Dart File
+
+```dart
+import 'package:flutter_google_places/flutter_google_places.dart';
+```
+
+### Step 3: Set Up the Google Places API
+
+To use the Google Places API, you need to create a project in the Google Cloud Console and enable the Places API. You can find more information on how to do this in the [Google Places API documentation](https://developers.google.com/places/web-service/get-api-key).
+
+### Step 4: Set Up the API Key
+
+To use the Google Places API, you need to provide an API key. You can do this by adding the following code to your `AndroidManifest.xml` file (for Android) or your `Info.plist` file (for iOS):
+
+#### Android
+
+```xml
+<application>
+    ...
+    <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="YOUR_API_KEY" />
+</application>
+```
+
+#### iOS
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs access to location to work properly</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>This app needs access to location to work properly</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>This app needs access to location to work properly</string>
+<key>com.google.android.geo.API_KEY</key>
+<string>YOUR_API_KEY</string>
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:google_maps_webservice/places.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Google Places Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _formKey = GlobalKey<FormState>();
+  final _searchController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Google Places Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Search for a place',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter a search query';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (_formKey.currentState.validate()) {
+                    final prediction = await PlacesAutocomplete.show(
+                      context: context,
+                      apiKey: 'YOUR_API_KEY',
+                      mode: Mode.overlay,
+                      language: 'en',
+                      components: [
+                        Component(Component.country, 'us'),
+                      ],
+                    );
+
+                    if (prediction != null) {
+                      final place = await GoogleMapsPlaces(
+                        apiKey: 'YOUR_API_KEY',
+                        apiPath: 'https://maps.googleapis.com/maps/api',
+                      ).getDetailsByPlaceId(prediction.placeId);
+
+                      if (place != null) {
+                        final lat = place.result.geometry.location.lat;
+                        final lng = place.result.geometry.location.lng;
+
+                        // Use the place details as needed
+                        print('Place ID: ${place.result.placeId}');
+                        print('Place Name: ${place.result.name}');
+                        print('Place Address: ${place.result.formattedAddress}');
+                        print('Place Phone Number: ${place.result.internationalPhoneNumber}');
+                        print('Place Latitude: $lat');
+                        print('Place Longitude: $lng');
+                      }
+                    }
+                  }
+                },
+                child: Text('Search'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user enters a search query in the text field.
+// 2. The user clicks the "Search" button.
+// 3. The application validates the search query.
+// 4. If the query is valid, the application displays the autocomplete suggestions using the PlacesAutocomplete.show method.
+// 5. The user selects a place from the suggestions.
+// 6. The application retrieves the place details using the GoogleMapsPlaces.getDetailsByPlaceId method.
+// 7. The application prints the place details to the console.
+
+// Note: You should replace 'YOUR_API_KEY' with your actual Google Places API key.
+
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,212 @@
+Here's a detailed technical blog on the "currency_converter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Currency Converter Flutter Package
+
+The `currency_converter` Flutter package is a powerful tool designed to facilitate currency conversion in Flutter applications. It provides a simple and efficient way to convert amounts between different currencies using real-time exchange rates. This package is particularly useful for applications that deal with financial transactions, travel, e-commerce, or any scenario where currency conversion is necessary.
+
+## When to Use This Package
+- **E-commerce Applications**: To display prices in the user's local currency.
+- **Travel Apps**: To help users understand costs in their home currency while traveling.
+- **Financial Apps**: For users who need to convert currencies for investment or trading purposes.
+
+## Features
+- **Real-time Exchange Rates**: Fetches the latest exchange rates from a reliable source.
+- **Multiple Currency Support**: Supports a wide range of currencies.
+- **Easy Integration**: Simple API for quick implementation in Flutter apps.
+- **Customizable**: Allows developers to customize the conversion logic as needed.
+
+With these features, the `currency_converter` package is an essential tool for any Flutter developer looking to implement currency conversion functionality in their applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the Currency Converter Package
+
+In this tutorial, we will walk through the setup process for the `currency_converter` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, you need to add the `currency_converter` package to your `pubspec.yaml` file. Open your `pubspec.yaml` and add the following line under dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  currency_converter: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command in your terminal to install it:
+
+```bash
+flutter pub get
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS Configuration
+For iOS, you may need to add permissions in your `Info.plist` file if you are accessing the internet:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+
+Now that the package is set up, you can start using it in your Flutter application. Below is a simple example of how to implement currency conversion.
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:currency_converter/currency_converter.dart';
+```
+
+2. Create an instance of the `CurrencyConverter` class and use it to convert currencies.
+
+```dart
+void convertCurrency() async {
+  CurrencyConverter converter = CurrencyConverter();
+  double amount = 100.0; // Amount to convert
+  String fromCurrency = 'USD'; // Currency to convert from
+  String toCurrency = 'EUR'; // Currency to convert to
+
+  double convertedAmount = await converter.convert(amount, fromCurrency, toCurrency);
+  print('Converted Amount: $convertedAmount');
+}
+```
+
+With these steps, you can easily integrate the `currency_converter` package into your Flutter application and start converting currencies.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Currency Converter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:currency_converter/currency_converter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Currency Converter',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: CurrencyConverterScreen(),
+    );
+  }
+}
+
+class CurrencyConverterScreen extends StatefulWidget {
+  @override
+  _CurrencyConverterScreenState createState() => _CurrencyConverterScreenState();
+}
+
+class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
+  final CurrencyConverter _converter = CurrencyConverter();
+  double _amount = 0.0;
+  String _fromCurrency = 'USD';
+  String _toCurrency = 'EUR';
+  double _convertedAmount = 0.0;
+
+  // Function to convert currency
+  void _convertCurrency() async {
+    // Call the convert method from the CurrencyConverter instance
+    double result = await _converter.convert(_amount, _fromCurrency, _toCurrency);
+    setState(() {
+      _convertedAmount = result; // Update the converted amount
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Currency Converter'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                _amount = double.tryParse(value) ?? 0.0; // Parse input to double
+              },
+            ),
+            DropdownButton<String>(
+              value: _fromCurrency,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _fromCurrency = newValue!; // Update from currency
+                });
+              },
+              items: <String>['USD', 'EUR', 'GBP', 'INR']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            DropdownButton<String>(
+              value: _toCurrency,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _toCurrency = newValue!; // Update to currency
+                });
+              },
+              items: <String>['USD', 'EUR', 'GBP', 'INR']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            ElevatedButton(
+              onPressed: _convertCurrency, // Trigger currency conversion
+              child: Text('Convert'),
+            ),
+            Text('Converted Amount: $_convertedAmount'), // Display converted amount
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and theme, and sets CurrencyConverterScreen as the home.
+// 3. CurrencyConverterScreen is a stateful widget that manages the currency conversion logic.
+// 4. The user inputs an amount and selects currencies from dropdowns.
+// 5. When the "Convert" button is pressed, the _convertCurrency method is called.
+// 6. This method uses the CurrencyConverter instance to convert the amount and updates the UI with the converted amount.
+```
+<!-- END_MAIN -->
+
+In this blog, we covered the `currency_converter` Flutter package, including its description, setup tutorial, and a complete example. The provided code demonstrates how to create a simple currency converter application, allowing users to input an amount and select currencies for conversion. The application flow is clearly explained through comments, making it easy to understand how each part works together.

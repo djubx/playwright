@@ -1,0 +1,207 @@
+<-- START_DESCRIPTION -->
+
+# latlong_to_osgrid Flutter Package
+The `latlong_to_osgrid` Flutter package is a utility library that allows developers to convert latitude and longitude coordinates to Ordnance Survey (OS) grid references and vice versa. This package is particularly useful for applications that require mapping or geolocation functionality in the United Kingdom.
+
+## Key Features
+
+* Convert latitude and longitude coordinates to OS grid references
+* Convert OS grid references to latitude and longitude coordinates
+* Supports both OSGB36 and WGS84 coordinate systems
+
+## When to Use This Package
+
+This package is ideal for applications that require mapping or geolocation functionality in the United Kingdom, such as:
+
+* Hiking or outdoor activity apps
+* Location-based games
+* Mapping or navigation apps
+* Geocaching apps
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Usage
+
+## Step 1: Add the Package to Your Project
+
+Add the `latlong_to_osgrid` package to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  latlong_to_osgrid: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+## Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:latlong_to_osgrid/latlong_to_osgrid.dart';
+```
+## Step 3: Convert Latitude and Longitude to OS Grid Reference
+
+Use the `LatLongToOSGrid` class to convert latitude and longitude coordinates to an OS grid reference:
+```dart
+LatLongToOSGrid converter = LatLongToOSGrid();
+String osGridRef = converter.convertLatLongToOSGrid(51.5074, -0.1278);
+print(osGridRef); // Output: TQ 300 800
+```
+## Step 4: Convert OS Grid Reference to Latitude and Longitude
+
+Use the `OSGridToLatLong` class to convert an OS grid reference to latitude and longitude coordinates:
+```dart
+OSGridToLatLong converter = OSGridToLatLong();
+List<double> latLong = converter.convertOSGridToLatLong('TQ 300 800');
+print(latLong); // Output: [51.5074, -0.1278]
+```
+## Platform-Specific Details
+
+This package uses the `latlong2osgrid` library under the hood, which is a C++ library. Therefore, this package requires a platform-specific implementation for Android and iOS.
+
+For Android, this package uses the `android-ndk` to compile the C++ library.
+
+For iOS, this package uses the `swift- package-manager` to compile the C++ library.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:latlong_to_osgrid/latlong_to_osgrid.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'LatLong to OS Grid Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _formKey = GlobalKey<FormState>();
+  String _osGridRef = '';
+  double _latitude = 0;
+  double _longitude = 0;
+
+  void _convertLatLongToOSGrid() {
+    // Create an instance of the LatLongToOSGrid class
+    LatLongToOSGrid converter = LatLongToOSGrid();
+
+    // Convert the latitude and longitude to an OS grid reference
+    String osGridRef = converter.convertLatLongToOSGrid(_latitude, _longitude);
+
+    // Update the UI with the result
+    setState(() {
+      _osGridRef = osGridRef;
+    });
+  }
+
+  void _convertOSGridToLatLong() {
+    // Create an instance of the OSGridToLatLong class
+    OSGridToLatLong converter = OSGridToLatLong();
+
+    // Convert the OS grid reference to latitude and longitude
+    List<double> latLong = converter.convertOSGridToLatLong(_osGridRef);
+
+    // Update the UI with the result
+    setState(() {
+      _latitude = latLong[0];
+      _longitude = latLong[1];
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('LatLong to OS Grid Demo'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Latitude',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a latitude';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _latitude = double.parse(value!),
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Longitude',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a longitude';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _longitude = double.parse(value!),
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    _convertLatLongToOSGrid();
+                  }
+                },
+                child: Text('Convert to OS Grid'),
+              ),
+              SizedBox(height: 16),
+              Text('OS Grid Reference: $_osGridRef'),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  _convertOSGridToLatLong();
+                },
+                child: Text('Convert to LatLong'),
+              ),
+              SizedBox(height: 16),
+              Text('Latitude: $_latitude, Longitude: $_longitude'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user enters a latitude and longitude in the text fields.
+// 2. The user clicks the "Convert to OS Grid" button.
+// 3. The _convertLatLongToOSGrid function is called, which creates an instance of the LatLongToOSGrid class.
+// 4. The LatLongToOSGrid class converts the latitude and longitude to an OS grid reference.
+// 5. The OS grid reference is displayed on the screen.
+// 6. The user can then click the "Convert to LatLong" button to convert the OS grid reference back to a latitude and longitude.
+// 7. The _convertOSGridToLatLong function is called, which creates an instance of the OSGridToLatLong class.
+// 8. The OSGridToLatLong class converts the OS grid reference to a latitude and longitude.
+// 9. The latitude and longitude are displayed on the screen.
+
+<-- END_MAIN -->

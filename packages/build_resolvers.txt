@@ -1,0 +1,165 @@
+<-- START_DESCRIPTION -->
+
+**Build Resolvers Package: Simplifying Flutter App Configuration**
+===========================================================
+
+The `build_resolvers` package is a powerful tool for Flutter developers, designed to simplify the process of configuring and resolving dependencies in their applications. It provides a flexible and modular way to manage app configuration, making it easier to switch between different environments, such as development, testing, and production.
+
+**When to Use This Package**
+---------------------------
+
+You should consider using the `build_resolvers` package in the following scenarios:
+
+* You have multiple environments (e.g., dev, prod) with different configurations.
+* You need to switch between different API endpoints or databases.
+* You want to manage feature flags or toggle certain features on/off.
+
+**Key Features**
+----------------
+
+* Modular configuration management
+* Environment-specific configuration
+* Feature flag management
+* Support for multiple platforms (Android, iOS, Web)
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setting Up the Package**
+-------------------------
+
+To use the `build_resolvers` package, follow these steps:
+
+1. Add the package to your `pubspec.yaml` file:
+```yml
+dependencies:
+  build_resolvers: ^1.0.0
+```
+2. Run `flutter pub get` to install the package.
+3. Create a new file called `build_config.yaml` in the root of your project:
+```yml
+environments:
+  dev:
+    apiEndpoint: 'https://dev-api.example.com'
+  prod:
+    apiEndpoint: 'https://api.example.com'
+```
+4. In your `main.dart` file, import the package and create a new instance of the `BuildResolver` class:
+```dart
+import 'package:build_resolvers/build_resolvers.dart';
+
+void main() {
+  final buildResolver = BuildResolver(
+    config: BuildConfig.fromJson(
+      jsonDecode(File('build_config.yaml').readAsStringSync()),
+    ),
+  );
+  // ...
+}
+```
+**Platform-Specific Details**
+---------------------------
+
+For Android, you need to add the following configuration to your `android/app/build.gradle` file:
+```groovy
+android {
+  // ...
+  buildTypes {
+    release {
+      // ...
+      buildConfigField "String", "API_ENDPOINT", "\"https://api.example.com\""
+    }
+  }
+}
+```
+For iOS, you need to add the following configuration to your `ios/Runner/Info.plist` file:
+```xml
+<key>API_ENDPOINT</key>
+<string>https://api.example.com</string>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:build_resolvers/build_resolvers.dart';
+
+void main() {
+  // Create a new instance of the BuildResolver class
+  final buildResolver = BuildResolver(
+    config: BuildConfig.fromJson(
+      jsonDecode(File('build_config.yaml').readAsStringSync()),
+    ),
+  );
+
+  // Get the current environment
+  final environment = buildResolver.environment;
+
+  // Get the API endpoint for the current environment
+  final apiEndpoint = buildResolver.config.apiEndpoint;
+
+  // Create a new instance of the RealFlutter class
+  final realFlutter = RealFlutter(
+    title: 'Build Resolvers Example',
+    home: MyHomePage(
+      environment: environment,
+      apiEndpoint: apiEndpoint,
+    ),
+  );
+
+  // Run the app
+  runApp(realFlutter);
+}
+
+class RealFlutter extends StatelessWidget {
+  final String title;
+  final Widget home;
+
+  RealFlutter({required this.title, required this.home});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: title,
+      home: home,
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  final String environment;
+  final String apiEndpoint;
+
+  MyHomePage({required this.environment, required this.apiEndpoint});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Build Resolvers Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Environment: $environment'),
+            Text('API Endpoint: $apiEndpoint'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The app starts by creating a new instance of the BuildResolver class, which loads the configuration from the build_config.yaml file.
+// The BuildResolver class provides a way to get the current environment and the API endpoint for that environment.
+// The app then creates a new instance of the RealFlutter class, which is a StatelessWidget that wraps the MaterialApp.
+// The RealFlutter class takes the title and home widget as parameters, which are used to configure the MaterialApp.
+// The home widget is an instance of the MyHomePage class, which displays the current environment and API endpoint.
+// The app uses the BuildResolver class to get the current environment and API endpoint, and then passes these values to the MyHomePage class.
+// The MyHomePage class displays the environment and API endpoint in the center of the screen.
+
+<-- END_MAIN -->

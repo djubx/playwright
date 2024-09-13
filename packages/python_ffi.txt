@@ -1,0 +1,183 @@
+<-- START_DESCRIPTION -->
+
+**Python FFI Package Overview**
+================================
+
+The `python_ffi` package is a powerful tool for Flutter developers, allowing them to leverage the strengths of Python in their mobile applications. FFI stands for Foreign Function Interface, which enables communication between different programming languages. With `python_ffi`, you can execute Python code from your Flutter app, opening up a world of possibilities for data analysis, machine learning, and more.
+
+**When to Use `python_ffi`**
+---------------------------
+
+1.  **Data Analysis**: Use popular Python libraries like Pandas, NumPy, and SciPy for data analysis and processing.
+2.  **Machine Learning**: Leverage scikit-learn, TensorFlow, or PyTorch for machine learning tasks, such as model training and prediction.
+3.  **Automation**: Automate tasks using Python scripts and integrate them into your Flutter app.
+
+**Key Features**
+----------------
+
+*   Execute Python code from Flutter
+*   Pass data between Flutter and Python
+*   Support for Python 3.8 and later
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setting Up `python_ffi`**
+---------------------------
+
+### Step 1: Add the `python_ffi` Package
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  python_ffi: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Configure Platform-Specific Settings
+
+#### Android
+
+In your `android/app/build.gradle` file, add the following code:
+
+```groovy
+android {
+    // ...
+    packagingOptions {
+        exclude 'lib/arm64-v8a/libpython3.8.so'
+        exclude 'lib/armeabi-v7l/libpython3.8.so'
+        exclude 'lib/x86/libpython3.8.so'
+        exclude 'lib/x86_64/libpython3.8.so'
+    }
+}
+```
+
+#### iOS
+
+In your `ios/Podfile` file, add the following code:
+
+```ruby
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= []
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'PYTHON_FFI_EMBEDDED=1'
+    end
+  end
+end
+```
+
+### Step 3: Initialize the Python Interpreter
+
+Create a new file called `python_wrapper.dart` and add the following code:
+
+```dart
+import 'package:python_ffi/python_ffi.dart';
+
+class PythonWrapper {
+  static Future<void> init() async {
+    await PythonFFI.init();
+  }
+}
+```
+
+Call the `init` method in your `main` function before running the app:
+
+```dart
+void main() async {
+  await PythonWrapper.init();
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:python_ffi/python_ffi.dart';
+
+void main() async {
+  await PythonWrapper.init();
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Python FFI Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: PythonFFIDemo(),
+    );
+  }
+}
+
+class PythonFFIDemo extends StatefulWidget {
+  @override
+  _PythonFFIDemoState createState() => _PythonFFIDemoState();
+}
+
+class _PythonFFIDemoState extends State<PythonFFIDemo> {
+  String _result = '';
+
+  void _runPythonCode() async {
+    // Create a new Python scope
+    final scope = await PythonFFI.createScope();
+
+    // Execute Python code
+    final code = '''
+import math
+result = math.pi
+''';
+    await scope.exec(code);
+
+    // Get the result from the Python scope
+    final result = await scope.get('result');
+
+    // Update the UI with the result
+    setState(() {
+      _result = 'Result: $result';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Python FFI Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_result),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _runPythonCode,
+              child: Text('Run Python Code'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user clicks the "Run Python Code" button.
+// 2. The _runPythonCode function is called, which creates a new Python scope.
+// 3. The Python code is executed in the scope, calculating the value of pi.
+// 4. The result is retrieved from the Python scope and stored in the _result variable.
+// 5. The UI is updated with the result.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,165 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Mapbox Autocomplete Package
+=====================================
+
+The `flutter_mapbox_autocomplete` package is a Flutter library that provides a simple and efficient way to add Mapbox autocomplete functionality to your Flutter app. With this package, you can easily integrate Mapbox's powerful autocomplete API into your app, allowing users to quickly and accurately search for locations.
+
+### When to Use This Package
+
+This package is ideal for apps that require location-based search functionality, such as:
+
+* Ride-hailing apps
+* Food delivery apps
+* Travel apps
+* Real estate apps
+
+### Features
+
+* Simple and easy-to-use API
+* Supports both Android and iOS platforms
+* Customizable UI components
+* Handles network requests and parsing of autocomplete responses
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `flutter_mapbox_autocomplete` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec File
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter_mapbox_autocomplete: ^1.0.0
+```
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:flutter_mapbox_autocomplete/flutter_mapbox_autocomplete.dart';
+```
+### Step 3: Set Up Your Mapbox API Credentials
+
+Create a new file called `mapbox_api_credentials.dart` and add your Mapbox API credentials:
+```dart
+class MapboxApiCredentials {
+  static const String accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+  static const String apiKey = 'YOUR_MAPBOX_API_KEY';
+}
+```
+### Step 4: Initialize the Package
+
+Initialize the package in your `main` function:
+```dart
+void main() {
+  MapboxAutocomplete.initialize(
+    accessToken: MapboxApiCredentials.accessToken,
+    apiKey: MapboxApiCredentials.apiKey,
+  );
+  runApp(MyApp());
+}
+```
+### Platform-Specific Details
+
+* Android: Add the following line to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+* iOS: Add the following line to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_mapbox_autocomplete/flutter_mapbox_autocomplete.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _searchController = TextEditingController();
+  List<AutocompleteResult> _results = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Mapbox Autocomplete'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (query) async {
+                // Step 1: Get the autocomplete results
+                final results = await MapboxAutocomplete.getAutocomplete(
+                  query: query,
+                  country: 'us',
+                );
+
+                // Step 2: Update the UI with the results
+                setState(() {
+                  _results = results;
+                });
+              },
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _results.length,
+                itemBuilder: (context, index) {
+                  final result = _results[index];
+
+                  // Step 3: Display the result
+                  return ListTile(
+                    title: Text(result.placeName),
+                    subtitle: Text(result.address),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user types a query in the search field.
+// 2. The `onChanged` callback is called, which sends a request to the Mapbox API for autocomplete results.
+// 3. The results are received and stored in the `_results` list.
+// 4. The UI is updated to display the results.
+// 5. The user can select a result to view more information.
+
+void main() {
+  MapboxAutocomplete.initialize(
+    accessToken: MapboxApiCredentials.accessToken,
+    apiKey: MapboxApiCredentials.apiKey,
+  );
+  runApp(RealFlutter());
+}
+```
+
+<-- END_MAIN -->

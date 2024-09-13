@@ -1,0 +1,211 @@
+Here's a detailed technical blog on the "ferry_generator" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Description
+
+The `ferry_generator` package is a powerful tool for generating code that simplifies the process of working with GraphQL in Flutter applications. It provides a way to define your GraphQL queries and mutations in a type-safe manner, allowing developers to leverage the benefits of Dart's strong typing system. This package is particularly useful when building applications that require complex data interactions with a GraphQL backend.
+
+## When to Use `ferry_generator`
+
+You should consider using `ferry_generator` in scenarios such as:
+
+- **Building Flutter applications that interact with GraphQL APIs**: If your app needs to fetch, mutate, or subscribe to data from a GraphQL server, this package can streamline the process.
+- **Type safety**: When you want to ensure that your queries and mutations are type-checked at compile time, reducing runtime errors.
+- **Code generation**: If you prefer to write less boilerplate code and want to automate the generation of data models and query classes.
+
+## Features
+
+- **Type-safe GraphQL queries and mutations**: Automatically generates Dart classes for your GraphQL operations.
+- **Integration with the `ferry` package**: Works seamlessly with the `ferry` package for executing queries and managing state.
+- **Customizable code generation**: Allows for customization of the generated code to fit your project's needs.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial
+
+## Setup Process
+
+To get started with the `ferry_generator` package, follow these steps:
+
+### Step 1: Add Dependencies
+
+Add the following dependencies to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  ferry: ^0.7.0
+  ferry_generator: ^0.7.0
+  build_runner: ^2.0.0
+  json_serializable: ^6.0.0
+```
+
+### Step 2: Create GraphQL Schema
+
+You need to define your GraphQL schema. Create a file named `schema.graphql` in your project root and define your types, queries, and mutations.
+
+### Step 3: Create Queries and Mutations
+
+Create a directory named `graphql` and add your GraphQL queries and mutations in `.graphql` files. For example, create a file named `get_users.graphql`:
+
+```graphql
+query GetUsers {
+  users {
+    id
+    name
+    email
+  }
+}
+```
+
+### Step 4: Configure Code Generation
+
+In your `build.yaml` file, configure the `ferry_generator`:
+
+```yaml
+targets:
+  $default:
+    builders:
+      ferry_generator:
+        options:
+          schema: schema.graphql
+```
+
+### Step 5: Run Code Generation
+
+Run the following command to generate the necessary Dart files:
+
+```bash
+flutter pub run build_runner build
+```
+
+### Platform-Specific Details
+
+#### Android
+
+Ensure that your `android/app/build.gradle` file has the following configurations:
+
+```gradle
+android {
+    ...
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+```
+
+#### iOS
+
+For iOS, ensure that your `ios/Podfile` has the following:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Using the Package
+
+Once the setup is complete, you can start using the generated classes in your Flutter application. Import the generated files and use them to execute queries and mutations.
+
+```dart
+import 'package:ferry/ferry.dart';
+import 'package:your_project/graphql/get_users.data.gql.dart';
+import 'package:your_project/graphql/get_users.req.gql.dart';
+import 'package:your_project/graphql/get_users.var.gql.dart';
+```
+
+You can now create a `RealFlutter` class that utilizes these generated classes to fetch data from your GraphQL API.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:ferry/ferry.dart';
+import 'package:ferry_flutter/ferry_flutter.dart';
+import 'package:your_project/graphql/get_users.data.gql.dart';
+import 'package:your_project/graphql/get_users.req.gql.dart';
+import 'package:your_project/graphql/get_users.var.gql.dart';
+import 'package:your_project/graphql/schema.schema.gql.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Create a client to connect to the GraphQL server
+    final client = Client(
+      link: HttpLink('https://your-graphql-endpoint.com/graphql'),
+      cache: Cache(),
+    );
+
+    return MaterialApp(
+      title: 'Ferry Generator Example',
+      home: FerryProvider(
+        client: client,
+        child: UserListScreen(),
+      ),
+    );
+  }
+}
+
+class UserListScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Create a request for the GetUsers query
+    final request = GGetUsersReq((b) => b..vars = GGetUsersVars());
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('User List'),
+      ),
+      body: Query(
+        request: request,
+        builder: (result, {refetch, fetchMore}) {
+          // Check for loading state
+          if (result.isLoading) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          // Check for errors
+          if (result.hasErrors) {
+            return Center(child: Text('Error: ${result.errors}'));
+          }
+
+          // Extract user data from the result
+          final users = result.data?.users ?? [];
+
+          return ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final user = users[index];
+              return ListTile(
+                title: Text(user.name),
+                subtitle: Text(user.email),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function initializes the app and runs the RealFlutter widget.
+// 2. The RealFlutter widget creates a GraphQL client and sets up the MaterialApp.
+// 3. The UserListScreen widget is displayed as the home screen.
+// 4. Inside UserListScreen, a GraphQL query is created to fetch users.
+// 5. The Query widget listens for the request and handles loading, error, and data states.
+// 6. If data is available, it displays the list of users in a ListView.
+```
+
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the `ferry_generator` package, including its features, setup instructions, and a complete example of how to use it in a Flutter application. The code demonstrates how to create a simple user list application that fetches data from a GraphQL API, showcasing the power and ease of use of the `ferry_generator` package.

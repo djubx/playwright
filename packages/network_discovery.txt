@@ -1,0 +1,167 @@
+<-- START_DESCRIPTION -->
+
+# Network Discovery Flutter Package
+=====================================
+
+The `network_discovery` Flutter package allows you to discover devices on your local network. It provides a simple API to scan for devices and retrieve their IP addresses, names, and other relevant information.
+
+## When to Use This Package
+---------------------------
+
+This package is useful when you need to:
+
+* Discover devices on your local network, such as printers, routers, or other computers.
+* Retrieve IP addresses and names of devices on your network.
+* Implement network-based features in your Flutter app, such as file sharing or multiplayer gaming.
+
+## Features
+------------
+
+* Scan for devices on your local network.
+* Retrieve IP addresses, names, and other information about discovered devices.
+* Filter devices by type (e.g., only show printers).
+* Support for both Android and iOS platforms.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `network_discovery` package, follow these steps:
+
+### Step 1: Add the Package to Your `pubspec.yaml` File
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  network_discovery: ^0.1.2
+```
+
+### Step 2: Import the Package in Your Dart File
+
+```dart
+import 'package:network_discovery/network_discovery.dart';
+```
+
+### Step 3: Initialize the Package
+
+```dart
+void main() async {
+  await NetworkDiscovery.init();
+  runApp(MyApp());
+}
+```
+
+### Platform-Specific Details
+
+#### Android
+
+* Add the following permission to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+```
+* If you're targeting Android 10 (API level 29) or later, add the following permission:
+```xml
+<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+```
+
+#### iOS
+
+* Add the following lines to your `Info.plist` file:
+```xml
+<key>NSLocalNetworkUsageDescription</key>
+<string>This app needs access to your local network to discover devices.</string>
+```
+
+### Using the Package
+
+```dart
+void _scanForDevices() async {
+  final devices = await NetworkDiscovery.scan();
+  print(devices);
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:network_discovery/network_discovery.dart';
+
+void main() async {
+  await NetworkDiscovery.init();
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  List<Device> _devices = [];
+
+  void _scanForDevices() async {
+    // Initialize the package
+    await NetworkDiscovery.init();
+
+    // Scan for devices on the local network
+    final devices = await NetworkDiscovery.scan();
+
+    // Filter devices by type (e.g., only show printers)
+    final filteredDevices = devices.where((device) => device.type == 'printer').toList();
+
+    // Update the UI with the discovered devices
+    setState(() {
+      _devices = filteredDevices;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Network Discovery Example'),
+        ),
+        body: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _scanForDevices,
+              child: Text('Scan for Devices'),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _devices.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_devices[index].name),
+                    subtitle: Text(_devices[index].ipAddress),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user clicks the "Scan for Devices" button.
+// 2. The _scanForDevices function is called, which initializes the package and scans for devices on the local network.
+// 3. The discovered devices are filtered by type (e.g., only show printers).
+// 4. The UI is updated with the discovered devices.
+// 5. The user can view the list of discovered devices, including their names and IP addresses.
+
+// Final summary: This code demonstrates how to use the network_discovery package to scan for devices on a local network, filter devices by type, and update the UI with the discovered devices.
+
+```
+
+<-- END_MAIN -->

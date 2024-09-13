@@ -1,0 +1,176 @@
+<-- START_DESCRIPTION -->
+
+# CRDT Sync Flutter Package
+The `crdt_sync` Flutter package provides a Conflict-free Replicated Data Type (CRDT) synchronization mechanism for Flutter applications. CRDTs are data structures designed to be replicated across multiple nodes in a distributed system, ensuring strong eventual consistency without the need for a centralized authority.
+
+## When to Use
+Use the `crdt_sync` package when building distributed systems, such as:
+
+* Real-time collaboration tools
+* Distributed databases
+* Cloud-connected applications
+
+## Features
+
+* Conflict-free data synchronization
+* Support for multiple data types (e.g., counters, sets, maps)
+* Automatic conflict resolution
+* Platform-agnostic (works on Android, iOS, and web)
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the CRDT Sync Package
+
+## Step 1: Add the Package to Your Project
+Add the `crdt_sync` package to your `pubspec.yaml` file:
+```yml
+dependencies:
+  crdt_sync: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+## Step 2: Import the Package
+Import the `crdt_sync` package in your Dart file:
+```dart
+import 'package:crdt_sync/crdt_sync.dart';
+```
+## Step 3: Initialize the CRDT Sync Instance
+Create a new instance of the `CrdtSync` class, passing in a unique identifier for your application:
+```dart
+final crdtSync = CrdtSync('my_app_id');
+```
+## Platform-Specific Configurations
+
+### Android
+On Android, you need to add the following configuration to your `AndroidManifest.xml` file:
+```xml
+<application>
+  ...
+  <meta-data
+    android:name="crdt_sync.android.content_provider"
+    android:resource="@string/crdt_sync_content_provider" />
+</application>
+```
+Then, create a new file `res/values/crdt_sync_content_provider.xml` with the following content:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="crdt_sync_content_provider">com.example.my_app.CrdtSyncContentProvider</string>
+</resources>
+```
+### iOS
+On iOS, you need to add the following configuration to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:crdt_sync/crdt_sync.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CRDT Sync Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _crdtSync = CrdtSync('my_app_id');
+  int _counter = 0;
+
+  // Step 1: Initialize the CRDT sync instance
+  void _initCrdtSync() async {
+    await _crdtSync.init();
+  }
+
+  // Step 2: Create a new counter CRDT
+  void _createCounter() async {
+    final counter = await _crdtSync.createCounter('my_counter');
+    _counter = counter.value;
+  }
+
+  // Step 3: Increment the counter CRDT
+  void _incrementCounter() async {
+    final counter = await _crdtSync.getCounter('my_counter');
+    counter.increment();
+    _counter = counter.value;
+  }
+
+  // Step 4: Sync the CRDT with the server
+  void _syncCrdt() async {
+    await _crdtSync.sync();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('CRDT Sync Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Counter: $_counter',
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _initCrdtSync,
+              child: Text('Init CRDT Sync'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _createCounter,
+              child: Text('Create Counter'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _incrementCounter,
+              child: Text('Increment Counter'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _syncCrdt,
+              child: Text('Sync CRDT'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The app flow is as follows:
+// 1. The user initializes the CRDT sync instance by pressing the "Init CRDT Sync" button.
+// 2. The user creates a new counter CRDT by pressing the "Create Counter" button.
+// 3. The user increments the counter CRDT by pressing the "Increment Counter" button.
+// 4. The user syncs the CRDT with the server by pressing the "Sync CRDT" button.
+// The counter value is displayed on the screen and updated in real-time as the user interacts with the app.
+
+```
+
+<-- END_MAIN -->

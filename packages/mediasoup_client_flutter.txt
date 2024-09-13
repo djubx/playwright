@@ -1,0 +1,192 @@
+Here's a detailed technical blog on the `mediasoup_client_flutter` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Mediasoup Client Flutter Package
+
+The `mediasoup_client_flutter` package is a powerful library designed for real-time communication in Flutter applications. It serves as a client-side implementation of the Mediasoup project, which is a WebRTC SFU (Selective Forwarding Unit) that allows for efficient media streaming and handling in applications. This package is particularly useful for developers looking to build applications that require video conferencing, live streaming, or any form of real-time audio/video communication.
+
+## When to Use This Package
+
+You should consider using the `mediasoup_client_flutter` package in scenarios such as:
+
+- **Video Conferencing Applications**: When building applications that require multiple users to communicate via video and audio.
+- **Live Streaming Services**: For applications that need to stream live video content to multiple viewers.
+- **Real-Time Collaboration Tools**: When creating tools that require real-time interaction, such as online whiteboards or collaborative editing platforms.
+
+## Features
+
+- **Multi-User Support**: Allows multiple users to join a single session and communicate seamlessly.
+- **Adaptive Bitrate Streaming**: Automatically adjusts the quality of the media stream based on network conditions.
+- **Audio/Video Handling**: Provides robust handling of audio and video streams, including support for various codecs.
+- **Platform Compatibility**: Works on both Android and iOS, making it suitable for cross-platform applications.
+
+The `mediasoup_client_flutter` package is a comprehensive solution for developers looking to implement real-time communication features in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Mediasoup Client Flutter
+
+In this tutorial, we will walk through the setup process for the `mediasoup_client_flutter` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `mediasoup_client_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  mediasoup_client_flutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/mediasoup_client_flutter).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Permissions**: Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.CAMERA"/>
+   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+   ```
+
+2. **Minimum SDK Version**: Ensure your `build.gradle` file has a minimum SDK version of at least 21:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+### iOS Configuration
+
+1. **Permissions**: Open your `Info.plist` file located at `ios/Runner/Info.plist` and add the following entries:
+
+   ```xml
+   <key>NSCameraUsageDescription</key>
+   <string>We need access to your camera for video calls.</string>
+   <key>NSMicrophoneUsageDescription</key>
+   <string>We need access to your microphone for audio calls.</string>
+   ```
+
+## Step 3: Basic Usage
+
+Now that we have set up the package, let's create a simple Flutter application that uses the `mediasoup_client_flutter` package.
+
+1. **Import the Package**: In your Dart file, import the package:
+
+   ```dart
+   import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
+   ```
+
+2. **Initialize the Client**: Create an instance of the `RealFlutter` class and initialize the Mediasoup client.
+
+3. **Join a Room**: Implement functionality to join a room and handle media streams.
+
+This will be demonstrated in the complete example section below.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example: Mediasoup Client Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mediasoup Client Flutter',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late MediasoupClient _client; // Declare the Mediasoup client
+  late String _roomId; // Room ID for joining
+  late String _userId; // User ID for the session
+
+  @override
+  void initState() {
+    super.initState();
+    _client = MediasoupClient(); // Initialize the Mediasoup client
+    _roomId = "exampleRoom"; // Example room ID
+    _userId = "user123"; // Example user ID
+    _joinRoom(); // Call the method to join the room
+  }
+
+  // Method to join a room
+  Future<void> _joinRoom() async {
+    try {
+      // Connect to the Mediasoup server
+      await _client.connect('wss://your.mediasoup.server'); // Replace with your server URL
+
+      // Join the room
+      await _client.join(_roomId, _userId);
+
+      // Handle media streams
+      _client.on('streamAdded', (stream) {
+        // Handle the added stream (e.g., display video)
+        print('Stream added: ${stream.id}');
+      });
+    } catch (e) {
+      print('Error joining room: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Mediasoup Client Flutter'),
+      ),
+      body: Center(
+        child: Text('Joined Room: $_roomId'),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _client.disconnect(); // Clean up the client on dispose
+    super.dispose();
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main function, which runs the MyApp widget.
+// 2. MyApp sets up the MaterialApp and home widget as RealFlutter.
+// 3. In RealFlutter, the Mediasoup client is initialized in initState.
+// 4. The _joinRoom method is called to connect to the Mediasoup server and join a room.
+// 5. Upon successfully joining, the application listens for added streams and prints their IDs.
+// 6. The UI displays the current room ID.
+// 7. On dispose, the Mediasoup client is disconnected to clean up resources.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the `mediasoup_client_flutter` package, detailing its features, setup process, and a complete example of how to use it in a Flutter application. The provided code demonstrates how to initialize the Mediasoup client, join a room, and handle media streams effectively. This package is a robust solution for developers looking to implement real-time communication features in their applications.

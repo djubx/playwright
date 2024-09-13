@@ -1,0 +1,188 @@
+<-- START_DESCRIPTION -->
+
+# Reactive Image Picker Flutter Package
+=====================================
+
+The `reactive_image_picker` Flutter package provides a simple and efficient way to pick images from the device's gallery or camera. It is designed to work seamlessly with the BLoC (Business Logic Component) architecture, making it easy to integrate with your existing Flutter projects.
+
+### When to Use This Package
+
+This package is ideal for applications that require users to select images from their device's gallery or camera. It is particularly useful for social media, e-commerce, and photo editing apps.
+
+### Features
+
+*   Supports picking images from the device's gallery or camera
+*   Compatible with BLoC architecture
+*   Easy to integrate with existing Flutter projects
+*   Customizable image picker dialog
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial: Setting Up and Using the Reactive Image Picker Package
+=============================================================
+
+### Step 1: Add the Package to Your Project
+
+To use the `reactive_image_picker` package, you need to add it to your project's `pubspec.yaml` file. Open the file and add the following line under the `dependencies` section:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  reactive_image_picker: ^1.0.0
+```
+
+Then, run `flutter pub get` in your terminal to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:reactive_image_picker/reactive_image_picker.dart';
+```
+
+### Step 3: Create a BLoC
+
+Create a BLoC (Business Logic Component) to handle the image picking logic. You can use the `reactive_image_picker` package with any BLoC library, such as `flutter_bloc` or `bloc`.
+
+Here's an example using `flutter_bloc`:
+
+```dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reactive_image_picker/reactive_image_picker.dart';
+
+class ImagePickerBloc extends Bloc<ImagePickerEvent, ImagePickerState> {
+  ImagePickerBloc() : super(ImagePickerInitial()) {
+    on<ImagePickerPickImageEvent>((event, emit) async {
+      final image = await ReactiveImagePicker.pickImage();
+      emit(ImagePickerPickedImageState(image));
+    });
+  }
+}
+```
+
+### Step 4: Use the Image Picker
+
+To use the image picker, you need to create a widget that dispatches the `ImagePickerPickImageEvent` to the BLoC. Here's an example:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reactive_image_picker/reactive_image_picker.dart';
+
+class ImagePickerWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ImagePickerBloc, ImagePickerState>(
+      builder: (context, state) {
+        if (state is ImagePickerPickedImageState) {
+          return Image.file(state.image);
+        } else {
+          return ElevatedButton(
+            onPressed: () {
+              context.read<ImagePickerBloc>().add(ImagePickerPickImageEvent());
+            },
+            child: Text('Pick Image'),
+          );
+        }
+      },
+    );
+  }
+}
+```
+
+### Platform-Specific Details
+
+The `reactive_image_picker` package uses the `image_picker` package under the hood, which has some platform-specific requirements.
+
+For Android, you need to add the following permissions to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.CAMERA" />
+```
+
+For iOS, you need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs photo library access to pick images.</string>
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to take photos.</string>
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:reactive_image_picker/reactive_image_picker.dart';
+
+// Create a BLoC to handle the image picking logic
+class ImagePickerBloc extends Bloc<ImagePickerEvent, ImagePickerState> {
+  ImagePickerBloc() : super(ImagePickerInitial()) {
+    on<ImagePickerPickImageEvent>((event, emit) async {
+      // Use the ReactiveImagePicker to pick an image
+      final image = await ReactiveImagePicker.pickImage();
+      emit(ImagePickerPickedImageState(image));
+    });
+  }
+}
+
+// Create a widget that dispatches the ImagePickerPickImageEvent to the BLoC
+class ImagePickerWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ImagePickerBloc, ImagePickerState>(
+      builder: (context, state) {
+        if (state is ImagePickerPickedImageState) {
+          // Display the picked image
+          return Image.file(state.image);
+        } else {
+          // Display a button to pick an image
+          return ElevatedButton(
+            onPressed: () {
+              context.read<ImagePickerBloc>().add(ImagePickerPickImageEvent());
+            },
+            child: Text('Pick Image'),
+          );
+        }
+      },
+    );
+  }
+}
+
+// Create a main function to run the app
+void main() {
+  runApp(
+    // Create a MaterialApp with a home page
+    MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Reactive Image Picker Example'),
+        ),
+        body: Center(
+          child: // Create a BlocProvider to provide the ImagePickerBloc to the ImagePickerWidget
+              BlocProvider(
+            create: (context) => ImagePickerBloc(),
+            child: ImagePickerWidget(),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// The app starts by displaying a button to pick an image.
+// When the button is pressed, the ImagePickerPickImageEvent is dispatched to the BLoC.
+// The BLoC uses the ReactiveImagePicker to pick an image and emits the ImagePickerPickedImageState with the picked image.
+// The ImagePickerWidget displays the picked image.
+```
+
+<-- END_MAIN -->

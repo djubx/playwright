@@ -1,0 +1,245 @@
+Here's a detailed technical blog on the `gma_mediation_inmobi` Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# gma_mediation_inmobi Flutter Package
+
+The `gma_mediation_inmobi` package is a Flutter plugin designed to facilitate the integration of InMobi's mediation platform into Flutter applications. This package allows developers to manage ad mediation seamlessly, enabling them to serve ads from multiple ad networks through a single interface. 
+
+## When to Use This Package
+
+You should consider using the `gma_mediation_inmobi` package when:
+- You want to implement ad mediation in your Flutter app to maximize ad revenue.
+- You are looking for a unified solution to manage ads from various networks, including InMobi.
+- You need to optimize ad performance and fill rates by leveraging multiple ad sources.
+
+## Features
+
+- **Cross-Platform Support**: Works on both Android and iOS platforms.
+- **Easy Integration**: Simplifies the process of integrating InMobi mediation into your Flutter app.
+- **Ad Formats**: Supports various ad formats, including banner, interstitial, and rewarded ads.
+- **Event Handling**: Provides callbacks for ad events, allowing developers to respond to ad loading, display, and errors.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up gma_mediation_inmobi
+
+In this tutorial, we will walk through the setup process for the `gma_mediation_inmobi` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `gma_mediation_inmobi` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  gma_mediation_inmobi: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Add the necessary permissions and metadata in your `android/app/src/main/AndroidManifest.xml` file:
+
+```xml
+<manifest>
+    <application>
+        <!-- Add this metadata for InMobi -->
+        <meta-data
+            android:name="inmobi_sdk_app_id"
+            android:value="YOUR_INMOBI_APP_ID" />
+    </application>
+</manifest>
+```
+
+2. **Gradle Configuration**: Ensure your `android/build.gradle` file includes the required repositories:
+
+```groovy
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://maven.inmobi.com' }
+    }
+}
+```
+
+### iOS Configuration
+
+1. **Update Info.plist**: Add the necessary keys to your `ios/Runner/Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>InMobiAppId</key>
+<string>YOUR_INMOBI_APP_ID</string>
+```
+
+2. **CocoaPods**: Ensure you have the latest version of CocoaPods installed and run:
+
+```bash
+cd ios
+pod install
+```
+
+## Step 3: Initialize the Package
+
+In your main Dart file, initialize the `gma_mediation_inmobi` package:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:gma_mediation_inmobi/gma_mediation_inmobi.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'InMobi Mediation Demo',
+      home: AdScreen(),
+    );
+  }
+}
+```
+
+## Step 4: Implementing Ads
+
+Create a new widget to handle ad loading and display:
+
+```dart
+class AdScreen extends StatefulWidget {
+  @override
+  _AdScreenState createState() => _AdScreenState();
+}
+
+class _AdScreenState extends State<AdScreen> {
+  late InMobiInterstitialAd _interstitialAd;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterstitialAd();
+  }
+
+  void _loadInterstitialAd() {
+    _interstitialAd = InMobiInterstitialAd(
+      adUnitId: 'YOUR_AD_UNIT_ID',
+      listener: InMobiInterstitialAdListener(
+        onAdLoaded: (ad) {
+          print('Ad loaded');
+          _interstitialAd.show();
+        },
+        onAdFailedToLoad: (ad, error) {
+          print('Ad failed to load: $error');
+        },
+      ),
+    );
+    _interstitialAd.load();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('InMobi Mediation')),
+      body: Center(child: Text('Ad will be displayed shortly')),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of gma_mediation_inmobi
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:gma_mediation_inmobi/gma_mediation_inmobi.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'InMobi Mediation Demo',
+      home: AdScreen(),
+    );
+  }
+}
+
+class AdScreen extends StatefulWidget {
+  @override
+  _AdScreenState createState() => _AdScreenState();
+}
+
+class _AdScreenState extends State<AdScreen> {
+  late InMobiInterstitialAd _interstitialAd; // Declare the interstitial ad variable
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterstitialAd(); // Load the interstitial ad when the widget is initialized
+  }
+
+  void _loadInterstitialAd() {
+    // Initialize the interstitial ad with the ad unit ID and listener
+    _interstitialAd = InMobiInterstitialAd(
+      adUnitId: 'YOUR_AD_UNIT_ID', // Replace with your actual ad unit ID
+      listener: InMobiInterstitialAdListener(
+        onAdLoaded: (ad) {
+          print('Ad loaded'); // Log when the ad is successfully loaded
+          _interstitialAd.show(); // Show the ad once it's loaded
+        },
+        onAdFailedToLoad: (ad, error) {
+          print('Ad failed to load: $error'); // Log any errors during ad loading
+        },
+      ),
+    );
+    _interstitialAd.load(); // Load the ad
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd.dispose(); // Dispose of the ad when the widget is removed
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('InMobi Mediation')), // App bar title
+      body: Center(child: Text('Ad will be displayed shortly')), // Center text
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The AdScreen widget is displayed as the home screen.
+// 3. In the AdScreen's initState, the interstitial ad is loaded.
+// 4. When the ad is loaded, it is displayed immediately.
+// 5. If the ad fails to load, an error message is printed to the console.
+// 6. The ad is disposed of when the AdScreen widget is removed from the widget tree.
+```
+<!-- END_MAIN -->
+
+In summary, this blog provided a comprehensive overview of the `gma_mediation_inmobi` Flutter package, including its features, setup instructions, and a complete example demonstrating its usage. By following the steps outlined, developers can effectively integrate InMobi's mediation platform into their Flutter applications, optimizing ad performance and revenue.

@@ -1,0 +1,170 @@
+<-- START_DESCRIPTION -->
+
+# Simple Native Image Compress Package
+=====================================
+
+The `simple_native_image_compress` package is a Flutter library that provides a simple and efficient way to compress images on both Android and iOS platforms. This package is useful when you need to reduce the size of images in your Flutter app, such as when uploading images to a server or storing them locally.
+
+## Features
+
+*   Compress images using native libraries (Android: `BitmapFactory`, iOS: `ImageIO`)
+*   Supports compression of JPEG, PNG, and WebP images
+*   Allows for customizable compression quality
+*   Returns the compressed image as a `Uint8List`
+
+## When to Use
+
+*   When you need to reduce the size of images in your Flutter app
+*   When you want to compress images using native libraries for better performance
+*   When you need to customize the compression quality of images
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Usage
+================
+
+## Step 1: Add the Package to Your Pubspec.yaml File
+
+Add the following line to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  simple_native_image_compress: ^1.0.0
+```
+
+## Step 2: Import the Package in Your Dart File
+
+```dart
+import 'package:simple_native_image_compress/simple_native_image_compress.dart';
+```
+
+## Step 3: Compress an Image
+
+```dart
+Future<Uint8List> compressImage(Uint8List imageBytes) async {
+  final compressedBytes = await SimpleNativeImageCompress.compress(
+    imageBytes,
+    quality: 80, // Customize the compression quality (1-100)
+  );
+  return compressedBytes;
+}
+```
+
+## Platform-Specific Details
+
+### Android
+
+*   The `simple_native_image_compress` package uses the `BitmapFactory` library to compress images on Android.
+*   Make sure to add the following line to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```
+
+### iOS
+
+*   The `simple_native_image_compress` package uses the `ImageIO` library to compress images on iOS.
+*   Make sure to add the following line to your `Info.plist` file:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs access to your photo library to compress images.</string>
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:simple_native_image_compress/simple_native_image_compress.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Simple Native Image Compress Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  Uint8List _originalImageBytes;
+  Uint8List _compressedImageBytes;
+
+  Future<void> _selectImage() async {
+    // Select an image from the gallery
+    final imageBytes = await SimpleNativeImageCompress.selectImage();
+    setState(() {
+      _originalImageBytes = imageBytes;
+    });
+  }
+
+  Future<void> _compressImage() async {
+    // Compress the selected image
+    final compressedBytes = await SimpleNativeImageCompress.compress(
+      _originalImageBytes,
+      quality: 80, // Customize the compression quality (1-100)
+    );
+    setState(() {
+      _compressedImageBytes = compressedBytes;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Simple Native Image Compress Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            if (_originalImageBytes != null)
+              Image.memory(_originalImageBytes),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _selectImage,
+              child: Text('Select Image'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _compressImage,
+              child: Text('Compress Image'),
+            ),
+            SizedBox(height: 20),
+            if (_compressedImageBytes != null)
+              Image.memory(_compressedImageBytes),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user selects an image from the gallery using the `_selectImage` function.
+// 2. The selected image is displayed on the screen.
+// 3. The user clicks the "Compress Image" button to compress the selected image using the `_compressImage` function.
+// 4. The compressed image is displayed on the screen below the original image.
+// 5. The user can customize the compression quality by modifying the `quality` parameter in the `_compressImage` function.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,185 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Onestore Inapp Package
+=====================================
+
+The `flutter_onestore_inapp` package is a Flutter plugin that allows developers to integrate in-app purchases and subscriptions for both Android and iOS platforms. It provides a simple and unified API for handling in-app transactions, making it easier to monetize your Flutter app.
+
+## Features
+
+*   Supports in-app purchases and subscriptions for both Android and iOS
+*   Unified API for handling in-app transactions across platforms
+*   Simple and easy-to-use API for developers
+
+## When to Use
+
+This package is ideal for developers who want to integrate in-app purchases and subscriptions into their Flutter app. It's suitable for a wide range of applications, including games, productivity tools, and content-based apps.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+---------------------------
+
+To use the `flutter_onestore_inapp` package, follow these steps:
+
+### Step 1: Add the Package to Your Flutter Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_onestore_inapp: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Configure the Package for Android
+
+In your `AndroidManifest.xml` file, add the following permission:
+
+```xml
+<uses-permission android:name="com.android.vending.BILLING" />
+```
+
+### Step 3: Configure the Package for iOS
+
+In your `Info.plist` file, add the following key:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+### Step 4: Initialize the Package
+
+In your Dart code, import the package and initialize it:
+
+```dart
+import 'package:flutter_onestore_inapp/flutter_onestore_inapp.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterOnestoreInapp.init();
+  runApp(MyApp());
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_onestore_inapp/flutter_onestore_inapp.dart';
+
+void main() {
+  // Initialize the package
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterOnestoreInapp.init();
+
+  // Run the app
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // List of products
+  List<Product> _products = [];
+
+  // Current product
+  Product _currentProduct;
+
+  // Purchase status
+  String _purchaseStatus = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Load products
+    _loadProducts();
+  }
+
+  // Load products from the store
+  Future<void> _loadProducts() async {
+    // Get the list of products from the store
+    List<Product> products = await FlutterOnestoreInapp.getProducts(['product1', 'product2']);
+
+    // Update the state with the products
+    setState(() {
+      _products = products;
+    });
+  }
+
+  // Purchase a product
+  Future<void> _purchaseProduct() async {
+    // Purchase the current product
+    PurchaseResult result = await FlutterOnestoreInapp.purchase(_currentProduct);
+
+    // Update the state with the purchase status
+    setState(() {
+      _purchaseStatus = result.status.toString();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Real Flutter'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Product list
+              DropdownButton<Product>(
+                value: _currentProduct,
+                onChanged: (Product newValue) {
+                  setState(() {
+                    _currentProduct = newValue;
+                  });
+                },
+                items: _products.map((Product product) {
+                  return DropdownMenuItem<Product>(
+                    value: product,
+                    child: Text(product.name),
+                  );
+                }).toList(),
+              ),
+
+              // Purchase button
+              ElevatedButton(
+                onPressed: _purchaseProduct,
+                child: Text('Purchase'),
+              ),
+
+              // Purchase status
+              Text(_purchaseStatus),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. Initialize the package and load the products from the store.
+// 2. Display the list of products to the user.
+// 3. Allow the user to select a product to purchase.
+// 4. Purchase the selected product using the package.
+// 5. Display the purchase status to the user.
+```
+
+<-- END_MAIN -->

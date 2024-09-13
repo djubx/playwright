@@ -1,0 +1,185 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Midi Package Overview
+=====================================
+
+The `flutter_midi` package provides a simple and easy-to-use interface for working with MIDI in Flutter applications. MIDI (Musical Instrument Digital Interface) is a protocol that allows electronic musical instruments, computers, and other devices to communicate and control each other.
+
+### When to Use This Package
+
+This package is ideal for music-related applications, such as:
+
+* Music composition and editing apps
+* Virtual instruments and effects processors
+* MIDI controllers and interfaces
+* Music games and interactive experiences
+
+### Features
+
+The `flutter_midi` package provides the following features:
+
+* MIDI input and output
+* Support for multiple MIDI devices
+* MIDI message sending and receiving
+* MIDI note on and off events
+* MIDI control change events
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Flutter Midi Package
+=====================================
+
+To use the `flutter_midi` package, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec File
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter_midi: ^1.0.0
+```
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:flutter_midi/flutter_midi.dart';
+```
+### Step 3: Initialize the MIDI Engine
+
+Initialize the MIDI engine before using it:
+```dart
+void main() {
+  MidiEngine.instance.initialize();
+  runApp(MyApp());
+}
+```
+### Platform-Specific Details
+
+#### Android
+
+On Android, you need to add the following permissions to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.MIDI_OUTPUT" />
+<uses-permission android:name="android.permission.MIDI_INPUT" />
+```
+#### iOS
+
+On iOS, you need to add the following lines to your `Info.plist` file:
+```xml
+<key>NSMIDIOutput</key>
+<string>Yes</string>
+<key>NSMIDIInput</key>
+<string>Yes</string>
+```
+### Optimizations
+
+To optimize the performance of the MIDI engine, you can adjust the buffer size and the latency:
+```dart
+MidiEngine.instance.setBufferSize(1024);
+MidiEngine.instance.setLatency(10);
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_midi/flutter_midi.dart';
+
+void main() {
+  MidiEngine.instance.initialize();
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  MidiEngine _midiEngine;
+  List<MidiDevice> _devices = [];
+  int _selectedDeviceIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _midiEngine = MidiEngine.instance;
+    _midiEngine.onMidiMessageReceived.listen((message) {
+      print('Received MIDI message: $message');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Flutter MIDI Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('Select a MIDI device:'),
+              DropdownButton(
+                value: _selectedDeviceIndex,
+                items: _devices.map((device) {
+                  return DropdownMenuItem(
+                    child: Text(device.name),
+                    value: _devices.indexOf(device),
+                  );
+                }).toList(),
+                onChanged: (index) {
+                  setState(() {
+                    _selectedDeviceIndex = index;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_selectedDeviceIndex != -1) {
+                    _midiEngine.sendMidiMessage(
+                      _devices[_selectedDeviceIndex].id,
+                      MidiMessage.noteOn(60, 127),
+                    );
+                  }
+                },
+                child: Text('Send Note On'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_selectedDeviceIndex != -1) {
+                    _midiEngine.sendMidiMessage(
+                      _devices[_selectedDeviceIndex].id,
+                      MidiMessage.noteOff(60, 127),
+                    );
+                  }
+                },
+                child: Text('Send Note Off'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user selects a MIDI device from the dropdown menu.
+// 2. The user presses the "Send Note On" button to send a note on message to the selected device.
+// 3. The user presses the "Send Note Off" button to send a note off message to the selected device.
+// 4. The MIDI engine receives the messages and prints them to the console.
+// 5. The user can repeat steps 2-4 to send multiple messages to the device.
+
+// Summary:
+// This example demonstrates how to use the `flutter_midi` package to send and receive MIDI messages.
+// The user can select a MIDI device, send note on and off messages, and view the received messages in the console.
+```
+
+<-- END_MAIN -->

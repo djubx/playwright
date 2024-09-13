@@ -1,0 +1,181 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Aad Oauth Package
+================================
+
+The `flutter_aad_oauth` package is a Flutter library that provides an easy-to-use interface for authenticating with Azure Active Directory (AAD) using the OAuth 2.0 protocol. This package is ideal for building Flutter apps that require authentication with AAD, such as enterprise apps or apps that use Microsoft services.
+
+## Features
+
+* Supports authentication with AAD using the OAuth 2.0 protocol
+* Supports authorization code flow and implicit flow
+* Handles token refresh and caching
+* Provides a simple and easy-to-use API for authenticating and accessing protected resources
+
+## When to Use
+
+Use this package when building Flutter apps that require authentication with AAD, such as:
+
+* Enterprise apps that use AAD for single sign-on (SSO)
+* Apps that use Microsoft services, such as Microsoft Graph or Azure Storage
+* Apps that require access to protected resources, such as APIs or data storage
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Tutorial
+==========
+
+## Step 1: Add the Package to Your Flutter Project
+
+Add the `flutter_aad_oauth` package to your Flutter project by adding the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  flutter_aad_oauth: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+## Step 2: Configure the Package
+
+Configure the package by creating a new instance of the `FlutterAadOauth` class and passing in the required parameters:
+```dart
+import 'package:flutter_aad_oauth/flutter_aad_oauth.dart';
+
+void main() {
+  final aadOauth = FlutterAadOauth(
+    clientId: 'your_client_id',
+    tenantId: 'your_tenant_id',
+    redirectUri: 'your_redirect_uri',
+  );
+}
+```
+Replace `your_client_id`, `your_tenant_id`, and `your_redirect_uri` with the values from your AAD application registration.
+
+## Step 3: Authenticate the User
+
+Authenticate the user by calling the `login` method:
+```dart
+void _login() async {
+  final result = await aadOauth.login();
+  if (result != null) {
+    print('Access token: ${result.accessToken}');
+  } else {
+    print('Login failed');
+  }
+}
+```
+This will redirect the user to the AAD login page, where they can enter their credentials and authorize the app.
+
+## Step 4: Access Protected Resources
+
+Access protected resources by using the access token obtained in the previous step:
+```dart
+void _getProtectedResource() async {
+  final response = await http.get(
+    Uri.parse('https://graph.microsoft.com/v1.0/me'),
+    headers: {
+      'Authorization': 'Bearer ${result.accessToken}',
+    },
+  );
+  print('Response: ${response.body}');
+}
+```
+This will send a GET request to the Microsoft Graph API to retrieve the user's profile information.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_aad_oauth/flutter_aad_oauth.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Aad Oauth Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _aadOauth = FlutterAadOauth(
+    clientId: 'your_client_id',
+    tenantId: 'your_tenant_id',
+    redirectUri: 'your_redirect_uri',
+  );
+
+  String _accessToken = '';
+
+  void _login() async {
+    // 1. Login the user and obtain an access token
+    final result = await _aadOauth.login();
+    if (result != null) {
+      setState(() {
+        _accessToken = result.accessToken;
+      });
+    } else {
+      print('Login failed');
+    }
+  }
+
+  void _getProtectedResource() async {
+    // 2. Use the access token to access a protected resource
+    final response = await http.get(
+      Uri.parse('https://graph.microsoft.com/v1.0/me'),
+      headers: {
+        'Authorization': 'Bearer $_accessToken',
+      },
+    );
+    print('Response: ${response.body}');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Aad Oauth Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: _login,
+              child: Text('Login'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _getProtectedResource,
+              child: Text('Get Protected Resource'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application flow:
+// 1. The user clicks the "Login" button, which calls the _login method.
+// 2. The _login method redirects the user to the AAD login page, where they can enter their credentials and authorize the app.
+// 3. After authorization, the app receives an access token, which is stored in the _accessToken variable.
+// 4. The user clicks the "Get Protected Resource" button, which calls the _getProtectedResource method.
+// 5. The _getProtectedResource method uses the access token to send a GET request to the Microsoft Graph API to retrieve the user's profile information.
+// 6. The response from the API is printed to the console.
+
+```
+
+<-- END_MAIN -->

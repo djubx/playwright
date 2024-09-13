@@ -1,0 +1,164 @@
+<-- START_DESCRIPTION -->
+
+**Chopper Built Value Flutter Package**
+=====================================
+
+The `chopper_built_value` package is a powerful tool for building robust and scalable APIs in Flutter applications. It provides a simple and efficient way to generate boilerplate code for APIs, allowing developers to focus on writing business logic.
+
+**When to Use**
+---------------
+
+This package is ideal for large-scale applications that require a robust API infrastructure. It's particularly useful when working with complex data models, multiple API endpoints, and caching mechanisms.
+
+**Key Features**
+----------------
+
+*   Automatic generation of boilerplate code for APIs
+*   Support for complex data models and caching mechanisms
+*   Easy integration with existing Flutter projects
+*   Platform-agnostic, with support for both Android and iOS
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+**Setup and Configuration**
+-------------------------
+
+To use the `chopper_built_value` package, follow these steps:
+
+### Step 1: Add Dependencies
+
+Add the following dependencies to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  chopper: ^4.0.0
+  chopper_built_value: ^4.0.0
+  built_value: ^7.1.0
+```
+
+### Step 2: Generate Boilerplate Code
+
+Run the following command to generate the boilerplate code:
+
+```bash
+flutter pub run build_runner build
+```
+
+### Step 3: Configure API Endpoints
+
+Create a new file called `api.dart` and define your API endpoints:
+
+```dart
+import 'package:chopper/chopper.dart';
+import 'package:chopper_built_value/chopper_built_value.dart';
+
+part 'api.g.dart';
+
+@ChopperApi(baseUrl: '/api')
+abstract class RealFlutter extends ChopperService {
+  @Get(path: '/users')
+  Future<Response<List<User>>> getUsers();
+
+  static RealFlutter create([ChopperClient client]) => _$RealFlutter(client);
+}
+```
+
+### Step 4: Initialize API Client
+
+Create a new file called `main.dart` and initialize the API client:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:chopper/chopper.dart';
+import 'package:chopper_built_value/chopper_built_value.dart';
+import 'api.dart';
+
+void main() {
+  final client = ChopperClient(
+    baseUrl: 'https://api.example.com',
+    services: [
+      RealFlutter.create(),
+    ],
+  );
+
+  runApp(MyApp(client: client));
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:chopper/chopper.dart';
+import 'package:chopper_built_value/chopper_built_value.dart';
+import 'api.dart';
+
+void main() {
+  final client = ChopperClient(
+    baseUrl: 'https://api.example.com',
+    services: [
+      RealFlutter.create(),
+    ],
+  );
+
+  runApp(MyApp(client: client));
+}
+
+class MyApp extends StatelessWidget {
+  final ChopperClient client;
+
+  MyApp({required this.client});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Real Flutter',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Real Flutter'),
+        ),
+        body: FutureBuilder(
+          future: client.getService<RealFlutter>().getUsers(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data!.body!.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(snapshot.data!.body![index].name),
+                  );
+                },
+              );
+            } else {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user runs the app, which initializes the Chopper client with the API endpoint.
+// 2. The app uses the Chopper client to fetch the list of users from the API.
+// 3. The app displays a loading indicator while waiting for the API response.
+// 4. Once the API response is received, the app displays the list of users in a ListView.
+// 5. Each user is represented by a ListTile, which displays the user's name.
+```
+
+The code flows as follows:
+
+*   The `main` function initializes the Chopper client with the API endpoint and creates an instance of the `MyApp` widget.
+*   The `MyApp` widget uses the Chopper client to fetch the list of users from the API.
+*   The app displays a loading indicator while waiting for the API response.
+*   Once the API response is received, the app displays the list of users in a ListView.
+*   Each user is represented by a ListTile, which displays the user's name.
+
+<-- END_MAIN -->

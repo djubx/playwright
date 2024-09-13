@@ -1,0 +1,177 @@
+<-- START_DESCRIPTION -->
+
+# rx_bloc_test Flutter Package
+The rx_bloc_test package is a testing library for Flutter applications that utilize the BLoC (Business Logic Component) architecture. It provides a simple and efficient way to test BLoC-based applications by allowing developers to easily mock and verify the behavior of their BLoCs.
+
+## When to Use
+This package is ideal for testing Flutter applications that use the BLoC architecture. It can be used to test individual BLoCs, as well as the interactions between multiple BLoCs.
+
+## Features
+The rx_bloc_test package provides the following features:
+
+*   Mocking of BLoCs: Allows developers to easily mock the behavior of their BLoCs for testing purposes.
+*   Verification of BLoC behavior: Provides a way to verify that a BLoC behaves as expected in different scenarios.
+*   Testing of BLoC interactions: Enables testing of interactions between multiple BLoCs.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Usage
+To use the rx_bloc_test package, follow these steps:
+
+### Step 1: Add the Package to Your Project
+Add the rx_bloc_test package to your project by adding the following line to your pubspec.yaml file:
+
+```yml
+dependencies:
+  rx_bloc_test: ^1.0.0
+```
+
+Then, run `flutter pub get` to get the package.
+
+### Step 2: Import the Package
+Import the package in your test file:
+
+```dart
+import 'package:rx_bloc_test/rx_bloc_test.dart';
+```
+
+### Step 3: Create a Test
+Create a test for your BLoC using the `RxBlocTest` widget:
+
+```dart
+void main() {
+  testWidgets('MyBloc test', (tester) async {
+    // Create a mock BLoC
+    final myBloc = MockMyBloc();
+    
+    // Create a test widget
+    await tester.pumpWidget(
+      RxBlocTest(
+        bloc: myBloc,
+        child: MyWidget(),
+      ),
+    );
+    
+    // Verify the BLoC behavior
+    verify(() => myBloc.myEvent()).called(1);
+  });
+}
+```
+
+### Platform-Specific Details
+The rx_bloc_test package works on both Android and iOS platforms. However, there are some platform-specific details to consider:
+
+*   On Android, the `RxBlocTest` widget uses the `MaterialApp` widget to render the test widget. This means that you need to have the `material` package in your project.
+*   On iOS, the `RxBlocTest` widget uses the `CupertinoApp` widget to render the test widget. This means that you need to have the `cupertino` package in your project.
+
+### Configurations and Optimizations
+To optimize the performance of your tests, you can configure the `RxBlocTest` widget to use a specific `Bloc` instance for all tests. This can be done by providing a `Bloc` instance to the `RxBlocTest` constructor:
+
+```dart
+void main() {
+  final myBloc = MyBloc();
+  
+  testWidgets('MyBloc test', (tester) async {
+    await tester.pumpWidget(
+      RxBlocTest(
+        bloc: myBloc,
+        child: MyWidget(),
+      ),
+    );
+  });
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:rx_bloc_test/rx_bloc_test.dart';
+
+// Define a BLoC
+class RealFlutterBloc extends RxBloc {
+  // Define an event
+  Stream<void> get myEvent => _myEventController.stream;
+  final _myEventController = StreamController<void>.broadcast();
+  
+  // Define a state
+  Stream<String> get myState => _myStateController.stream;
+  final _myStateController = StreamController<String>.broadcast();
+  
+  // Define a method to handle the event
+  void onMyEvent() {
+    _myStateController.add('Hello, World!');
+  }
+  
+  // Dispose the BLoC
+  @override
+  void dispose() {
+    _myEventController.close();
+    _myStateController.close();
+    super.dispose();
+  }
+}
+
+void main() {
+  // Create a test widget
+  testWidgets('RealFlutterBloc test', (tester) async {
+    // Create a mock BLoC
+    final realFlutterBloc = RealFlutterBloc();
+    
+    // Create a test widget
+    await tester.pumpWidget(
+      RxBlocTest(
+        bloc: realFlutterBloc,
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: StreamBuilder(
+                stream: realFlutterBloc.myState,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(snapshot.data);
+                  } else {
+                    return Text('No data');
+                  }
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    
+    // Verify the BLoC behavior
+    expect(find.text('No data'), findsOneWidget);
+    
+    // Simulate an event
+    realFlutterBloc.onMyEvent();
+    await tester.pump();
+    
+    // Verify the BLoC behavior
+    expect(find.text('Hello, World!'), findsOneWidget);
+  });
+}
+
+// The application flow is as follows:
+// 1. The test widget is created with a mock BLoC.
+// 2. The test widget is rendered with the `RxBlocTest` widget.
+// 3. The BLoC behavior is verified by checking the initial state.
+// 4. An event is simulated by calling the `onMyEvent` method.
+// 5. The BLoC behavior is verified by checking the updated state.
+
+// The code flow is as follows:
+// 1. The `RealFlutterBloc` class is defined with an event and a state.
+// 2. The `onMyEvent` method is defined to handle the event.
+// 3. The `RxBlocTest` widget is used to render the test widget.
+// 4. The test widget is created with a mock BLoC.
+// 5. The BLoC behavior is verified by checking the initial state and the updated state.
+
+// In summary, this code tests the behavior of a BLoC by simulating an event and verifying the updated state.
+```
+
+<-- END_MAIN -->

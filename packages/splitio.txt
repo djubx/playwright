@@ -1,0 +1,221 @@
+Here's a detailed technical blog on the "splitio" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# SplitIO Flutter Package
+
+The SplitIO Flutter package is a powerful tool for feature flagging and experimentation in mobile applications. It allows developers to manage feature rollouts, A/B testing, and user segmentation effectively. By integrating SplitIO, developers can control the visibility of features in their applications based on user attributes, making it easier to test new functionalities and gather user feedback.
+
+## When to Use SplitIO
+
+- **Feature Flagging**: When you want to enable or disable features for specific users or groups without deploying new code.
+- **A/B Testing**: To test different versions of a feature with different user segments to determine which performs better.
+- **User Segmentation**: When you need to tailor the user experience based on user attributes or behaviors.
+
+## Key Features
+
+- **Real-time Updates**: Changes to feature flags can be made in real-time without requiring app updates.
+- **User Targeting**: Ability to target specific users or groups based on attributes.
+- **Analytics**: Built-in analytics to track feature usage and performance.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+
+The SplitIO package is essential for developers looking to enhance their applications' flexibility and responsiveness to user needs.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up SplitIO in Flutter
+
+In this tutorial, we will walk through the setup process for the SplitIO Flutter package and demonstrate how to use it effectively in your Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the SplitIO package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  splitio_flutter: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Add the necessary permissions in `AndroidManifest.xml` if required by your application.
+
+### iOS Configuration
+
+1. Open `ios/Runner/Info.plist` and add any necessary configurations, such as permissions or settings required by SplitIO.
+
+2. Ensure your iOS deployment target is set to at least 10.0 in `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Initialize SplitIO
+
+In your main application file, initialize the SplitIO SDK. Here’s how you can do it:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:splitio_flutter/splitio_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SplitIO Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late SplitIO _splitIO;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSplitIO();
+  }
+
+  void _initializeSplitIO() async {
+    // Initialize SplitIO with your SDK key
+    _splitIO = await SplitIO.init('YOUR_SDK_KEY');
+    // Fetch the feature flag value
+    var treatment = await _splitIO.getTreatment('user_id', 'feature_flag_key');
+    print('Treatment: $treatment');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SplitIO Example'),
+      ),
+      body: Center(
+        child: Text('Check console for feature flag treatment.'),
+      ),
+    );
+  }
+}
+```
+
+## Step 4: Using Feature Flags
+
+Once initialized, you can use feature flags in your application logic. The `getTreatment` method allows you to check the status of a feature flag for a specific user.
+
+## Summary
+
+In this tutorial, we covered how to set up the SplitIO Flutter package, including platform-specific configurations for Android and iOS. We also demonstrated how to initialize the SDK and fetch feature flag values.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of SplitIO in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:splitio_flutter/splitio_flutter.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SplitIO Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late SplitIO _splitIO; // Declare SplitIO instance
+  String _treatment = 'loading'; // Variable to hold treatment value
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSplitIO(); // Initialize SplitIO on app start
+  }
+
+  void _initializeSplitIO() async {
+    // Initialize SplitIO with your SDK key
+    _splitIO = await SplitIO.init('YOUR_SDK_KEY');
+    // Fetch the feature flag value for a specific user
+    var treatment = await _splitIO.getTreatment('user_id', 'feature_flag_key');
+    setState(() {
+      _treatment = treatment; // Update state with treatment value
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SplitIO Example'),
+      ),
+      body: Center(
+        child: _buildContent(), // Build content based on treatment
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    // Display different content based on the treatment value
+    if (_treatment == 'on') {
+      return Text('Feature is ON!'); // Feature enabled
+    } else if (_treatment == 'off') {
+      return Text('Feature is OFF!'); // Feature disabled
+    } else {
+      return CircularProgressIndicator(); // Loading state
+    }
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds the MaterialApp and sets HomeScreen as the home widget.
+// 3. HomeScreen initializes the SplitIO SDK in initState.
+// 4. The SDK fetches the treatment value for the specified user and feature flag.
+// 5. The treatment value is stored in the _treatment variable and the UI is updated.
+// 6. The UI displays different content based on the treatment value: 
+//    - If 'on', it shows "Feature is ON!"
+//    - If 'off', it shows "Feature is OFF!"
+//    - If loading, it shows a CircularProgressIndicator.
+```
+
+<!-- END_MAIN -->
+
+This blog provides a comprehensive overview of the SplitIO Flutter package, including its features, setup instructions, and a complete example demonstrating its usage. By following this guide, developers can effectively implement feature flagging and A/B testing in their Flutter applications.

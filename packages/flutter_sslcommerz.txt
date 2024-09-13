@@ -1,0 +1,288 @@
+<-- START_DESCRIPTION -->
+# Flutter SSLCommerz Package
+================================
+
+The `flutter_sslcommerz` package is a Flutter plugin that allows developers to integrate SSLCommerz payment gateway into their Flutter applications. SSLCommerz is a popular payment gateway in South Asia, particularly in Bangladesh, India, and Pakistan.
+
+## When to Use
+--------------
+
+Use this package when you need to integrate a payment gateway into your Flutter application that supports multiple payment methods, including credit/debit cards, mobile payments, and internet banking.
+
+## Features
+------------
+
+*   Supports multiple payment methods, including credit/debit cards, mobile payments, and internet banking
+*   Easy integration with Flutter applications
+*   Secure payment processing using SSLCommerz payment gateway
+*   Supports both Android and iOS platforms
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+# Tutorial
+==========
+
+## Step 1: Add the Package to Your Flutter Project
+------------------------------------------------
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_sslcommerz: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Step 2: Import the Package
+---------------------------
+
+Import the package in your Dart file:
+
+```dart
+import 'package:flutter_sslcommerz/flutter_sslcommerz.dart';
+```
+
+## Step 3: Initialize the Payment Gateway
+-----------------------------------------
+
+Initialize the payment gateway using your SSLCommerz store ID and password:
+
+```dart
+SSLCommerz sslCommerz = SSLCommerz(
+  storeId: 'your_store_id',
+  password: 'your_password',
+);
+```
+
+## Step 4: Create a Payment Request
+----------------------------------
+
+Create a payment request using the `createPaymentRequest` method:
+
+```dart
+PaymentRequest paymentRequest = sslCommerz.createPaymentRequest(
+  amount: 100,
+  currency: 'BDT',
+  productCategory: 'Test Product',
+);
+```
+
+## Step 5: Handle Payment Response
+---------------------------------
+
+Handle the payment response using the `handlePaymentResponse` method:
+
+```dart
+sslCommerz.handlePaymentResponse(
+  paymentRequest,
+  (paymentResponse) {
+    if (paymentResponse.status == 'VALID') {
+      // Payment successful
+    } else {
+      // Payment failed
+    }
+  },
+);
+```
+
+### Platform-Specific Details
+
+#### Android
+
+Add the following code to your `AndroidManifest.xml` file:
+
+```xml
+<application
+  ...
+  android:usesCleartextTraffic="true"
+  ...
+>
+```
+
+#### iOS
+
+Add the following code to your `Info.plist` file:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_sslcommerz/flutter_sslcommerz.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SSLCommerz Payment Gateway',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final _formKey = GlobalKey<FormState>();
+  String _amount = '';
+  String _currency = '';
+  String _productCategory = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SSLCommerz Payment Gateway'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter amount';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _amount = value,
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Currency',
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter currency';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _currency = value,
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Product Category',
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter product category';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _productCategory = value,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    _makePayment();
+                  }
+                },
+                child: Text('Make Payment'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _makePayment() async {
+    // Create SSLCommerz instance
+    SSLCommerz sslCommerz = SSLCommerz(
+      storeId: 'your_store_id',
+      password: 'your_password',
+    );
+
+    // Create payment request
+    PaymentRequest paymentRequest = sslCommerz.createPaymentRequest(
+      amount: double.parse(_amount),
+      currency: _currency,
+      productCategory: _productCategory,
+    );
+
+    // Handle payment response
+    sslCommerz.handlePaymentResponse(
+      paymentRequest,
+      (paymentResponse) {
+        if (paymentResponse.status == 'VALID') {
+          // Payment successful
+          print('Payment successful');
+        } else {
+          // Payment failed
+          print('Payment failed');
+        }
+      },
+    );
+  }
+}
+```
+// The application flow is as follows:
+// 1. The user enters the amount, currency, and product category in the form.
+// 2. The user clicks the "Make Payment" button.
+// 3. The `_makePayment` function is called, which creates an instance of the `SSLCommerz` class.
+// 4. The `createPaymentRequest` method is called to create a payment request.
+// 5. The `handlePaymentResponse` method is called to handle the payment response.
+// 6. If the payment is successful, the "Payment successful" message is printed.
+// 7. If the payment fails, the "Payment failed" message is printed.
+
+// The code uses the `SSLCommerz` class to create a payment request and handle the payment response.
+// The `createPaymentRequest` method takes the amount, currency, and product category as parameters.
+// The `handlePaymentResponse` method takes the payment request and a callback function as parameters.
+// The callback function is called with the payment response as an argument.
+// The payment response contains the status of the payment, which can be "VALID" or "FAILED".
+
+// The code uses the `ElevatedButton` widget to create a button that calls the `_makePayment` function when clicked.
+// The `_makePayment` function is called when the button is clicked, which creates a payment request and handles the payment response.
+
+// The code uses the `TextFormField` widget to create form fields for the amount, currency, and product category.
+// The `TextFormField` widget takes a `decoration` property, which is used to set the label text for the form field.
+// The `TextFormField` widget also takes a `validator` property, which is used to validate the input.
+// The `validator` property is a function that takes the input value as an argument and returns a string if the input is invalid.
+// The `TextFormField` widget also takes an `onSaved` property, which is used to save the input value when the form is submitted.
+
+// The code uses the `Form` widget to create a form that contains the form fields.
+// The `Form` widget takes a `key` property, which is used to identify the form.
+// The `Form` widget also takes a `child` property, which is used to set the content of the form.
+
+// The code uses the `Scaffold` widget to create a scaffold that contains the form.
+// The `Scaffold` widget takes an `appBar` property, which is used to set the app bar for the scaffold.
+// The `Scaffold` widget also takes a `body` property, which is used to set the content of the scaffold.
+
+// The code uses the `MaterialApp` widget to create a material app that contains the scaffold.
+// The `MaterialApp` widget takes a `title` property, which is used to set the title of the app.
+// The `MaterialApp` widget also takes a `home` property, which is used to set the home page of the app.
+
+// The code uses the `MyHomePage` widget to create a home page that contains the scaffold.
+// The `MyHomePage` widget takes a `title` property, which is used to set the title of the page.
+
+// The code uses the `MyApp` widget to create an app that contains the material app.
+// The `MyApp` widget takes a `title` property, which is used to set the title of the app.
+
+<-- END_MAIN -->

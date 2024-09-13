@@ -1,0 +1,221 @@
+Here's a detailed technical blog on the "strava_client" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# Strava Client Flutter Package
+
+The `strava_client` Flutter package is a powerful tool designed for developers looking to integrate Strava's API into their Flutter applications. Strava is a popular platform for tracking athletic activities, and this package allows developers to access Strava's extensive features, such as retrieving user activities, uploading new activities, and managing user profiles.
+
+## When to Use This Package
+
+You should consider using the `strava_client` package when:
+- You are developing a fitness application that requires integration with Strava.
+- You want to display user activities, statistics, or leaderboards from Strava.
+- You need to allow users to upload their activities directly to Strava from your app.
+
+## Features
+
+- **Authentication**: Simplifies the OAuth2 authentication process to connect with Strava.
+- **Activity Management**: Retrieve, create, and update activities seamlessly.
+- **User Profile Access**: Fetch user profile information and statistics.
+- **Error Handling**: Built-in error handling for API requests.
+
+With these features, the `strava_client` package provides a comprehensive solution for integrating Strava's capabilities into your Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up the Strava Client Package
+
+In this tutorial, we will walk through the setup process for the `strava_client` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+
+To get started, add the `strava_client` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  strava_client: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Configure OAuth2 Authentication
+
+### Android Configuration
+
+1. Open your `android/app/build.gradle` file and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        manifestPlaceholders = [appAuthRedirectScheme: 'your.package.name']
+    }
+}
+```
+
+Replace `your.package.name` with your actual package name.
+
+2. Add the necessary permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS Configuration
+
+1. Open your `ios/Runner/Info.plist` file and add the following:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>your.package.name</string>
+        </array>
+    </dict>
+</array>
+```
+
+Replace `your.package.name` with your actual package name.
+
+## Step 3: Initialize the Strava Client
+
+In your main Dart file, initialize the Strava client with your client ID and client secret:
+
+```dart
+import 'package:strava_client/strava_client.dart';
+
+class RealFlutter {
+  final StravaClient client;
+
+  RealFlutter(this.client);
+}
+```
+
+## Step 4: Implement Authentication
+
+Use the following code to authenticate users:
+
+```dart
+void authenticate() async {
+  final result = await client.authenticate();
+  if (result != null) {
+    // User is authenticated
+  } else {
+    // Handle authentication error
+  }
+}
+```
+
+## Step 5: Fetch User Activities
+
+Once authenticated, you can fetch user activities:
+
+```dart
+void fetchActivities() async {
+  final activities = await client.getActivities();
+  // Process activities
+}
+```
+
+## Conclusion
+
+You have now set up the `strava_client` package in your Flutter application. You can authenticate users and fetch their activities from Strava. In the next section, we will provide a complete example demonstrating these features in action.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the Strava Client Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:strava_client/strava_client.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Strava Client Example',
+      home: StravaHome(),
+    );
+  }
+}
+
+class StravaHome extends StatefulWidget {
+  @override
+  _StravaHomeState createState() => _StravaHomeState();
+}
+
+class _StravaHomeState extends State<StravaHome> {
+  late StravaClient client; // Declare the Strava client
+  List<Activity> activities = []; // List to hold user activities
+
+  @override
+  void initState() {
+    super.initState();
+    client = StravaClient(clientId: 'YOUR_CLIENT_ID', clientSecret: 'YOUR_CLIENT_SECRET'); // Initialize the client
+    authenticate(); // Start the authentication process
+  }
+
+  // Function to authenticate the user
+  void authenticate() async {
+    final result = await client.authenticate(); // Call the authenticate method
+    if (result != null) {
+      fetchActivities(); // Fetch activities if authentication is successful
+    } else {
+      // Handle authentication error
+      print('Authentication failed');
+    }
+  }
+
+  // Function to fetch user activities
+  void fetchActivities() async {
+    final fetchedActivities = await client.getActivities(); // Get activities from Strava
+    setState(() {
+      activities = fetchedActivities; // Update the state with fetched activities
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Strava Activities'),
+      ),
+      body: activities.isEmpty
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator if no activities
+          : ListView.builder(
+              itemCount: activities.length,
+              itemBuilder: (context, index) {
+                final activity = activities[index];
+                return ListTile(
+                  title: Text(activity.name), // Display activity name
+                  subtitle: Text('Distance: ${activity.distance} km'), // Display activity distance
+                );
+              },
+            ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and home set to StravaHome.
+// 3. In StravaHome, the StravaClient is initialized with client ID and secret.
+// 4. The authenticate method is called in initState to start the OAuth2 process.
+// 5. If authentication is successful, fetchActivities is called to retrieve user activities.
+// 6. The activities are displayed in a ListView, showing the name and distance of each activity.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the `strava_client` Flutter package, including its features, setup process, and a complete example application. The application demonstrates how to authenticate users and fetch their activities from Strava, providing a solid foundation for building fitness-related applications.

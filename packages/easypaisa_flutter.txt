@@ -1,0 +1,216 @@
+Here's a detailed technical blog on the "easypaisa_flutter" Flutter package, structured as requested.
+
+<!-- START_DESCRIPTION -->
+# easypaisa_flutter Package Overview
+
+The `easypaisa_flutter` package is a Flutter plugin that allows developers to integrate Easypaisa's payment services into their mobile applications. Easypaisa is a popular mobile wallet and payment service in Pakistan, enabling users to perform various financial transactions, including money transfers, bill payments, and mobile top-ups.
+
+## When to Use This Package
+
+You should consider using the `easypaisa_flutter` package when:
+- You are developing a Flutter application that requires payment processing capabilities.
+- Your target audience is in Pakistan, where Easypaisa is widely used.
+- You want to provide users with a seamless and secure way to handle financial transactions within your app.
+
+## Features
+
+- **Easy Integration**: The package simplifies the process of integrating Easypaisa's payment gateway into your Flutter application.
+- **User Authentication**: It provides methods for user authentication, ensuring secure transactions.
+- **Transaction Management**: You can manage various types of transactions, including sending and receiving money.
+- **Real-time Notifications**: The package supports real-time notifications for transaction status updates.
+
+Overall, the `easypaisa_flutter` package is a powerful tool for developers looking to enhance their applications with payment functionalities tailored for the Pakistani market.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using easypaisa_flutter
+
+In this tutorial, we will walk through the setup process for the `easypaisa_flutter` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Adding the Dependency
+
+To get started, add the `easypaisa_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  easypaisa_flutter: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Open `android/app/src/main/AndroidManifest.xml` and add the following permissions:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+2. **Add Easypaisa SDK**: Ensure that the Easypaisa SDK is included in your project. This may involve adding specific dependencies or configurations as per the official documentation.
+
+### iOS Configuration
+
+1. **Update Info.plist**: Open `ios/Runner/Info.plist` and add the following permissions:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. **CocoaPods**: Make sure to run `pod install` in the `ios` directory to install any necessary dependencies.
+
+## Step 3: Using the Package
+
+Now that we have set up the package, let's see how to use it in your Flutter application.
+
+1. **Import the Package**:
+
+   ```dart
+   import 'package:easypaisa_flutter/easypaisa_flutter.dart';
+   ```
+
+2. **Initialize the Easypaisa Service**:
+
+   You need to initialize the Easypaisa service in your application. This is typically done in the `main` function or the first screen of your app.
+
+   ```dart
+   void main() {
+     runApp(MyApp());
+     EasypaisaFlutter.initialize();
+   }
+   ```
+
+3. **Creating a Payment**:
+
+   You can create a payment request using the following method:
+
+   ```dart
+   void createPayment() async {
+     var response = await EasypaisaFlutter.createPayment(
+       amount: 100.0,
+       phoneNumber: '03001234567',
+       transactionId: 'txn12345',
+     );
+
+     if (response.success) {
+       print('Payment Successful: ${response.transactionId}');
+     } else {
+       print('Payment Failed: ${response.errorMessage}');
+     }
+   }
+   ```
+
+4. **Handling Notifications**:
+
+   To handle real-time notifications, you can set up a listener:
+
+   ```dart
+   EasypaisaFlutter.onTransactionStatusChanged.listen((status) {
+     print('Transaction Status: $status');
+   });
+   ```
+
+With these steps, you can successfully integrate and use the `easypaisa_flutter` package in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of easypaisa_flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:easypaisa_flutter/easypaisa_flutter.dart';
+
+void main() {
+  runApp(MyApp());
+  // Initialize the Easypaisa service
+  EasypaisaFlutter.initialize();
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Easypaisa Flutter Demo',
+      home: PaymentScreen(),
+    );
+  }
+}
+
+class PaymentScreen extends StatefulWidget {
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  String transactionStatus = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for transaction status changes
+    EasypaisaFlutter.onTransactionStatusChanged.listen((status) {
+      setState(() {
+        transactionStatus = status;
+      });
+    });
+  }
+
+  void createPayment() async {
+    // Create a payment request
+    var response = await EasypaisaFlutter.createPayment(
+      amount: 100.0,
+      phoneNumber: '03001234567',
+      transactionId: 'txn12345',
+    );
+
+    // Check the response and update the UI accordingly
+    if (response.success) {
+      print('Payment Successful: ${response.transactionId}');
+    } else {
+      print('Payment Failed: ${response.errorMessage}');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Easypaisa Payment'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Transaction Status: $transactionStatus'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: createPayment,
+              child: Text('Make Payment'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, initializing the Easypaisa service.
+// 2. MyApp is the root widget, which builds the PaymentScreen.
+// 3. In PaymentScreen, we listen for transaction status changes and update the UI.
+// 4. When the "Make Payment" button is pressed, createPayment() is called.
+// 5. createPayment() sends a payment request to Easypaisa and handles the response.
+// 6. The transaction status is displayed on the screen, updating in real-time as notifications are received.
+```
+
+<!-- END_MAIN -->
+
+In this blog, we covered the `easypaisa_flutter` package, detailing its features, setup process, and a complete example of how to implement it in a Flutter application. This package provides a robust solution for integrating payment functionalities tailored for users in Pakistan, making it an excellent choice for developers targeting this market.

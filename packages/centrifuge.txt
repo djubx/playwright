@@ -1,0 +1,176 @@
+<-- START_DESCRIPTION -->
+
+# Centrifuge Flutter Package: Real-time Messaging for Your App
+===========================================================
+
+The Centrifuge Flutter package is a powerful tool for adding real-time messaging capabilities to your Flutter app. It provides a simple and efficient way to establish a persistent connection between your app and your server, allowing for bidirectional communication and enabling features like live updates, collaborative editing, and real-time gaming.
+
+When to Use Centrifuge
+--------------------
+
+*   You need to update your app's UI in real-time based on server-side changes.
+*   You want to enable collaborative editing or live commenting in your app.
+*   You're building a real-time gaming or chat application.
+
+Key Features of Centrifuge
+-------------------------
+
+*   **Bidirectional communication**: Send and receive messages between your app and server in real-time.
+*   **Persistent connections**: Establish a stable, long-lived connection between your app and server.
+*   **Automatic reconnection**: Centrifuge handles connection drops and reestablishes the connection for you.
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up Centrifuge in Your Flutter App
+=============================================
+
+### Step 1: Add the Centrifuge Package to Your Pubspec
+
+Add the following line to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  centrifuge: ^0.9.5
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Centrifuge Package
+
+Add the following line to the top of your Dart file:
+
+```dart
+import 'package:centrifuge/centrifuge.dart';
+```
+
+### Step 3: Create a Centrifuge Client
+
+Create a new instance of the `CentrifugeClient` class, passing in your Centrifuge server's URL and a unique client ID:
+
+```dart
+final client = CentrifugeClient(
+  url: 'ws://your-centrifuge-server.com/connection/websocket',
+  clientId: 'your-client-id',
+);
+```
+
+### Step 4: Establish a Connection
+
+Call the `connect` method to establish a connection to your Centrifuge server:
+
+```dart
+await client.connect();
+```
+
+### Step 5: Subscribe to a Channel
+
+Subscribe to a channel to receive messages published to that channel:
+
+```dart
+final subscription = await client.subscribe('your-channel-name');
+```
+
+### Step 6: Publish a Message
+
+Publish a message to a channel:
+
+```dart
+await client.publish('your-channel-name', 'Hello, world!');
+```
+
+### Platform-Specific Details
+
+*   **Android**: Make sure to add the `android.permission.INTERNET` permission to your `AndroidManifest.xml` file.
+*   **iOS**: Make sure to add the `NSAppTransportSecurity` key to your `Info.plist` file, with the `NSAllowsArbitraryLoads` key set to `YES`.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:centrifuge/centrifuge.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _client = CentrifugeClient(
+    url: 'ws://your-centrifuge-server.com/connection/websocket',
+    clientId: 'your-client-id',
+  );
+
+  final _messages = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _connectToCentrifuge();
+  }
+
+  Future<void> _connectToCentrifuge() async {
+    // Establish a connection to the Centrifuge server
+    await _client.connect();
+
+    // Subscribe to a channel
+    final subscription = await _client.subscribe('your-channel-name');
+
+    // Listen for messages published to the channel
+    subscription.onPublication((publication) {
+      setState(() {
+        _messages.add(publication.data);
+      });
+    });
+  }
+
+  Future<void> _publishMessage() async {
+    // Publish a message to the channel
+    await _client.publish('your-channel-name', 'Hello, world!');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Centrifuge Example'),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_messages[index]),
+                  );
+                },
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _publishMessage,
+              child: Text('Publish Message'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The app starts by establishing a connection to the Centrifuge server.
+// Once connected, it subscribes to a channel and listens for messages published to that channel.
+// When a message is received, it is added to the list of messages and the UI is updated.
+// The user can publish a message to the channel by pressing the "Publish Message" button.
+// The message is then sent to the Centrifuge server and broadcast to all subscribers of the channel.
+```
+
+<-- END_MAIN -->

@@ -1,0 +1,180 @@
+<-- START_DESCRIPTION -->
+
+# requests_inspector Flutter Package
+=====================================
+
+The `requests_inspector` Flutter package is a powerful tool for inspecting and debugging HTTP requests made by your Flutter app. It provides a simple and intuitive way to view request and response data, including headers, bodies, and error messages.
+
+### When to Use
+
+You should use `requests_inspector` when:
+
+* Debugging issues with your app's HTTP requests
+* Testing API integrations
+* Verifying request and response data
+
+### Features
+
+* Inspect request and response data, including headers and bodies
+* View error messages and exceptions
+* Filter requests by URL, method, or status code
+* Export request and response data to a file
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up requests_inspector
+=============================
+
+To use `requests_inspector` in your Flutter app, follow these steps:
+
+### Step 1: Add the Package to Your Pubspec
+
+Add the following line to your `pubspec.yaml` file:
+```yml
+dependencies:
+  requests_inspector: ^1.0.0
+```
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+```dart
+import 'package:requests_inspector/requests_inspector.dart';
+```
+### Step 3: Initialize the Inspector
+
+Initialize the inspector in your app's `main` function:
+```dart
+void main() {
+  RequestsInspector.instance.init();
+  runApp(MyApp());
+}
+```
+### Platform-Specific Configurations
+
+#### Android
+
+To use `requests_inspector` on Android, you need to add the following permission to your `AndroidManifest.xml` file:
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+#### iOS
+
+To use `requests_inspector` on iOS, you need to add the following lines to your `Info.plist` file:
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <true/>
+</dict>
+```
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:requests_inspector/requests_inspector.dart';
+
+void main() {
+  // Initialize the inspector
+  RequestsInspector.instance.init();
+
+  // Run the app
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Requests Inspector Demo',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  // Create a RequestsInspector instance
+  final _inspector = RequestsInspector.instance;
+
+  // Create a text controller to display the request data
+  final _textController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Requests Inspector Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Button to send a GET request
+            ElevatedButton(
+              onPressed: () async {
+                // Send a GET request
+                final response = await http.get(Uri.parse('https://jsonplaceholder.typicode.com/todos/1'));
+
+                // Inspect the request and response data
+                _inspector.inspectRequest(response.request);
+                _inspector.inspectResponse(response);
+
+                // Display the request data
+                _textController.text = _inspector.getRequestData();
+              },
+              child: Text('Send GET Request'),
+            ),
+            // Button to send a POST request
+            ElevatedButton(
+              onPressed: () async {
+                // Send a POST request
+                final response = await http.post(Uri.parse('https://jsonplaceholder.typicode.com/todos'),
+                  headers: {
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body: jsonEncode({'title': 'foo', 'completed': false}),
+                );
+
+                // Inspect the request and response data
+                _inspector.inspectRequest(response.request);
+                _inspector.inspectResponse(response);
+
+                // Display the request data
+                _textController.text = _inspector.getRequestData();
+              },
+              child: Text('Send POST Request'),
+            ),
+            // Text field to display the request data
+            TextField(
+              controller: _textController,
+              maxLines: 10,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The app flow is as follows:
+// 1. The user clicks the "Send GET Request" or "Send POST Request" button.
+// 2. The corresponding request is sent using the http package.
+// 3. The request and response data are inspected using the RequestsInspector instance.
+// 4. The request data is displayed in the text field.
+// 5. The user can view the request data and verify that it is correct.
+
+// This demo shows how to use the RequestsInspector package to inspect request and response data in a Flutter app.
+// It also shows how to display the request data in a text field for verification.
+```
+
+<-- END_MAIN -->

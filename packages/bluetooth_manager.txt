@@ -1,0 +1,176 @@
+<-- START_DESCRIPTION -->
+
+# Bluetooth Manager Flutter Package
+=====================================
+
+The `bluetooth_manager` Flutter package provides a simple and easy-to-use interface for managing Bluetooth connections in your Flutter app. It allows you to scan for nearby devices, connect to them, and exchange data.
+
+### When to Use This Package
+
+This package is useful when you need to integrate Bluetooth functionality into your Flutter app, such as:
+
+* Connecting to a Bluetooth device to exchange data
+* Scanning for nearby Bluetooth devices
+* Managing Bluetooth connections
+
+### Features
+
+* Scan for nearby Bluetooth devices
+* Connect to a Bluetooth device
+* Exchange data with a connected Bluetooth device
+* Manage Bluetooth connections
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+-------------------------
+
+To use the `bluetooth_manager` package, you need to add it to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+  bluetooth_manager: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Platform-Specific Setup
+
+#### Android
+
+To use the `bluetooth_manager` package on Android, you need to add the following permissions to your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+```
+
+#### iOS
+
+To use the `bluetooth_manager` package on iOS, you need to add the following lines to your `Info.plist` file:
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+    <string>bluetooth-central</string>
+</array>
+```
+
+### Using the Package
+
+To use the `bluetooth_manager` package, you need to import it into your Dart file:
+
+```dart
+import 'package:bluetooth_manager/bluetooth_manager.dart';
+```
+
+Then, you can use the `BluetoothManager` class to scan for nearby devices, connect to them, and exchange data.
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:bluetooth_manager/bluetooth_manager.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Bluetooth Manager Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  BluetoothManager _bluetoothManager = BluetoothManager.instance;
+  List<BluetoothDevice> _devices = [];
+  BluetoothDevice _connectedDevice;
+
+  @override
+  void initState() {
+    super.initState();
+    _bluetoothManager.startScan().then((devices) {
+      setState(() {
+        _devices = devices;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Bluetooth Manager Demo'),
+      ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: ListView.builder(
+              itemCount: _devices.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_devices[index].name),
+                  subtitle: Text(_devices[index].address),
+                  onTap: () {
+                    _bluetoothManager.connect(_devices[index]).then((_) {
+                      setState(() {
+                        _connectedDevice = _devices[index];
+                      });
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_connectedDevice != null) {
+                  _bluetoothManager.disconnect(_connectedDevice).then((_) {
+                    setState(() {
+                      _connectedDevice = null;
+                    });
+                  });
+                }
+              },
+              child: Text('Disconnect'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// The app starts by running the main function, which creates a new instance of the MyApp widget.
+// The MyApp widget is a stateless widget that returns a MaterialApp widget with a title and a theme.
+// The home property of the MaterialApp widget is set to an instance of the MyHomePage widget.
+// The MyHomePage widget is a stateful widget that returns a Scaffold widget with an AppBar and a Column.
+// The Column widget contains an Expanded widget with a ListView.builder widget and a Padding widget with an ElevatedButton.
+// The ListView.builder widget is used to display a list of nearby Bluetooth devices.
+// When a device is tapped, the app connects to the device using the BluetoothManager instance.
+// The ElevatedButton is used to disconnect from the connected device.
+// When the button is pressed, the app disconnects from the device using the BluetoothManager instance.
+```
+
+<-- END_MAIN -->
