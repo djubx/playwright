@@ -1,0 +1,256 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Bluetooth Serial BLE Package
+=====================================
+
+The `flutter_bluetooth_serial_ble` package provides a simple way to communicate with Bluetooth Low Energy (BLE) devices from a Flutter application. It supports both Android and iOS platforms.
+
+### When to Use This Package
+
+This package is ideal for applications that require communication with BLE devices, such as:
+
+* IoT devices
+* Wearables
+* Sensors
+* Actuators
+
+### Features
+
+* Scan for nearby BLE devices
+* Connect to a BLE device
+* Discover services and characteristics
+* Read and write data to characteristics
+* Receive notifications from characteristics
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setup and Usage
+================
+
+### Add the Package to Your Project
+
+Add the following dependency to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_bluetooth_serial_ble: ^1.0.0
+```
+
+### Android Configuration
+
+In your `AndroidManifest.xml` file, add the following permissions:
+
+```xml
+<uses-permission android:name="android.permission.BLUETOOTH" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+
+### iOS Configuration
+
+In your `Info.plist` file, add the following keys:
+
+```xml
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>This app needs access to Bluetooth</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs access to location</string>
+```
+
+### Import the Package
+
+In your Dart file, import the package:
+
+```dart
+import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
+```
+
+### Scan for Devices
+
+Use the `startScan` method to scan for nearby BLE devices:
+
+```dart
+Future<void> _scanForDevices() async {
+  final devices = await FlutterBluetoothSerialBle.startScan();
+  print(devices);
+}
+```
+
+### Connect to a Device
+
+Use the `connect` method to connect to a BLE device:
+
+```dart
+Future<void> _connectToDevice(BluetoothDevice device) async {
+  await FlutterBluetoothSerialBle.connect(device);
+}
+```
+
+### Discover Services and Characteristics
+
+Use the `discoverServices` method to discover services and characteristics:
+
+```dart
+Future<void> _discoverServices() async {
+  final services = await FlutterBluetoothSerialBle.discoverServices();
+  print(services);
+}
+```
+
+### Read and Write Data
+
+Use the `read` and `write` methods to read and write data to characteristics:
+
+```dart
+Future<void> _readData(BluetoothCharacteristic characteristic) async {
+  final data = await FlutterBluetoothSerialBle.read(characteristic);
+  print(data);
+}
+
+Future<void> _writeData(BluetoothCharacteristic characteristic, List<int> data) async {
+  await FlutterBluetoothSerialBle.write(characteristic, data);
+}
+```
+
+### Receive Notifications
+
+Use the `setNotification` method to receive notifications from characteristics:
+
+```dart
+Future<void> _setNotification(BluetoothCharacteristic characteristic) async {
+  await FlutterBluetoothSerialBle.setNotification(characteristic, true);
+}
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial_ble/flutter_bluetooth_serial_ble.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  List<BluetoothDevice> _devices = [];
+  BluetoothDevice _connectedDevice;
+  List<BluetoothService> _services = [];
+  List<BluetoothCharacteristic> _characteristics = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _scanForDevices();
+  }
+
+  Future<void> _scanForDevices() async {
+    final devices = await FlutterBluetoothSerialBle.startScan();
+    setState(() {
+      _devices = devices;
+    });
+  }
+
+  Future<void> _connectToDevice(BluetoothDevice device) async {
+    await FlutterBluetoothSerialBle.connect(device);
+    setState(() {
+      _connectedDevice = device;
+    });
+    _discoverServices();
+  }
+
+  Future<void> _discoverServices() async {
+    final services = await FlutterBluetoothSerialBle.discoverServices();
+    setState(() {
+      _services = services;
+    });
+  }
+
+  Future<void> _readData(BluetoothCharacteristic characteristic) async {
+    final data = await FlutterBluetoothSerialBle.read(characteristic);
+    print(data);
+  }
+
+  Future<void> _writeData(BluetoothCharacteristic characteristic, List<int> data) async {
+    await FlutterBluetoothSerialBle.write(characteristic, data);
+  }
+
+  Future<void> _setNotification(BluetoothCharacteristic characteristic) async {
+    await FlutterBluetoothSerialBle.setNotification(characteristic, true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Bluetooth Serial BLE'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _devices.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_devices[index].name),
+                  subtitle: Text(_devices[index].address),
+                  onTap: () {
+                    _connectToDevice(_devices[index]);
+                  },
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _services.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_services[index].uuid),
+                  onTap: () {
+                    _discoverCharacteristics(_services[index]);
+                  },
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _characteristics.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_characteristics[index].uuid),
+                  onTap: () {
+                    _readData(_characteristics[index]);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _discoverCharacteristics(BluetoothService service) async {
+    final characteristics = await FlutterBluetoothSerialBle.discoverCharacteristics(service);
+    setState(() {
+      _characteristics = characteristics;
+    });
+  }
+}
+
+// The app starts by scanning for nearby BLE devices.
+// When a device is found, it is added to the list of devices.
+// The user can then select a device to connect to.
+// Once connected, the app discovers the services and characteristics of the device.
+// The user can then select a characteristic to read or write data to.
+// The app also allows the user to set notifications for a characteristic.
+```
+
+<-- END_MAIN -->

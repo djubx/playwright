@@ -1,0 +1,103 @@
+```dart
+import 'package:flutter/material.dart';
+import 'package:aws_sqs_api/aws_sqs_api.dart';
+
+void main() {
+  runApp(RealFlutterApp());
+}
+
+class RealFlutterApp extends StatefulWidget {
+  @override
+  _RealFlutterAppState createState() => _RealFlutterAppState();
+}
+
+class _RealFlutterAppState extends State<RealFlutterApp> {
+  final sqsClient = AwsSqsClient(
+    region: 'your-region',
+    credentials: AwsClientCredentials(
+      accessKey: 'your-access-key',
+      secretKey: 'your-secret-key',
+    ),
+  );
+
+  String _queueUrl;
+  String _messageId;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Real Flutter SQS Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: _createQueue,
+                child: Text('Create Queue'),
+              ),
+              ElevatedButton(
+                onPressed: _sendMessage,
+                child: Text('Send Message'),
+              ),
+              ElevatedButton(
+                onPressed: _receiveMessage,
+                child: Text('Receive Message'),
+              ),
+              Text(_queueUrl != null ? _queueUrl : ''),
+              Text(_messageId != null ? _messageId : ''),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _createQueue() async {
+    final queueUrl = await sqsClient.createQueue(
+      CreateQueueRequest(
+        queueName: 'your-queue-name',
+      ),
+    );
+    setState(() {
+      _queueUrl = queueUrl;
+    });
+  }
+
+  Future<void> _sendMessage() async {
+    final messageId = await sqsClient.sendMessage(
+      SendMessageRequest(
+        queueUrl: _queueUrl,
+        messageBody: 'Hello, world!',
+      ),
+    );
+    setState(() {
+      _messageId = messageId;
+    });
+  }
+
+  Future<void> _receiveMessage() async {
+    final message = await sqsClient.receiveMessage(
+      ReceiveMessageRequest(
+        queueUrl: _queueUrl,
+      ),
+    );
+    print(message);
+  }
+}
+
+// The application flow is as follows:
+// 1. The user clicks the "Create Queue" button, which calls the _createQueue function.
+// 2. The _createQueue function creates a new SQS queue using the AwsSqsClient.
+// 3. The queue URL is stored in the _queueUrl variable and displayed on the screen.
+// 4. The user clicks the "Send Message" button, which calls the _sendMessage function.
+// 5. The _sendMessage function sends a message to the SQS queue using the AwsSqsClient.
+// 6. The message ID is stored in the _messageId variable and displayed on the screen.
+// 7. The user clicks the "Receive Message" button, which calls the _receiveMessage function.
+// 8. The _receiveMessage function receives a message from the SQS queue using the AwsSqsClient.
+// 9. The received message is printed to the console.
+
+<-- END_MAIN -->
+```

@@ -1,0 +1,228 @@
+<-- START_DESCRIPTION -->
+
+# Flutter Painting Tools Package
+=====================================
+
+The `flutter_painting_tools` package is a powerful Flutter library that provides a set of tools for creating and manipulating paintings in Flutter applications. This package is ideal for developers who want to create custom painting experiences, such as drawing apps, signature pads, or even games that involve painting.
+
+## Features
+
+*   Customizable painting tools (e.g., brushes, erasers, etc.)
+*   Support for various painting modes (e.g., freehand, straight line, etc.)
+*   Ability to save and load paintings
+*   Extensive customization options (e.g., colors, sizes, etc.)
+
+## When to Use This Package
+
+This package is perfect for any Flutter project that requires custom painting functionality. Some examples of use cases include:
+
+*   Drawing or painting apps
+*   Signature pads or electronic signature systems
+*   Games that involve painting or drawing
+*   Custom UI components that require painting functionality
+
+<-- END_DESCRIPTION -->
+
+<-- START_TUTORIAL -->
+
+# Setting Up the Package
+---------------------------
+
+To use the `flutter_painting_tools` package, follow these steps:
+
+### Step 1: Add the Package to Your Project
+
+Add the following line to your `pubspec.yaml` file:
+
+```yml
+dependencies:
+  flutter_painting_tools: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+### Step 2: Import the Package
+
+Import the package in your Dart file:
+
+```dart
+import 'package:flutter_painting_tools/flutter_painting_tools.dart';
+```
+
+### Step 3: Create a Painting Tool
+
+Create a new instance of the `PaintingTool` class:
+
+```dart
+PaintingTool _paintingTool = PaintingTool(
+  toolType: ToolType.brush,
+  toolSize: 10.0,
+  toolColor: Colors.black,
+);
+```
+
+### Step 4: Use the Painting Tool
+
+Use the painting tool to create a painting:
+
+```dart
+Painting _painting = _paintingTool.createPainting(
+  points: [
+    Offset(10.0, 10.0),
+    Offset(20.0, 20.0),
+    Offset(30.0, 30.0),
+  ],
+);
+```
+
+<-- END_TUTORIAL -->
+
+<-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_painting_tools/flutter_painting_tools.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Painting Tools Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  PaintingTool _paintingTool;
+  Painting _painting;
+
+  @override
+  void initState() {
+    super.initState();
+    _paintingTool = PaintingTool(
+      toolType: ToolType.brush,
+      toolSize: 10.0,
+      toolColor: Colors.black,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Flutter Painting Tools Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Create a painting area
+            Container(
+              width: 300.0,
+              height: 300.0,
+              child: GestureDetector(
+                onPanUpdate: (details) {
+                  // Add points to the painting
+                  setState(() {
+                    _painting = _paintingTool.createPainting(
+                      points: [
+                        ..._painting?.points ?? [],
+                        details.localPosition,
+                      ],
+                    );
+                  });
+                },
+                child: CustomPaint(
+                  painter: PaintingPainter(_painting),
+                  child: Container(),
+                ),
+              ),
+            ),
+            // Change the painting tool
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _paintingTool = PaintingTool(
+                        toolType: ToolType.brush,
+                        toolSize: 10.0,
+                        toolColor: Colors.black,
+                      );
+                    });
+                  },
+                  child: Text('Brush'),
+                ),
+                SizedBox(width: 10.0),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _paintingTool = PaintingTool(
+                        toolType: ToolType.eraser,
+                        toolSize: 10.0,
+                        toolColor: Colors.white,
+                      );
+                    });
+                  },
+                  child: Text('Eraser'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// A custom painter for the painting
+class PaintingPainter extends CustomPainter {
+  final Painting _painting;
+
+  PaintingPainter(this._painting);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (_painting != null) {
+      canvas.drawPoints(
+        PointMode.polygon,
+        _painting.points,
+        Paint()
+          ..color = _painting.toolColor
+          ..strokeWidth = _painting.toolSize,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(PaintingPainter oldDelegate) {
+    return oldDelegate._painting != _painting;
+  }
+}
+
+// The flow of the application:
+// 1. The user interacts with the painting area by dragging their finger.
+// 2. The `onPanUpdate` callback is called, which adds points to the painting.
+// 3. The `createPainting` method is called, which creates a new painting with the updated points.
+// 4. The `CustomPaint` widget is updated with the new painting.
+// 5. The `PaintingPainter` class is used to draw the painting on the canvas.
+// 6. The user can change the painting tool by pressing the "Brush" or "Eraser" buttons.
+// 7. The painting tool is updated, and the painting is redrawn with the new tool.
+
+```
+
+<-- END_MAIN -->
