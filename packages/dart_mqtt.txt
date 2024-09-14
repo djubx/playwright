@@ -1,0 +1,120 @@
+```dart
+import 'package:flutter/material.dart';
+import 'package:dart_mqtt/dart_mqtt.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  MqttClient _client;
+  String _message = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _client = MqttClient('ws://test.mosquitto.org/ws');
+    _connectToMqttBroker();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('MQTT Example'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(_message),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _publishMessage,
+                child: Text('Publish Message'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _subscribeToTopic,
+                child: Text('Subscribe to Topic'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _unsubscribeFromTopic,
+                child: Text('Unsubscribe from Topic'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _disconnectFromMqttBroker,
+                child: Text('Disconnect from MQTT Broker'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _connectToMqttBroker() {
+    _client.connect().then((_) {
+      print('Connected to MQTT broker');
+    }).catchError((error) {
+      print('Error connecting to MQTT broker: $error');
+    });
+  }
+
+  void _publishMessage() {
+    _client.publishMessage('my_topic', 'Hello, world!').then((_) {
+      print('Message published');
+    }).catchError((error) {
+      print('Error publishing message: $error');
+    });
+  }
+
+  void _subscribeToTopic() {
+    _client.subscribe('my_topic', (message) {
+      print('Received message: $message');
+      setState(() {
+        _message = message;
+      });
+    }).then((_) {
+      print('Subscribed to topic');
+    }).catchError((error) {
+      print('Error subscribing to topic: $error');
+    });
+  }
+
+  void _unsubscribeFromTopic() {
+    _client.unsubscribe('my_topic').then((_) {
+      print('Unsubscribed from topic');
+    }).catchError((error) {
+      print('Error unsubscribing from topic: $error');
+    });
+  }
+
+  void _disconnectFromMqttBroker() {
+    _client.disconnect().then((_) {
+      print('Disconnected from MQTT broker');
+    }).catchError((error) {
+      print('Error disconnecting from MQTT broker: $error');
+    });
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and the `RealFlutter` widget is created.
+// 2. The `RealFlutter` widget creates an instance of the `MqttClient` class and connects to the MQTT broker.
+// 3. The user can then publish messages to a topic, subscribe to a topic, unsubscribe from a topic, or disconnect from the MQTT broker.
+// 4. When the user publishes a message, the message is sent to the MQTT broker and printed to the console.
+// 5. When the user subscribes to a topic, the app starts listening for messages on that topic and prints any received messages to the console.
+// 6. When the user unsubscribes from a topic, the app stops listening for messages on that topic.
+// 7. When the user disconnects from the MQTT broker, the app stops communicating with the MQTT broker.
+
+<-- END_MAIN -->
+```

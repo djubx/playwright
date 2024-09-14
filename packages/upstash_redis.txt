@@ -1,0 +1,99 @@
+```dart
+import 'package:flutter/material.dart';
+import 'package:upstash_redis/upstash_redis.dart';
+
+void main() {
+  runApp(RealFlutterApp());
+}
+
+class RealFlutterApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Upstash Redis Demo',
+      home: RealFlutterHomePage(),
+    );
+  }
+}
+
+class RealFlutterHomePage extends StatefulWidget {
+  @override
+  _RealFlutterHomePageState createState() => _RealFlutterHomePageState();
+}
+
+class _RealFlutterHomePageState extends State<RealFlutterHomePage> {
+  final _redisClient = RedisClient(
+    host: 'localhost',
+    port: 6379,
+    password: 'your_password',
+  );
+
+  final _subscription = RedisClient(
+    host: 'localhost',
+    port: 6379,
+    password: 'your_password',
+  ).subscribe('channel');
+
+  String _message = '';
+
+  void _setMessage(String message) {
+    setState(() {
+      _message = message;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription.listen((message) {
+      _setMessage(message);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Upstash Redis Demo'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_message),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _redisClient.set('key', 'value');
+                final value = await _redisClient.get('key');
+                _setMessage(value);
+              },
+              child: Text('Set Value'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _redisClient.publish('channel', 'Hello, World!');
+              },
+              child: Text('Publish Message'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user opens the app and is presented with a screen containing two buttons: "Set Value" and "Publish Message".
+// 2. When the user clicks the "Set Value" button, the app sets a value in Redis using the `set` command and then retrieves the value using the `get` command.
+// 3. The retrieved value is then displayed on the screen.
+// 4. When the user clicks the "Publish Message" button, the app publishes a message to the Redis channel using the `publish` command.
+// 5. The message is then received by the app through the subscription and displayed on the screen.
+
+// This demo showcases the basic usage of the Upstash Redis package, including setting and getting values, and publishing and subscribing to messages.
+
+// Note that this is just a simple example and you may want to add error handling and other features depending on your use case.
+
+<-- END_MAIN -->
+```
