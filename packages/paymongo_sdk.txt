@@ -1,0 +1,159 @@
+```dart
+import 'package:flutter/material.dart';
+import 'package:paymongo_sdk/paymongo_sdk.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final _formKey = GlobalKey<FormState>();
+  final _cardNumberController = TextEditingController();
+  final _expMonthController = TextEditingController();
+  final _expYearController = TextEditingController();
+  final _cvcController = TextEditingController();
+  final _amountController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Paymongo SDK Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Paymongo SDK Demo'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _cardNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'Card Number',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your card number';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _expMonthController,
+                  decoration: InputDecoration(
+                    labelText: 'Expiry Month',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your expiry month';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _expYearController,
+                  decoration: InputDecoration(
+                    labelText: 'Expiry Year',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your expiry year';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _cvcController,
+                  decoration: InputDecoration(
+                    labelText: 'CVC',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter your CVC';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _amountController,
+                  decoration: InputDecoration(
+                    labelText: 'Amount',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter the amount';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      // Create a payment method
+                      PaymentMethod paymentMethod =
+                          await PaymongoSdk.createPaymentMethod(
+                        type: 'card',
+                        cardNumber: _cardNumberController.text,
+                        expMonth: int.parse(_expMonthController.text),
+                        expYear: int.parse(_expYearController.text),
+                        cvc: _cvcController.text,
+                      );
+
+                      // Create a payment intent
+                      PaymentIntent paymentIntent =
+                          await PaymongoSdk.createPaymentIntent(
+                        amount: int.parse(_amountController.text),
+                        currency: 'PHP',
+                        paymentMethodTypes: ['card'],
+                      );
+
+                      // Confirm the payment intent
+                      paymentIntent = await PaymongoSdk.confirmPaymentIntent(
+                        paymentIntentId: paymentIntent.id,
+                        paymentMethodId: paymentMethod.id,
+                      );
+
+                      // Show a success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Payment successful!')),
+                      );
+                    }
+                  },
+                  child: Text('Pay Now'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The application flow is as follows:
+// 1. The user enters their card details and the amount they want to pay.
+// 2. When the user clicks the "Pay Now" button, the app creates a payment method using the Paymongo SDK.
+// 3. The app then creates a payment intent using the Paymongo SDK.
+// 4. The app confirms the payment intent using the Paymongo SDK.
+// 5. If the payment is successful, the app shows a success message to the user.
+
+// Note: This is a basic example and you should handle errors and exceptions properly in a real-world application.
+
+// Summary:
+// This code creates a simple payment app using the Paymongo SDK.
+// The app takes the user's card details and the amount they want to pay as input.
+// It then creates a payment method and a payment intent using the Paymongo SDK.
+// Finally, it confirms the payment intent and shows a success message to the user if the payment is successful.
+
+<-- END_MAIN -->```
