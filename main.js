@@ -23,7 +23,7 @@ async function launchBrowser() {
 
 async function login(page) {
   await log("Navigating to the website...");
-  await page.goto('https://apps.abacus.ai/chatllm/62d3636d8/?forceAppId=62d3636d8');
+  await page.goto('https://apps.abacus.ai/chatllm/?appId=a4fa6bef0');
   await log("Website loaded successfully.");
 
   await log("Logging in...");
@@ -36,6 +36,7 @@ async function login(page) {
   await log("Waiting for logged-in state...");
   await page.waitForSelector('textarea[placeholder="Write something..."]', { timeout: 8000000 });
   await log("Logged in successfully.");
+  await page.goto('https://apps.abacus.ai/chatllm/?appId=a4fa6bef0');
 }
 
 async function loadPrompts() {
