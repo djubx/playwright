@@ -1,139 +1,155 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Paymongo SDK Flutter Package
+
+The **paymongo_sdk** Flutter package is a powerful tool designed to facilitate payment processing in Flutter applications. It provides a seamless integration with PayMongo, a payment gateway that allows developers to accept online payments in the Philippines. This package is particularly useful for e-commerce applications, subscription services, and any app that requires payment processing.
+
+## When to Use This Package
+- **E-commerce Applications**: If you're building an online store, this package allows you to handle transactions securely.
+- **Subscription Services**: For apps that require recurring payments, the Paymongo SDK can manage subscriptions effectively.
+- **Donation Platforms**: Non-profit organizations can use this package to accept donations easily.
+
+## Features
+- **Multiple Payment Methods**: Supports various payment options including credit/debit cards, e-wallets, and bank transfers.
+- **Secure Transactions**: Ensures that all payment data is handled securely, complying with industry standards.
+- **Easy Integration**: Simple setup process that allows developers to integrate payment processing with minimal effort.
+- **Real-time Payment Status**: Provides real-time updates on payment status, allowing for a smooth user experience.
+
+Overall, the paymongo_sdk package is an essential tool for Flutter developers looking to implement payment solutions in their applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using Paymongo SDK
+
+In this tutorial, we will walk through the setup process for the paymongo_sdk package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Adding the Package to Your Project
+To get started, add the paymongo_sdk package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  paymongo_sdk: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version of the package.
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+1. Open `android/app/build.gradle` and ensure that you have the following configurations:
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21 // Ensure this is set to at least 21
+       }
+   }
+   ```
+
+2. Add the necessary permissions in `AndroidManifest.xml`:
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+### iOS Configuration
+1. Open `ios/Runner/Info.plist` and add the following:
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. Ensure that your iOS deployment target is set to at least 10.0 in `ios/Podfile`:
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+## Step 3: Using the Package
+Now that we have set up the package, we can start using it in our Flutter application. Below is a simple example of how to initiate a payment.
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:paymongo_sdk/paymongo_sdk.dart';
 
-void main() {
-  runApp(RealFlutter());
-}
-
-class RealFlutter extends StatefulWidget {
-  @override
-  _RealFlutterState createState() => _RealFlutterState();
-}
-
-class _RealFlutterState extends State<RealFlutter> {
-  final _formKey = GlobalKey<FormState>();
-  final _cardNumberController = TextEditingController();
-  final _expMonthController = TextEditingController();
-  final _expYearController = TextEditingController();
-  final _cvcController = TextEditingController();
-  final _amountController = TextEditingController();
-
+class RealFlutter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Paymongo SDK Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Paymongo SDK Demo'),
+        appBar: AppBar(title: Text('Paymongo Payment Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              // Initialize Paymongo SDK
+              final paymongo = Paymongo();
+
+              // Create a payment intent
+              final paymentIntent = await paymongo.createPaymentIntent(
+                amount: 10000, // Amount in cents
+                currency: 'PHP',
+                paymentMethod: 'card', // Payment method type
+              );
+
+              // Handle the payment response
+              if (paymentIntent.status == 'succeeded') {
+                // Payment was successful
+                print('Payment successful: ${paymentIntent.id}');
+              } else {
+                // Payment failed
+                print('Payment failed: ${paymentIntent.error}');
+              }
+            },
+            child: Text('Pay Now'),
+          ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _cardNumberController,
-                  decoration: InputDecoration(
-                    labelText: 'Card Number',
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your card number';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _expMonthController,
-                  decoration: InputDecoration(
-                    labelText: 'Expiry Month',
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your expiry month';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _expYearController,
-                  decoration: InputDecoration(
-                    labelText: 'Expiry Year',
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your expiry year';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _cvcController,
-                  decoration: InputDecoration(
-                    labelText: 'CVC',
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your CVC';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _amountController,
-                  decoration: InputDecoration(
-                    labelText: 'Amount',
-                  ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter the amount';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      // Create a payment method
-                      PaymentMethod paymentMethod =
-                          await PaymongoSdk.createPaymentMethod(
-                        type: 'card',
-                        cardNumber: _cardNumberController.text,
-                        expMonth: int.parse(_expMonthController.text),
-                        expYear: int.parse(_expYearController.text),
-                        cvc: _cvcController.text,
-                      );
+      ),
+    );
+  }
+}
+```
+<!-- END_TUTORIAL -->
 
-                      // Create a payment intent
-                      PaymentIntent paymentIntent =
-                          await PaymongoSdk.createPaymentIntent(
-                        amount: int.parse(_amountController.text),
-                        currency: 'PHP',
-                        paymentMethodTypes: ['card'],
-                      );
+<!-- START_MAIN -->
+# Complete Example of Paymongo SDK in Flutter
 
-                      // Confirm the payment intent
-                      paymentIntent = await PaymongoSdk.confirmPaymentIntent(
-                        paymentIntentId: paymentIntent.id,
-                        paymentMethodId: paymentMethod.id,
-                      );
+```dart
+import 'package:flutter/material.dart';
+import 'package:paymongo_sdk/paymongo_sdk.dart';
 
-                      // Show a success message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Payment successful!')),
-                      );
-                    }
-                  },
-                  child: Text('Pay Now'),
-                ),
-              ],
-            ),
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Paymongo Payment Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              // Step 1: Initialize Paymongo SDK
+              final paymongo = Paymongo();
+
+              // Step 2: Create a payment intent
+              final paymentIntent = await paymongo.createPaymentIntent(
+                amount: 10000, // Amount in cents (100 PHP)
+                currency: 'PHP', // Currency code
+                paymentMethod: 'card', // Payment method type
+              );
+
+              // Step 3: Handle the payment response
+              if (paymentIntent.status == 'succeeded') {
+                // Payment was successful
+                print('Payment successful: ${paymentIntent.id}');
+              } else {
+                // Payment failed
+                print('Payment failed: ${paymentIntent.error}');
+              }
+            },
+            child: Text('Pay Now'), // Button to initiate payment
           ),
         ),
       ),
@@ -141,19 +157,18 @@ class _RealFlutterState extends State<RealFlutter> {
   }
 }
 
-// The application flow is as follows:
-// 1. The user enters their card details and the amount they want to pay.
-// 2. When the user clicks the "Pay Now" button, the app creates a payment method using the Paymongo SDK.
-// 3. The app then creates a payment intent using the Paymongo SDK.
-// 4. The app confirms the payment intent using the Paymongo SDK.
-// 5. If the payment is successful, the app shows a success message to the user.
+// Application Flow Explanation:
+// 1. The app starts with a MaterialApp containing a Scaffold.
+// 2. An AppBar is displayed with the title 'Paymongo Payment Example'.
+// 3. The body contains a Center widget with an ElevatedButton.
+// 4. When the button is pressed, the Paymongo SDK is initialized.
+// 5. A payment intent is created with a specified amount and currency.
+// 6. The response from the payment intent is checked.
+// 7. If the payment is successful, the payment ID is printed.
+// 8. If the payment fails, the error message is printed.
+```
+<!-- END_MAIN -->
+```
 
-// Note: This is a basic example and you should handle errors and exceptions properly in a real-world application.
-
-// Summary:
-// This code creates a simple payment app using the Paymongo SDK.
-// The app takes the user's card details and the amount they want to pay as input.
-// It then creates a payment method and a payment intent using the Paymongo SDK.
-// Finally, it confirms the payment intent and shows a success message to the user if the payment is successful.
-
-<-- END_MAIN -->```
+### Summary
+In this blog post, we explored the **paymongo_sdk** Flutter package, detailing its features, setup process, and usage through a complete example. The provided code demonstrates how to integrate payment processing into a Flutter application, making it easier for developers to implement secure and efficient payment solutions. By following the steps outlined, you can quickly set up and start accepting payments in your Flutter apps.

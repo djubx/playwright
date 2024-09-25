@@ -1,0 +1,181 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the tus_file_uploader Flutter Package
+
+The `tus_file_uploader` package is a powerful tool for Flutter developers looking to implement file uploads using the TUS protocol. TUS is a protocol for resumable uploads, which means that if an upload is interrupted (due to network issues, for example), it can be resumed from where it left off rather than starting over. This is particularly useful for large files or unreliable network conditions.
+
+## When to Use This Package
+- **Large File Uploads**: When you need to upload large files that may take time and could be interrupted.
+- **Unstable Network Conditions**: In scenarios where the network connection is unreliable, and you want to ensure that uploads can be resumed.
+- **User Experience**: To provide a better user experience by allowing users to continue uploads without losing progress.
+
+## Key Features
+- **Resumable Uploads**: Automatically resumes uploads from the last successful byte.
+- **Progress Tracking**: Provides real-time upload progress updates.
+- **Multiple File Support**: Allows uploading multiple files simultaneously.
+- **Customizable**: Offers options for customizing the upload process, including headers and metadata.
+
+Overall, the `tus_file_uploader` package is an excellent choice for developers looking to implement robust file upload functionality in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using the tus_file_uploader Package
+
+## Installation
+To get started with the `tus_file_uploader` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  tus_file_uploader: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+
+### Android
+For Android, ensure that you have the following permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
+
+### iOS
+For iOS, you need to add the following permissions in your `Info.plist`:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to upload files.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to upload files.</string>
+```
+
+## Basic Usage
+Here’s how to use the `tus_file_uploader` package in your Flutter application:
+
+1. Import the package:
+   ```dart
+   import 'package:tus_file_uploader/tus_file_uploader.dart';
+   ```
+
+2. Create an instance of the uploader and configure it:
+   ```dart
+   final uploader = TusUploader(
+     url: 'https://your.tus.server/files',
+     headers: {
+       'Authorization': 'Bearer your_token',
+     },
+   );
+   ```
+
+3. Start the upload:
+   ```dart
+   uploader.upload(filePath: 'path/to/your/file');
+   ```
+
+4. Listen for progress updates:
+   ```dart
+   uploader.onProgress.listen((progress) {
+     print('Upload progress: $progress%');
+   });
+   ```
+
+This setup will allow you to start uploading files using the TUS protocol with minimal configuration.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using tus_file_uploader
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:tus_file_uploader/tus_file_uploader.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'TUS File Uploader Example',
+      home: FileUploaderScreen(),
+    );
+  }
+}
+
+class FileUploaderScreen extends StatefulWidget {
+  @override
+  _FileUploaderScreenState createState() => _FileUploaderScreenState();
+}
+
+class _FileUploaderScreenState extends State<FileUploaderScreen> {
+  final TusUploader _uploader = TusUploader(
+    url: 'https://your.tus.server/files', // TUS server URL
+    headers: {
+      'Authorization': 'Bearer your_token', // Optional headers
+    },
+  );
+
+  double _progress = 0.0; // Variable to track upload progress
+
+  // Function to start the upload
+  void _startUpload() async {
+    // Specify the file path to upload
+    String filePath = 'path/to/your/file';
+    
+    // Start the upload process
+    await _uploader.upload(filePath: filePath);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Listen for progress updates
+    _uploader.onProgress.listen((progress) {
+      setState(() {
+        _progress = progress; // Update the progress variable
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('TUS File Uploader'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Upload Progress: ${(_progress * 100).toStringAsFixed(2)}%'), // Display progress
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startUpload, // Start upload on button press
+              child: Text('Upload File'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The FileUploaderScreen widget is displayed, which contains the upload logic.
+// 3. When the user presses the "Upload File" button, the _startUpload function is called.
+// 4. The upload process begins, and the app listens for progress updates.
+// 5. As the upload progresses, the progress variable is updated, and the UI reflects the current upload percentage.
+```
+
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `tus_file_uploader` package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow. This should serve as a valuable resource for Flutter developers looking to implement file uploads in their applications.

@@ -1,3 +1,227 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the leancode_contracts Flutter Package
 
+The `leancode_contracts` package is a powerful tool designed for Flutter developers who need to manage and validate contracts in their applications. This package is particularly useful in scenarios where you need to define and enforce data contracts, ensuring that the data structures used in your app adhere to specific rules and formats.
 
-<-- END_MAIN -->
+## When to Use This Package
+- **API Integration**: When working with APIs that require strict data formats.
+- **Data Validation**: To ensure that the data being processed meets certain criteria before being used in the application.
+- **Type Safety**: To leverage Dart's strong typing system for better code reliability.
+
+## Key Features
+- **Contract Definition**: Easily define contracts for your data models.
+- **Validation**: Built-in validation mechanisms to check data integrity.
+- **Serialization/Deserialization**: Simplifies the process of converting data to and from JSON.
+- **Error Handling**: Provides clear error messages when validation fails.
+
+Overall, `leancode_contracts` enhances the robustness of Flutter applications by ensuring that data adheres to defined contracts, making it an essential package for developers focused on data integrity and validation.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using leancode_contracts
+
+## Installation
+To add the `leancode_contracts` package to your Flutter project, include it in your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  leancode_contracts: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/leancode_contracts).
+
+## Platform-Specific Configuration
+### Android
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, you may need to configure your `Info.plist` file to allow for any specific permissions required by your application.
+
+## Basic Usage
+To use the `leancode_contracts` package, you will typically follow these steps:
+
+1. **Define a Contract**: Create a class that extends `Contract`.
+2. **Validate Data**: Use the validation methods provided by the package.
+3. **Serialize/Deserialize**: Convert your data to and from JSON format.
+
+Here’s a simple example of how to define a contract:
+
+```dart
+import 'package:leancode_contracts/leancode_contracts.dart';
+
+class UserContract extends Contract {
+  final String name;
+  final int age;
+
+  UserContract({required this.name, required this.age}) : super();
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'age': age,
+    };
+  }
+
+  @override
+  void validate() {
+    if (name.isEmpty) {
+      throw ValidationException('Name cannot be empty');
+    }
+    if (age < 0) {
+      throw ValidationException('Age cannot be negative');
+    }
+  }
+}
+```
+
+This example demonstrates how to create a simple user contract with validation rules. You can then use this contract to ensure that any user data adheres to the specified rules.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of leancode_contracts in Action
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:leancode_contracts/leancode_contracts.dart';
+
+// Main entry point of the Flutter application
+void main() {
+  runApp(MyApp());
+}
+
+// MyApp widget that serves as the root of the application
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Leancode Contracts Example',
+      home: UserForm(),
+    );
+  }
+}
+
+// UserForm widget to collect user data
+class UserForm extends StatefulWidget {
+  @override
+  _UserFormState createState() => _UserFormState();
+}
+
+class _UserFormState extends State<UserForm> {
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
+  String _errorMessage = '';
+
+  // Function to handle form submission
+  void _submit() {
+    // Create a UserContract instance
+    final userContract = UserContract(
+      name: _nameController.text,
+      age: int.tryParse(_ageController.text) ?? -1,
+    );
+
+    try {
+      // Validate the contract
+      userContract.validate();
+      // If validation passes, clear the error message
+      setState(() {
+        _errorMessage = '';
+      });
+      // Here you can proceed with further processing, like sending data to an API
+      print('User data is valid: ${userContract.toJson()}');
+    } catch (e) {
+      // If validation fails, update the error message
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('User Form')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: _ageController,
+              decoration: InputDecoration(labelText: 'Age'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submit,
+              child: Text('Submit'),
+            ),
+            if (_errorMessage.isNotEmpty)
+              Text(
+                _errorMessage,
+                style: TextStyle(color: Colors.red),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// UserContract class to define the data structure and validation rules
+class UserContract extends Contract {
+  final String name;
+  final int age;
+
+  UserContract({required this.name, required this.age}) : super();
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'age': age,
+    };
+  }
+
+  @override
+  void validate() {
+    if (name.isEmpty) {
+      throw ValidationException('Name cannot be empty');
+    }
+    if (age < 0) {
+      throw ValidationException('Age cannot be negative');
+    }
+  }
+}
+
+/*
+Application Flow Explanation:
+1. The application starts with the main function, which runs the MyApp widget.
+2. MyApp builds a MaterialApp with a title and sets UserForm as the home widget.
+3. UserForm contains two text fields for user input (name and age) and a submit button.
+4. When the submit button is pressed, the _submit function is called.
+5. Inside _submit, a UserContract instance is created with the input values.
+6. The validate method of UserContract is called to check the input data.
+7. If validation passes, a success message is printed, and the error message is cleared.
+8. If validation fails, the error message is displayed on the screen.
+*/
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the `leancode_contracts` package, guiding developers through its features, setup, and practical usage with a complete example.

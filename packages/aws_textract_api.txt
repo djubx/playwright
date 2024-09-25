@@ -1,3 +1,205 @@
+# aws_textract_api Flutter Package
 
+## <-- START_DESCRIPTION -->
 
-<-- END_MAIN -->
+### Description
+
+The `aws_textract_api` Flutter package provides a convenient way to integrate Amazon Textract's powerful document analysis capabilities into your Flutter applications. Amazon Textract is a machine learning service that automatically extracts text, handwriting, and data from scanned documents. This package allows developers to leverage these capabilities seamlessly within their Flutter apps, making it ideal for applications that require document processing, such as invoice management, form processing, and data extraction from various document types.
+
+### Key Features
+
+- **Text Extraction**: Extract printed and handwritten text from documents.
+- **Form Data Extraction**: Automatically identify and extract key-value pairs from forms.
+- **Table Data Extraction**: Analyze and extract structured data from tables within documents.
+- **Support for Multiple Document Formats**: Works with various document types, including PDFs and images.
+- **Easy Integration**: Simple API for integrating Textract functionality into Flutter applications.
+
+### When to Use
+
+- When you need to automate data entry from physical documents.
+- For applications that require scanning and processing forms or invoices.
+- When building tools that need to analyze and extract information from documents for reporting or analytics.
+
+## <-- END_DESCRIPTION -->
+
+## <-- START_TUTORIAL -->
+
+### Tutorial
+
+To get started with the `aws_textract_api` package, follow these steps:
+
+#### Step 1: Add Dependency
+
+Add the `aws_textract_api` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  aws_textract_api: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/aws_textract_api).
+
+#### Step 2: Configure AWS Credentials
+
+You need to set up AWS credentials to use the Textract service. This can be done by creating an IAM user in the AWS Management Console with permissions for Textract. After creating the user, you will receive an Access Key ID and Secret Access Key.
+
+- **For Android**: 
+  - Add the following permissions to your `AndroidManifest.xml`:
+
+    ```xml
+    <uses-permission android:name="android.permission.INTERNET"/>
+    ```
+
+- **For iOS**: 
+  - Ensure you have the necessary permissions in your `Info.plist`:
+
+    ```xml
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+    </dict>
+    ```
+
+#### Step 3: Initialize the Package
+
+In your Flutter application, initialize the `aws_textract_api` package with your AWS credentials:
+
+```dart
+import 'package:aws_textract_api/aws_textract_api.dart';
+
+final textract = Textract(
+  region: 'your-region', // e.g., 'us-west-2'
+  credentials: AwsClientCredentials(
+    accessKey: 'your-access-key',
+    secretKey: 'your-secret-key',
+  ),
+);
+```
+
+### Step 4: Using the Package
+
+You can now use the package to analyze documents. Here’s a simple example of how to call the Textract API to analyze a document:
+
+```dart
+final response = await textract.analyzeDocument(
+  document: Document(
+    s3Object: S3Object(
+      bucket: 'your-bucket-name',
+      name: 'your-document-name',
+    ),
+  ),
+  featureTypes: ['TABLES', 'FORMS'],
+);
+```
+
+## <-- END_TUTORIAL -->
+
+## <-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:aws_textract_api/aws_textract_api.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'AWS Textract Example',
+      home: TextractHome(),
+    );
+  }
+}
+
+class TextractHome extends StatefulWidget {
+  @override
+  _TextractHomeState createState() => _TextractHomeState();
+}
+
+class _TextractHomeState extends State<TextractHome> {
+  final textract = Textract(
+    region: 'your-region', // Specify your AWS region
+    credentials: AwsClientCredentials(
+      accessKey: 'your-access-key', // Your AWS Access Key
+      secretKey: 'your-secret-key', // Your AWS Secret Key
+    ),
+  );
+
+  String _extractedText = '';
+
+  // Function to analyze the document
+  Future<void> _analyzeDocument() async {
+    try {
+      // Call the analyzeDocument method from the Textract API
+      final response = await textract.analyzeDocument(
+        document: Document(
+          s3Object: S3Object(
+            bucket: 'your-bucket-name', // Your S3 bucket name
+            name: 'your-document-name', // The document name in S3
+          ),
+        ),
+        featureTypes: ['TABLES', 'FORMS'], // Specify the features to extract
+      );
+
+      // Process the response to extract text
+      setState(() {
+        _extractedText = response.blocks
+            .where((block) => block.blockType == 'LINE')
+            .map((line) => line.text)
+            .join('\n'); // Join all lines of text
+      });
+    } catch (e) {
+      // Handle any errors that occur during the API call
+      setState(() {
+        _extractedText = 'Error: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('AWS Textract Example'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: _analyzeDocument, // Trigger document analysis
+              child: Text('Analyze Document'),
+            ),
+            SizedBox(height: 20),
+            Text(
+              _extractedText, // Display the extracted text
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and home set to TextractHome.
+// 3. TextractHome is a stateful widget that initializes the Textract API with AWS credentials.
+// 4. When the "Analyze Document" button is pressed, the _analyzeDocument function is called.
+// 5. This function makes an API call to analyze the document stored in an S3 bucket.
+// 6. The response is processed to extract lines of text, which are then displayed on the screen.
+// 7. If an error occurs during the API call, it is caught and displayed instead.
+```
+
+## <-- END_MAIN -->
+
+### Summary
+
+In this blog post, we explored the `aws_textract_api` Flutter package, which allows developers to integrate Amazon Textract's document analysis capabilities into their applications. We covered the setup process, including adding the package, configuring AWS credentials, and using the API to analyze documents. The complete example provided demonstrates how to extract text from a document stored in an S3 bucket and display it in a Flutter app. This package is particularly useful for applications that require automated data extraction from various document types, making it a valuable tool for developers working in this space.

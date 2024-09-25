@@ -1,3 +1,226 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# iaphub_flutter: A Comprehensive Overview
 
+The `iaphub_flutter` package is a powerful tool designed for Flutter developers who want to integrate in-app purchases (IAP) into their applications seamlessly. This package provides a straightforward way to manage subscriptions and one-time purchases across both iOS and Android platforms, leveraging the Iaphub service.
 
-<-- END_MAIN -->
+## When to Use iaphub_flutter
+
+You should consider using `iaphub_flutter` when:
+- You want to implement in-app purchases in your Flutter application.
+- You need a unified solution for managing subscriptions and purchases across multiple platforms.
+- You are looking for a package that simplifies the complexities of handling IAPs, including receipt validation and user management.
+
+## Key Features
+
+- **Cross-Platform Support**: Works on both iOS and Android, allowing for a consistent experience across devices.
+- **Subscription Management**: Easily manage subscription plans, including renewals and cancellations.
+- **Receipt Validation**: Automatically validates purchase receipts to ensure authenticity.
+- **User Management**: Integrates user accounts with purchases, making it easier to manage subscriptions per user.
+- **Analytics**: Provides insights into user behavior and purchase patterns.
+
+With these features, `iaphub_flutter` stands out as a robust solution for developers looking to monetize their applications effectively.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# iaphub_flutter Setup and Usage Tutorial
+
+In this section, we will walk through the setup process for the `iaphub_flutter` package and explain how to use it in your Flutter application.
+
+## Installation
+
+To get started, add the `iaphub_flutter` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  iaphub_flutter: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Then, run the following command to install the package:
+
+```bash
+flutter pub get
+```
+
+## Platform-Specific Configuration
+
+### iOS Configuration
+
+1. **Update Info.plist**: Add the following keys to your `Info.plist` file to enable in-app purchases:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+<key>SKAdNetworkItems</key>
+<array>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>your_skadnetwork_id</string>
+    </dict>
+</array>
+```
+
+2. **Enable In-App Purchases**: Ensure that your app's capabilities include In-App Purchases in Xcode.
+
+### Android Configuration
+
+1. **Update AndroidManifest.xml**: Add the following permissions to your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="com.android.vending.BILLING" />
+```
+
+2. **Google Play Console**: Make sure to set up your in-app products in the Google Play Console.
+
+## Basic Usage
+
+To use the `iaphub_flutter` package, you need to initialize it with your Iaphub API key and set up the necessary methods for handling purchases.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:iaphub_flutter/iaphub_flutter.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Iaphub with your API key
+    Iaphub.init('your_api_key');
+  }
+
+  // Method to fetch products
+  void fetchProducts() async {
+    // Fetch available products from Iaphub
+    final products = await Iaphub.getProducts();
+    // Handle the fetched products
+  }
+
+  // Method to make a purchase
+  void purchaseProduct(String productId) async {
+    // Initiate a purchase for the specified product
+    final result = await Iaphub.purchase(productId);
+    // Handle the purchase result
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Iaphub Example')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            fetchProducts(); // Fetch products when button is pressed
+          },
+          child: Text('Fetch Products'),
+        ),
+      ),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of iaphub_flutter
+
+Here is a fully functional Flutter main file that demonstrates the key features of the `iaphub_flutter` package.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:iaphub_flutter/iaphub_flutter.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  List<Product> products = []; // List to hold fetched products
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Iaphub with your API key
+    Iaphub.init('your_api_key');
+    fetchProducts(); // Fetch products on app start
+  }
+
+  // Method to fetch products
+  void fetchProducts() async {
+    // Fetch available products from Iaphub
+    final fetchedProducts = await Iaphub.getProducts();
+    setState(() {
+      products = fetchedProducts; // Update state with fetched products
+    });
+  }
+
+  // Method to make a purchase
+  void purchaseProduct(String productId) async {
+    // Initiate a purchase for the specified product
+    final result = await Iaphub.purchase(productId);
+    // Handle the purchase result
+    if (result.success) {
+      // Purchase was successful
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Purchase successful!')),
+      );
+    } else {
+      // Handle purchase failure
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Purchase failed: ${result.error}')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Iaphub Example')),
+      body: ListView.builder(
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return ListTile(
+            title: Text(product.name), // Display product name
+            subtitle: Text(product.price), // Display product price
+            trailing: ElevatedButton(
+              onPressed: () => purchaseProduct(product.id), // Purchase on button press
+              child: Text('Buy'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and initializes the Iaphub service with the provided API key.
+// 2. It fetches the available products from Iaphub and updates the state.
+// 3. The products are displayed in a ListView, showing their names and prices.
+// 4. When the user clicks the "Buy" button, the purchaseProduct method is called.
+// 5. The purchase result is handled, displaying a success or failure message accordingly.
+
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive understanding of the `iaphub_flutter` package, guiding developers through its features, setup, and practical implementation.

@@ -1,3 +1,210 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the piped_client Flutter Package
 
+The `piped_client` package is a powerful tool designed for Flutter developers who want to interact with the Piped API, a lightweight and privacy-focused alternative to YouTube. This package allows developers to fetch videos, playlists, and channels seamlessly, making it an excellent choice for applications that require video content without the overhead of traditional video platforms.
 
-<-- END_MAIN -->
+## When to Use `piped_client`
+
+- **Video Streaming Apps**: If you're building an app that requires video content, `piped_client` provides a straightforward way to access videos from Piped.
+- **Privacy-Focused Applications**: For apps that prioritize user privacy, using Piped as a video source can be a significant advantage.
+- **Custom Video Players**: If you want to create a custom video player experience, this package allows you to fetch and display videos easily.
+
+## Key Features
+
+- **Easy API Access**: Simplifies the process of making API calls to Piped.
+- **Video Fetching**: Retrieve video details, including titles, descriptions, and thumbnails.
+- **Playlist Support**: Access and display playlists from Piped.
+- **Channel Information**: Fetch details about channels, including subscriber counts and channel descriptions.
+
+Overall, `piped_client` is an excellent choice for developers looking to integrate video content from Piped into their Flutter applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using the piped_client Package
+
+## Installation
+
+To get started with the `piped_client` package, you need to add it to your Flutter project. Open your `pubspec.yaml` file and add the following dependency:
+
+```yaml
+dependencies:
+  piped_client: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/piped_client).
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+## Platform-Specific Configuration
+
+### Android
+
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+
+For iOS, you may need to configure your `Info.plist` to allow network requests. Add the following lines to your `ios/Runner/Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+
+Once the package is installed and configured, you can start using it in your Flutter application. Here’s a simple example of how to fetch and display a video from Piped.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:piped_client/piped_client.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Piped Client Example')),
+        body: VideoFetcher(),
+      ),
+    );
+  }
+}
+
+class VideoFetcher extends StatefulWidget {
+  @override
+  _VideoFetcherState createState() => _VideoFetcherState();
+}
+
+class _VideoFetcherState extends State<VideoFetcher> {
+  late Future<Video> video;
+
+  @override
+  void initState() {
+    super.initState();
+    video = PipedClient().getVideo('video_id'); // Replace with a valid video ID
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Video>(
+      future: video,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final videoData = snapshot.data!;
+          return Column(
+            children: [
+              Text(videoData.title),
+              Image.network(videoData.thumbnailUrl),
+              // Add more video details as needed
+            ],
+          );
+        }
+      },
+    );
+  }
+}
+```
+
+This code sets up a simple Flutter application that fetches and displays a video from Piped. The `VideoFetcher` widget uses a `FutureBuilder` to handle the asynchronous fetching of video data.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using piped_client
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:piped_client/piped_client.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Piped Client Example')),
+        body: VideoFetcher(),
+      ),
+    );
+  }
+}
+
+class VideoFetcher extends StatefulWidget {
+  @override
+  _VideoFetcherState createState() => _VideoFetcherState();
+}
+
+class _VideoFetcherState extends State<VideoFetcher> {
+  late Future<Video> video; // Declare a Future to hold the video data
+
+  @override
+  void initState() {
+    super.initState();
+    video = PipedClient().getVideo('video_id'); // Replace with a valid video ID
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Video>(
+      future: video, // Use the Future to fetch video data
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // While waiting for the data, show a loading indicator
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          // If there's an error, display it
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final videoData = snapshot.data!; // Get the video data
+          return Column(
+            children: [
+              Text(videoData.title), // Display the video title
+              Image.network(videoData.thumbnailUrl), // Display the video thumbnail
+              // You can add more video details as needed
+            ],
+          );
+        }
+      },
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The main function runs the RealFlutter app.
+// 2. RealFlutter builds a MaterialApp with a Scaffold containing an AppBar and the VideoFetcher widget.
+// 3. VideoFetcher is a StatefulWidget that fetches video data from Piped using the PipedClient.
+// 4. In the initState method, we initialize the video Future with a call to getVideo, passing a valid video ID.
+// 5. The FutureBuilder listens to the video Future and updates the UI based on its state.
+// 6. While waiting for the data, a CircularProgressIndicator is shown.
+// 7. If an error occurs, it displays the error message.
+// 8. Once the data is fetched, it displays the video title and thumbnail in a Column widget.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `piped_client` package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow.

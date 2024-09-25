@@ -1,3 +1,199 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the socket_connector Flutter Package
 
+The `socket_connector` package is a powerful tool for Flutter developers looking to implement real-time communication in their applications. It provides a simple and efficient way to connect to WebSocket servers, enabling features such as live chat, notifications, and real-time data updates. 
 
-<-- END_MAIN -->
+## When to Use `socket_connector`
+- **Real-time Applications**: Ideal for chat applications, live sports updates, or any app requiring instant data exchange.
+- **IoT Applications**: Useful for connecting to IoT devices that communicate over WebSockets.
+- **Gaming**: Perfect for multiplayer games that require real-time interaction between players.
+
+## Key Features
+- **Easy Connection Management**: Simplifies the process of connecting, disconnecting, and managing WebSocket connections.
+- **Event Handling**: Provides a straightforward way to handle incoming messages and connection events.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+- **Customizable**: Allows developers to customize connection parameters and message handling.
+
+Overall, `socket_connector` is an excellent choice for developers looking to add real-time capabilities to their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using socket_connector
+
+## Installation
+To get started with the `socket_connector` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  socket_connector: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+
+### Android
+1. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21.
+2. No additional permissions are required for WebSocket connections.
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following to allow arbitrary loads (if needed):
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the `socket_connector`, you will typically follow these steps:
+
+1. **Import the package**:
+   ```dart
+   import 'package:socket_connector/socket_connector.dart';
+   ```
+
+2. **Create an instance of the connector**:
+   ```dart
+   final connector = SocketConnector('wss://your-websocket-url');
+   ```
+
+3. **Connect to the server**:
+   ```dart
+   connector.connect();
+   ```
+
+4. **Listen for messages**:
+   ```dart
+   connector.onMessage.listen((message) {
+     print('Received message: $message');
+   });
+   ```
+
+5. **Send messages**:
+   ```dart
+   connector.send('Hello, Server!');
+   ```
+
+6. **Handle connection events**:
+   ```dart
+   connector.onConnect.listen((_) {
+     print('Connected to the server');
+   });
+
+   connector.onDisconnect.listen((_) {
+     print('Disconnected from the server');
+   });
+   ```
+
+By following these steps, you can easily set up and use the `socket_connector` package in your Flutter application.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of socket_connector in a Flutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:socket_connector/socket_connector.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Socket Connector Example',
+      home: SocketConnectorExample(),
+    );
+  }
+}
+
+class SocketConnectorExample extends StatefulWidget {
+  @override
+  _SocketConnectorExampleState createState() => _SocketConnectorExampleState();
+}
+
+class _SocketConnectorExampleState extends State<SocketConnectorExample> {
+  late SocketConnector connector; // Declare the connector
+  String receivedMessage = ''; // Store received messages
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the connector with the WebSocket URL
+    connector = SocketConnector('wss://your-websocket-url');
+    
+    // Connect to the WebSocket server
+    connector.connect();
+
+    // Listen for incoming messages
+    connector.onMessage.listen((message) {
+      setState(() {
+        receivedMessage = message; // Update the state with the received message
+      });
+    });
+
+    // Handle connection events
+    connector.onConnect.listen((_) {
+      print('Connected to the server');
+    });
+
+    connector.onDisconnect.listen((_) {
+      print('Disconnected from the server');
+    });
+  }
+
+  @override
+  void dispose() {
+    connector.disconnect(); // Clean up the connection
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Socket Connector Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Received Message:'),
+            Text(receivedMessage, style: TextStyle(fontSize: 24)),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                connector.send('Hello, Server!'); // Send a message to the server
+              },
+              child: Text('Send Message'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and a home widget (SocketConnectorExample).
+// 3. In SocketConnectorExample, we initialize the SocketConnector with a WebSocket URL.
+// 4. We connect to the server and set up listeners for incoming messages and connection events.
+// 5. When a message is received, we update the state to display it on the screen.
+// 6. The user can send a message to the server by pressing the "Send Message" button.
+// 7. When the widget is disposed, we disconnect from the WebSocket server to clean up resources.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `socket_connector` package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow.

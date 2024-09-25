@@ -1,1 +1,188 @@
-don't show loader
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `prometheus_client` Flutter Package
+
+The `prometheus_client` package is a powerful tool designed for Flutter developers who want to integrate Prometheus monitoring into their applications. This package allows you to expose metrics from your Flutter app, which can then be scraped by a Prometheus server for monitoring and alerting purposes. 
+
+## When to Use This Package
+You should consider using the `prometheus_client` package when:
+- You need to monitor the performance and health of your Flutter application.
+- You want to collect custom metrics for analytics and reporting.
+- You are building applications that require real-time monitoring and alerting.
+
+## Key Features
+- **Metrics Collection**: Easily define and collect various types of metrics such as counters, gauges, histograms, and summaries.
+- **HTTP Server**: The package provides an HTTP server to expose the metrics in a format that Prometheus can scrape.
+- **Custom Metrics**: You can create custom metrics tailored to your application's specific needs.
+- **Integration**: Seamlessly integrates with existing Prometheus setups.
+
+Overall, the `prometheus_client` package is an essential tool for developers looking to implement robust monitoring solutions in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using the `prometheus_client` Package
+
+## Installation
+To get started with the `prometheus_client` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  prometheus_client: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/prometheus_client).
+
+## Platform-Specific Configuration
+
+### Android
+For Android, ensure that your `AndroidManifest.xml` file has the necessary permissions to allow network access. You may need to add the following line within the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+For iOS, you may need to configure your app's `Info.plist` to allow network requests. Add the following key-value pair:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+Once you have installed the package and configured your app, you can start using it to collect metrics. Here’s a simple example of how to set up a basic metrics server:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:prometheus_client/prometheus_client.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Create a metrics registry
+    final registry = Registry();
+
+    // Create a counter metric
+    final counter = Counter('example_counter', 'An example counter');
+    registry.register(counter);
+
+    // Start the HTTP server to expose metrics
+    startMetricsServer(registry);
+
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Prometheus Client Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Increment the counter each time the button is pressed
+              counter.inc();
+            },
+            child: Text('Increment Counter'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void startMetricsServer(Registry registry) {
+    // Start the HTTP server on port 8080
+    final server = HttpServer.bind('localhost', 8080);
+    server.then((HttpServer httpServer) {
+      httpServer.listen((HttpRequest request) {
+        // Respond with the metrics in Prometheus format
+        request.response
+          ..headers.contentType = ContentType.text
+          ..write(registry.collect());
+        request.response.close();
+      });
+    });
+  }
+}
+```
+
+This code sets up a simple Flutter application that exposes a counter metric. When the button is pressed, the counter increments, and the metrics can be scraped by Prometheus.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using `prometheus_client`
+
+```dart
+import 'dart:io'; // Importing Dart's IO library for HTTP server
+import 'package:flutter/material.dart'; // Importing Flutter material package
+import 'package:prometheus_client/prometheus_client.dart'; // Importing the prometheus_client package
+
+void main() {
+  runApp(RealFlutter()); // Running the RealFlutter app
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Create a metrics registry to hold our metrics
+    final registry = Registry();
+
+    // Create a counter metric to track button presses
+    final counter = Counter('example_counter', 'An example counter');
+    registry.register(counter); // Register the counter with the registry
+
+    // Start the HTTP server to expose metrics
+    startMetricsServer(registry);
+
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Prometheus Client Example')), // App bar title
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Increment the counter each time the button is pressed
+              counter.inc(); // Increment the counter
+            },
+            child: Text('Increment Counter'), // Button text
+          ),
+        ),
+      ),
+    );
+  }
+
+  void startMetricsServer(Registry registry) {
+    // Start the HTTP server on port 8080
+    final server = HttpServer.bind('localhost', 8080);
+    server.then((HttpServer httpServer) {
+      httpServer.listen((HttpRequest request) {
+        // Respond with the metrics in Prometheus format
+        request.response
+          ..headers.contentType = ContentType.text // Set response content type
+          ..write(registry.collect()); // Write the collected metrics to the response
+        request.response.close(); // Close the response
+      });
+    });
+  }
+}
+```
+
+// The application starts by running the `RealFlutter` widget.
+// Inside the `build` method, we create a metrics registry to hold our metrics.
+// We define a counter metric called `example_counter` and register it with the registry.
+// The `startMetricsServer` function is called to start an HTTP server on localhost at port 8080.
+// When the button is pressed, the `onPressed` callback increments the counter.
+// The HTTP server listens for incoming requests and responds with the collected metrics in Prometheus format.
+// This allows Prometheus to scrape the metrics for monitoring purposes.
+
+<!-- END_MAIN -->
+``` 
+
+In summary, this blog post provides a comprehensive overview of the `prometheus_client` package, including its features, setup instructions, and a complete example of how to use it in a Flutter application. By following the steps outlined, developers can effectively integrate Prometheus monitoring into their Flutter apps, enabling better performance tracking and analytics.

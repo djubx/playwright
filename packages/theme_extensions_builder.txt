@@ -1,11 +1,185 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Exploring the `theme_extensions_builder` Flutter Package
 
-// The application flow is as follows:
-// 1. The RealFlutter class is defined, which uses the custom theme extension.
-// 2. The custom theme extension is created and passed to the Theme widget.
-// 3. The Theme widget uses the custom theme extension to create a ThemeData object.
-// 4. The ThemeData object is used to style the application.
-// 5. The application is run using the runApp function.
+The `theme_extensions_builder` package is a powerful tool for Flutter developers looking to create customizable and extensible themes for their applications. This package allows you to define theme extensions that can be easily integrated into your Flutter app, enabling a more modular and maintainable approach to styling.
 
-// In summary, the code flows as follows:
-// RealFlutter class -> CustomThemeExtension class -> Theme widget -> ThemeData object -> Application styling.
-<-- END_MAIN -->
+## When to Use This Package
+You might consider using `theme_extensions_builder` when:
+- You want to create a consistent look and feel across your application.
+- You need to support multiple themes (e.g., light and dark modes) with ease.
+- You want to encapsulate theme-related properties in a structured way.
+
+## Key Features
+- **Custom Theme Extensions**: Define your own theme properties that can be reused throughout your app.
+- **Easy Integration**: Seamlessly integrate with existing Flutter themes.
+- **Modular Design**: Keep your theme-related code organized and maintainable.
+- **Dynamic Updates**: Change themes at runtime without needing to rebuild the entire app.
+
+With these features, `theme_extensions_builder` empowers developers to create visually appealing and user-friendly applications with minimal effort.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `theme_extensions_builder`
+
+## Installation
+To get started with `theme_extensions_builder`, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  theme_extensions_builder: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/theme_extensions_builder).
+
+## Platform-Specific Details
+### Android
+No specific configurations are required for Android. Just ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file.
+
+### iOS
+For iOS, ensure that your deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Using the Package
+1. **Define Your Theme Extension**: Create a class that extends `ThemeExtension` and define your custom properties.
+2. **Add the Theme Extension to Your ThemeData**: Use the `copyWith` method to add your custom theme extension to the existing `ThemeData`.
+3. **Access Your Theme Extension**: Use `Theme.of(context).extension<YourThemeExtension>()` to access your custom properties in your widgets.
+
+### Example
+Here’s a simple example of how to define and use a custom theme extension:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:theme_extensions_builder/theme_extensions_builder.dart';
+
+// Step 1: Define your custom theme extension
+class MyThemeExtension extends ThemeExtension<MyThemeExtension> {
+  final Color customColor;
+
+  MyThemeExtension({required this.customColor});
+
+  @override
+  MyThemeExtension copyWith({Color? customColor}) {
+    return MyThemeExtension(
+      customColor: customColor ?? this.customColor,
+    );
+  }
+
+  @override
+  MyThemeExtension lerp(ThemeExtension<MyThemeExtension>? other, double t) {
+    if (other is! MyThemeExtension) return this;
+    return MyThemeExtension(
+      customColor: Color.lerp(customColor, other.customColor, t)!,
+    );
+  }
+}
+
+// Step 2: Add the theme extension to your ThemeData
+ThemeData myTheme = ThemeData().copyWith(
+  extensions: <ThemeExtension<dynamic>>[
+    MyThemeExtension(customColor: Colors.blue),
+  ],
+);
+```
+
+This setup allows you to create a custom theme that can be easily accessed throughout your application.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `theme_extensions_builder`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:theme_extensions_builder/theme_extensions_builder.dart';
+
+// Step 1: Define your custom theme extension
+class MyThemeExtension extends ThemeExtension<MyThemeExtension> {
+  final Color customColor;
+
+  MyThemeExtension({required this.customColor});
+
+  @override
+  MyThemeExtension copyWith({Color? customColor}) {
+    return MyThemeExtension(
+      customColor: customColor ?? this.customColor,
+    );
+  }
+
+  @override
+  MyThemeExtension lerp(ThemeExtension<MyThemeExtension>? other, double t) {
+    if (other is! MyThemeExtension) return this;
+    return MyThemeExtension(
+      customColor: Color.lerp(customColor, other.customColor, t)!,
+    );
+  }
+}
+
+// Step 2: Create the main application widget
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Step 3: Define the theme with the custom extension
+    ThemeData myTheme = ThemeData().copyWith(
+      extensions: <ThemeExtension<dynamic>>[
+        MyThemeExtension(customColor: Colors.blue),
+      ],
+    );
+
+    return MaterialApp(
+      title: 'Theme Extensions Builder Example',
+      theme: myTheme,
+      home: MyHomePage(),
+    );
+  }
+}
+
+// Step 4: Create a home page to demonstrate the theme extension
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Step 5: Access the custom theme extension
+    final myThemeExtension = Theme.of(context).extension<MyThemeExtension>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Theme Extensions Builder Example'),
+      ),
+      body: Center(
+        child: Container(
+          // Step 6: Use the custom color from the theme extension
+          color: myThemeExtension?.customColor,
+          width: 200,
+          height: 200,
+          child: Center(
+            child: Text(
+              'Custom Color Box',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Step 7: Application Flow Explanation
+// The application starts with the main function, which runs the RealFlutter widget.
+// In RealFlutter, we define a custom theme that includes our MyThemeExtension.
+// The MyHomePage widget is displayed, where we access the custom theme extension
+// and use its properties to style a container. The container's background color
+// is set to the custom color defined in the theme extension, demonstrating how
+// to utilize the theme extension throughout the app.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `theme_extensions_builder` package, guiding developers through its features, setup, and practical usage with a complete example.

@@ -1,16 +1,182 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Instabug Dio Interceptor: A Comprehensive Overview
 
+The `instabug_dio_interceptor` Flutter package is designed to integrate Instabug's bug reporting and feedback capabilities into your Flutter applications seamlessly. This package acts as a middleware for the Dio HTTP client, allowing developers to capture network requests and responses, which can be invaluable for debugging and improving user experience.
 
-// This is the main entry point of the app.
-// First, we initialize Instabug with our token and invocation events.
-// Then, we create a Dio instance and add the InstabugDioInterceptor to it.
-// Finally, we run the app with the Dio instance.
+## When to Use This Package
+- **Error Tracking**: If your application encounters network errors, this package can help you capture and report them automatically.
+- **User Feedback**: It allows users to provide feedback directly related to network requests, enhancing the quality of your app.
+- **Performance Monitoring**: By logging network requests, you can analyze performance issues and optimize your API interactions.
 
-// In the MyApp widget, we create a Material app with a title and a home page.
-// In the MyHomePage widget, we create a scaffold with an app bar and a body.
-// In the body, we have a button that makes a network request using Dio when pressed.
+## Key Features
+- **Automatic Error Reporting**: Captures and reports errors from network requests.
+- **User Feedback Integration**: Allows users to send feedback related to specific network calls.
+- **Customizable**: You can customize the behavior of the interceptor to suit your application's needs.
+- **Seamless Integration**: Works effortlessly with the Dio HTTP client, which is widely used in Flutter applications.
 
-// When the button is pressed, the InstabugDioInterceptor will track the network request and response.
-// If there is an error, the InstabugDioInterceptor will also track the error.
-// We can view the tracked requests and errors in the Instabug dashboard.
+Overall, the `instabug_dio_interceptor` package is a powerful tool for developers looking to enhance their app's reliability and user engagement through effective bug reporting and feedback mechanisms.
+<!-- END_DESCRIPTION -->
 
-<-- END_MAIN -->
+<!-- START_TUTORIAL -->
+# Setting Up and Using Instabug Dio Interceptor
+
+In this section, we will walk through the setup process for the `instabug_dio_interceptor` package and demonstrate how to use it effectively in your Flutter application.
+
+## Installation
+
+To get started, you need to add the `instabug_dio_interceptor` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.0.0
+  instabug_dio_interceptor: ^1.0.0
+```
+
+After adding the dependencies, run the following command to install them:
+
+```bash
+flutter pub get
+```
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `android/app/build.gradle` file and ensure you have the following permissions:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // or higher
+    }
+}
+```
+
+2. Add the Instabug SDK to your project by following the [official Instabug Android setup guide](https://docs.instabug.com/docs/android-integration).
+
+### iOS
+1. Open your `ios/Podfile` and ensure you have the following:
+
+```ruby
+platform :ios, '10.0' # or higher
+```
+
+2. Follow the [official Instabug iOS setup guide](https://docs.instabug.com/docs/ios-integration) to integrate the SDK.
+
+## Using the Package
+
+Once you have installed the package and configured your project, you can start using it in your Flutter application. Here’s how to set it up:
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:instabug_dio_interceptor/instabug_dio_interceptor.dart';
+
+void main() {
+  // Initialize Dio
+  final dio = Dio();
+
+  // Add the Instabug interceptor
+  dio.interceptors.add(InstabugDioInterceptor());
+
+  // Now you can use dio to make network requests
+}
+```
+
+This setup allows you to automatically capture and report network errors and user feedback related to those requests. You can now proceed to make network calls using the `dio` instance, and the interceptor will handle the rest.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Instabug Dio Interceptor
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:instabug_dio_interceptor/instabug_dio_interceptor.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Instabug Dio Interceptor Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final Dio dio = Dio();
+
+  @override
+  void initState() {
+    super.initState();
+    // Add the Instabug interceptor to the Dio instance
+    dio.interceptors.add(InstabugDioInterceptor());
+  }
+
+  // Function to make a network request
+  Future<void> fetchData() async {
+    try {
+      // Making a GET request to a sample API
+      final response = await dio.get('https://jsonplaceholder.typicode.com/posts');
+      // Displaying the response in a dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Response'),
+          content: Text(response.data.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      // Handle any errors that occur during the request
+      print('Error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Instabug Dio Interceptor Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: fetchData, // Trigger the network request
+          child: Text('Fetch Data'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the `main` function, which runs the `RealFlutter` widget.
+// 2. The `RealFlutter` widget builds a MaterialApp with a `HomeScreen` as its home.
+// 3. In the `HomeScreen`, we initialize a Dio instance and add the Instabug interceptor in `initState()`.
+// 4. When the user presses the "Fetch Data" button, the `fetchData` function is called.
+// 5. The `fetchData` function makes a GET request to a sample API.
+// 6. If the request is successful, the response is displayed in an AlertDialog.
+// 7. If an error occurs, it is printed to the console, and the Instabug interceptor will handle reporting it.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `instabug_dio_interceptor` package, guiding developers through its features, setup, and practical usage in a Flutter application.

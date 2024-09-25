@@ -1,10 +1,217 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `store_version_checker` Flutter Package
 
+The `store_version_checker` package is a powerful tool for Flutter developers that allows you to check for the latest version of your app available on the app stores (Google Play Store for Android and App Store for iOS). This package is particularly useful for ensuring that users are running the latest version of your application, which can help improve user experience and security.
 
-// The application flow is as follows:
-// 1. The user runs the app, and the `RealFlutter` widget is created.
-// 2. In the `initState` method, the `_checkVersion` function is called to check the current app version and retrieve the latest version number and release notes.
-// 3. The `_checkVersion` function creates an instance of the `StoreVersionChecker` class and uses it to get the current app version, latest version number, and release notes.
-// 4. The current app version, latest version number, and release notes are displayed on the screen using `Text` widgets.
-// 5. If the user wants to check for updates again, they can restart the app or call the `_checkVersion` function manually.
+## When to Use This Package
+- **Version Management**: To prompt users to update to the latest version of your app.
+- **User Engagement**: To inform users about new features or bug fixes in the latest version.
+- **App Maintenance**: To ensure that users are not using outdated versions that may have known issues.
 
-<-- END_MAIN -->
+## Key Features
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Customizable Alerts**: You can customize the dialog that prompts users to update.
+- **Version Comparison**: Automatically compares the current app version with the latest version available on the store.
+- **Easy Integration**: Simple API that makes it easy to integrate into your existing Flutter application.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `store_version_checker`
+
+## Installation
+To get started with the `store_version_checker` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  store_version_checker: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Ensure you have the following permissions added:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following key to allow network requests:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the `store_version_checker`, you can call the `StoreVersionChecker.getStoreVersion()` method to check for the latest version. Here’s a simple example:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:store_version_checker/store_version_checker.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: VersionCheckScreen(),
+    );
+  }
+}
+
+class VersionCheckScreen extends StatefulWidget {
+  @override
+  _VersionCheckScreenState createState() => _VersionCheckScreenState();
+}
+
+class _VersionCheckScreenState extends State<VersionCheckScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkForUpdate();
+  }
+
+  void _checkForUpdate() async {
+    final String currentVersion = '1.0.0'; // Your current app version
+    final String latestVersion = await StoreVersionChecker.getStoreVersion();
+
+    if (latestVersion != currentVersion) {
+      // Show update dialog
+      _showUpdateDialog(latestVersion);
+    }
+  }
+
+  void _showUpdateDialog(String latestVersion) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Update Available'),
+          content: Text('A new version ($latestVersion) is available. Please update!'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Redirect to app store
+                Navigator.of(context).pop();
+              },
+              child: Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Version Checker')),
+      body: Center(child: Text('Checking for updates...')),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of `store_version_checker`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:store_version_checker/store_version_checker.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: VersionCheckScreen(),
+    );
+  }
+}
+
+class VersionCheckScreen extends StatefulWidget {
+  @override
+  _VersionCheckScreenState createState() => _VersionCheckScreenState();
+}
+
+class _VersionCheckScreenState extends State<VersionCheckScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkForUpdate(); // Call the method to check for updates when the app starts
+  }
+
+  void _checkForUpdate() async {
+    final String currentVersion = '1.0.0'; // Your current app version
+    final String latestVersion = await StoreVersionChecker.getStoreVersion(); // Fetch the latest version from the store
+
+    if (latestVersion != currentVersion) { // Compare the versions
+      _showUpdateDialog(latestVersion); // Show dialog if an update is available
+    }
+  }
+
+  void _showUpdateDialog(String latestVersion) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Update Available'), // Title of the dialog
+          content: Text('A new version ($latestVersion) is available. Please update!'), // Message with the latest version
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Redirect to app store
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Update'), // Button to trigger update
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Version Checker')), // App bar title
+      body: Center(child: Text('Checking for updates...')), // Center message while checking
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and the `MyApp` widget is built.
+// 2. The `VersionCheckScreen` widget is displayed, which triggers the `_checkForUpdate` method in `initState()`.
+// 3. The `_checkForUpdate` method fetches the latest version from the store and compares it with the current version.
+// 4. If the versions do not match, it calls `_showUpdateDialog` to inform the user about the available update.
+// 5. The user can then choose to update the app by clicking the 'Update' button, which can be configured to redirect to the app store.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive understanding of the `store_version_checker` package, guiding developers through its features, setup, and practical implementation.

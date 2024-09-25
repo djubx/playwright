@@ -1,8 +1,245 @@
+# CometChat SDK Flutter Package
 
+## <-- START_DESCRIPTION -->
 
-// Final summary:
-// The Cometchat SDK Flutter package provides a simple and efficient way to integrate real-time chat functionality into your Flutter app.
-// The package handles all the underlying complexity of real-time communication, allowing you to focus on building a seamless and engaging user experience.
-// With its robust features and easy-to-use API, the Cometchat SDK Flutter package is an ideal choice for building social media apps, messaging apps, online communities, and customer support platforms.
+### Overview
 
-<-- END_MAIN -->
+The **CometChat SDK** is a powerful package designed for Flutter developers who want to integrate real-time chat functionality into their applications. It provides a comprehensive set of features that enable developers to build chat applications with ease, including one-on-one messaging, group chats, and multimedia sharing. The SDK is particularly useful for social networking apps, customer support systems, and any application that requires real-time communication.
+
+### When to Use
+
+You should consider using the CometChat SDK when:
+- You need to implement real-time chat features in your Flutter application.
+- You want to provide users with a seamless messaging experience, including text, images, and videos.
+- You require advanced features like typing indicators, read receipts, and message reactions.
+
+### Key Features
+
+- **Real-time Messaging**: Send and receive messages instantly.
+- **Group Chats**: Create and manage group conversations.
+- **Media Sharing**: Share images, videos, and files.
+- **User Presence**: Track online/offline status of users.
+- **Typing Indicators**: Show when users are typing.
+- **Message Reactions**: Allow users to react to messages.
+- **Customizable UI**: Build a chat interface that fits your app's design.
+
+## <-- END_DESCRIPTION -->
+
+## <-- START_TUTORIAL -->
+
+### Setup Process
+
+To get started with the CometChat SDK in your Flutter project, follow these steps:
+
+#### Step 1: Add Dependency
+
+Add the CometChat SDK to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cometchat_sdk: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/cometchat_sdk).
+
+#### Step 2: Platform-Specific Configuration
+
+**For Android:**
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // or higher
+        ...
+    }
+}
+```
+
+2. Add internet permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+**For iOS:**
+1. Open `ios/Runner/Info.plist` and add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+2. Ensure your iOS deployment target is set to at least 10.0 in `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+#### Step 3: Initialize CometChat
+
+In your main Dart file, initialize the CometChat SDK with your app credentials:
+
+```dart
+import 'package:cometchat_sdk/cometchat_sdk.dart';
+
+void main() {
+  CometChat.init("YOUR_APP_ID", "YOUR_REGION").then((value) {
+    runApp(MyApp());
+  }).catchError((error) {
+    print("Error initializing CometChat: $error");
+  });
+}
+```
+
+### Usage
+
+Once the SDK is initialized, you can start using its features. For example, you can log in a user and send a message:
+
+```dart
+CometChat.login("USER_ID", "AUTH_KEY").then((user) {
+  // User logged in successfully
+}).catchError((error) {
+  // Handle login error
+});
+```
+
+## <-- END_TUTORIAL -->
+
+## <-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cometchat_sdk/cometchat_sdk.dart';
+
+void main() {
+  // Initialize CometChat with your app credentials
+  CometChat.init("YOUR_APP_ID", "YOUR_REGION").then((value) {
+    runApp(MyApp());
+  }).catchError((error) {
+    print("Error initializing CometChat: $error");
+  });
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CometChat Example',
+      home: ChatScreen(),
+    );
+  }
+}
+
+class ChatScreen extends StatefulWidget {
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  List<Message> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Log in the user
+    CometChat.login("USER_ID", "AUTH_KEY").then((user) {
+      // Fetch previous messages if needed
+      fetchMessages();
+    }).catchError((error) {
+      print("Error logging in: $error");
+    });
+  }
+
+  void fetchMessages() {
+    // Fetch messages from a specific conversation
+    CometChat.getMessages("CONVERSATION_ID").then((messages) {
+      setState(() {
+        _messages = messages;
+      });
+    }).catchError((error) {
+      print("Error fetching messages: $error");
+    });
+  }
+
+  void sendMessage() {
+    // Create a new message object
+    Message message = Message(
+      text: _messageController.text,
+      receiverId: "RECEIVER_ID",
+      type: MessageType.text,
+    );
+
+    // Send the message
+    CometChat.sendMessage(message).then((sentMessage) {
+      setState(() {
+        _messages.add(sentMessage); // Add sent message to the list
+      });
+      _messageController.clear(); // Clear the input field
+    }).catchError((error) {
+      print("Error sending message: $error");
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Chat")),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_messages[index].text),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(hintText: "Type a message"),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: sendMessage, // Send message on button press
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app initializes the CometChat SDK with the provided app credentials.
+// 2. The user is logged in using their USER_ID and AUTH_KEY.
+// 3. Upon successful login, previous messages are fetched from the specified conversation.
+// 4. The chat interface displays a list of messages.
+// 5. Users can type a message in the input field and send it by pressing the send button.
+// 6. The sent message is added to the message list and displayed in the chat interface.
+
+```
+
+## <-- END_MAIN -->
+
+### Summary
+
+In this blog post, we explored the CometChat SDK for Flutter, detailing its features, setup process, and providing a complete example of a chat application. The application allows users to log in, fetch previous messages, and send new messages in real-time. By following the steps outlined, developers can easily integrate chat functionality into their Flutter applications, enhancing user engagement and communication.

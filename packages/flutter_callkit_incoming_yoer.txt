@@ -1,10 +1,181 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Flutter CallKit Incoming Yoer Package
 
+The `flutter_callkit_incoming_yoer` package is a powerful Flutter plugin designed to facilitate the integration of incoming call notifications in your Flutter applications. This package is particularly useful for developers looking to implement VoIP (Voice over Internet Protocol) functionalities, allowing users to receive calls in a native-like manner on both Android and iOS platforms.
 
-// The app initializes the FlutterCallkitIncomingYoer package and sets up an event listener for incoming calls.
-// When an incoming call is received, the app displays the call screen using the showCallScreen method.
-// The call screen is displayed on top of the current app screen, allowing the user to answer or reject the call.
-// The app uses the CallKit framework on iOS and the TelecomManager on Android to handle incoming calls.
-// The app requires the necessary permissions to handle incoming calls, such as the READ_PHONE_STATE and CALL_PHONE permissions on Android.
-// The app also requires a configuration file, such as the CallKit.plist file on iOS, to configure the CallKit framework.
+## When to Use This Package
+You should consider using `flutter_callkit_incoming_yoer` when:
+- You are developing a VoIP application and need to handle incoming calls.
+- You want to provide a seamless user experience by utilizing native call interfaces.
+- You need to manage call states and notifications effectively.
 
-<-- END_MAIN -->
+## Key Features
+- **Native Call UI**: Displays incoming call notifications using the native call interface on both Android and iOS.
+- **Call Management**: Supports various call states such as incoming, answered, and ended.
+- **Customizable UI**: Allows customization of the incoming call screen to match your app's branding.
+- **Support for Multiple Calls**: Can handle multiple incoming calls simultaneously.
+- **Integration with Push Notifications**: Works well with push notifications to alert users of incoming calls.
+
+This package is an excellent choice for developers looking to enhance their Flutter applications with robust call handling capabilities.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up flutter_callkit_incoming_yoer
+
+In this tutorial, we will walk through the setup process for the `flutter_callkit_incoming_yoer` package and demonstrate how to use it in your Flutter application.
+
+## Step 1: Add Dependency
+To get started, add the package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_callkit_incoming_yoer: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/flutter_callkit_incoming_yoer).
+
+## Step 2: Platform-Specific Configuration
+
+### Android Configuration
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions and service declarations:
+
+```xml
+<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+<application>
+    <service android:name="com.yourpackage.CallKitIncomingService" android:permission="android.permission.BIND_INCALL_SERVICE" android:exported="true"/>
+</application>
+```
+
+### iOS Configuration
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following keys to request permissions:
+
+```xml
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone for calls.</string>
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>We need access to Bluetooth for calls.</string>
+```
+
+## Step 3: Initialize the Package
+In your main Dart file, import the package and initialize it:
+
+```dart
+import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming_yoer.dart';
+
+void main() {
+  runApp(MyApp());
+  FlutterCallkitIncomingYoer.setup();
+}
+```
+
+## Step 4: Handling Incoming Calls
+You can now handle incoming calls by using the provided methods. For example, to display an incoming call:
+
+```dart
+void displayIncomingCall() {
+  FlutterCallkitIncomingYoer.displayIncomingCall(
+    id: '12345',
+    nameCaller: 'John Doe',
+    avatar: 'https://example.com/avatar.png',
+    handle: 'john.doe@example.com',
+    type: 0, // 0 for audio, 1 for video
+  );
+}
+```
+
+This method will trigger the native call interface to show an incoming call notification.
+
+With these steps, you are now set up to use the `flutter_callkit_incoming_yoer` package in your Flutter application!
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of flutter_callkit_incoming_yoer
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_callkit_incoming_yoer/flutter_callkit_incoming_yoer.dart';
+
+void main() {
+  runApp(RealFlutter());
+  // Initialize the CallKit package
+  FlutterCallkitIncomingYoer.setup();
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CallKit Incoming Example',
+      home: CallHomePage(),
+    );
+  }
+}
+
+class CallHomePage extends StatefulWidget {
+  @override
+  _CallHomePageState createState() => _CallHomePageState();
+}
+
+class _CallHomePageState extends State<CallHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Listen for incoming call events
+    FlutterCallkitIncomingYoer.onEvent.listen((event) {
+      // Handle incoming call events here
+      if (event['event'] == 'incoming_call') {
+        // Display the incoming call UI
+        displayIncomingCall();
+      }
+    });
+  }
+
+  void displayIncomingCall() {
+    // Display an incoming call notification
+    FlutterCallkitIncomingYoer.displayIncomingCall(
+      id: '12345',
+      nameCaller: 'John Doe',
+      avatar: 'https://example.com/avatar.png',
+      handle: 'john.doe@example.com',
+      type: 0, // 0 for audio, 1 for video
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('CallKit Incoming Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Simulate an incoming call
+            displayIncomingCall();
+          },
+          child: Text('Simulate Incoming Call'),
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and initializes the CallKit package.
+// 2. The CallHomePage listens for incoming call events.
+// 3. When an event is detected, it checks if it's an incoming call.
+// 4. If it is, it calls the displayIncomingCall method to show the native call UI.
+// 5. The user can also simulate an incoming call by pressing the button on the home page.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `flutter_callkit_incoming_yoer` package, guiding developers through its features, setup, and usage with clear examples and explanations.

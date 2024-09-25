@@ -1,2 +1,189 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the android_flutter_wifi Package
 
-<-- END_MAIN -->
+The `android_flutter_wifi` package is a Flutter plugin that provides a way to interact with Wi-Fi networks on Android devices. This package allows developers to manage Wi-Fi connections, scan for available networks, and retrieve information about the current Wi-Fi connection. It is particularly useful for applications that require network management features, such as IoT applications, network monitoring tools, or any app that needs to connect to specific Wi-Fi networks.
+
+## Key Features
+- **Wi-Fi Scanning**: Discover available Wi-Fi networks in the vicinity.
+- **Connection Management**: Connect to or disconnect from Wi-Fi networks programmatically.
+- **Network Information**: Retrieve details about the current Wi-Fi connection, such as SSID, BSSID, and signal strength.
+- **Permissions Handling**: Automatically manages necessary permissions for accessing Wi-Fi features.
+
+## When to Use
+- When building applications that require Wi-Fi connectivity management.
+- For IoT applications that need to connect to specific networks.
+- In network monitoring tools that need to display available networks and their statuses.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using android_flutter_wifi
+
+## Installation
+To use the `android_flutter_wifi` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  android_flutter_wifi: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/android_flutter_wifi).
+
+## Platform-Specific Configuration
+
+### Android
+1. **Permissions**: You need to add the following permissions to your `AndroidManifest.xml` file located in `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+2. **Location Services**: Starting from Android 6.0 (API level 23), location services must be enabled to scan for Wi-Fi networks. Ensure that your app requests location permissions at runtime.
+
+### iOS
+Currently, the `android_flutter_wifi` package is designed for Android only. If you need similar functionality on iOS, consider using other packages like `wifi_iot`.
+
+## Basic Usage
+Here’s how to use the `android_flutter_wifi` package in your Flutter application:
+
+1. Import the package:
+
+```dart
+import 'package:android_flutter_wifi/android_flutter_wifi.dart';
+```
+
+2. Initialize the package and request permissions:
+
+```dart
+void initWifi() async {
+  // Check and request permissions
+  await AndroidFlutterWifi.requestPermissions();
+}
+```
+
+3. Scan for available Wi-Fi networks:
+
+```dart
+void scanWifi() async {
+  List<WifiNetwork> networks = await AndroidFlutterWifi.scanWifiNetworks();
+  // Handle the list of networks
+}
+```
+
+4. Connect to a Wi-Fi network:
+
+```dart
+void connectToWifi(String ssid, String password) async {
+  bool success = await AndroidFlutterWifi.connectToWifi(ssid, password);
+  // Handle connection success or failure
+}
+```
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using android_flutter_wifi
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:android_flutter_wifi/android_flutter_wifi.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Wi-Fi Manager',
+      home: WifiManager(),
+    );
+  }
+}
+
+class WifiManager extends StatefulWidget {
+  @override
+  _WifiManagerState createState() => _WifiManagerState();
+}
+
+class _WifiManagerState extends State<WifiManager> {
+  List<WifiNetwork> _networks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    initWifi(); // Initialize Wi-Fi on app start
+  }
+
+  // Function to initialize Wi-Fi and request permissions
+  void initWifi() async {
+    await AndroidFlutterWifi.requestPermissions(); // Request necessary permissions
+    scanWifi(); // Start scanning for Wi-Fi networks
+  }
+
+  // Function to scan for available Wi-Fi networks
+  void scanWifi() async {
+    List<WifiNetwork> networks = await AndroidFlutterWifi.scanWifiNetworks(); // Scan for networks
+    setState(() {
+      _networks = networks; // Update the state with the scanned networks
+    });
+  }
+
+  // Function to connect to a selected Wi-Fi network
+  void connectToWifi(String ssid, String password) async {
+    bool success = await AndroidFlutterWifi.connectToWifi(ssid, password); // Attempt to connect
+    if (success) {
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connected to $ssid')));
+    } else {
+      // Show failure message
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to connect to $ssid')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Wi-Fi Manager')),
+      body: ListView.builder(
+        itemCount: _networks.length,
+        itemBuilder: (context, index) {
+          final network = _networks[index];
+          return ListTile(
+            title: Text(network.ssid), // Display the SSID of the network
+            trailing: ElevatedButton(
+              onPressed: () {
+                connectToWifi(network.ssid, 'your_password'); // Connect to the network
+              },
+              child: Text('Connect'), // Button to connect
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+```
+// Explanation of the application flow:
+// 1. The app starts with the `main` function, which runs the `MyApp` widget.
+// 2. `MyApp` builds a MaterialApp with a title and sets `WifiManager` as the home widget.
+// 3. In `WifiManager`, the state is initialized, and Wi-Fi permissions are requested.
+// 4. After permissions are granted, the app scans for available Wi-Fi networks.
+// 5. The scanned networks are displayed in a ListView, showing their SSIDs.
+// 6. Each network has a "Connect" button that, when pressed, attempts to connect to the selected network.
+// 7. If the connection is successful, a Snackbar message is shown to the user.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the `android_flutter_wifi` package, guiding developers through its features, setup, and practical usage with a complete example.

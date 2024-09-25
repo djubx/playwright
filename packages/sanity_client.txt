@@ -1,2 +1,185 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Sanity Client Flutter Package
 
-<-- END_MAIN -->
+The `sanity_client` Flutter package is a powerful tool designed to facilitate seamless integration with Sanity.io, a headless CMS that allows developers to manage content in a structured way. This package provides a straightforward API to interact with Sanity's content and data, making it an excellent choice for Flutter developers looking to build dynamic applications that require real-time content updates.
+
+## When to Use This Package
+- **Content-Driven Applications**: Ideal for apps that rely heavily on content management, such as blogs, portfolios, or e-commerce platforms.
+- **Real-Time Updates**: Perfect for applications that need to reflect content changes in real-time without requiring a full app refresh.
+- **Customizable Content Structures**: Useful for projects that require a flexible content model, allowing developers to define their own schemas.
+
+## Features
+- **Easy Integration**: Simple setup process to connect your Flutter app with Sanity.io.
+- **Real-Time Data Fetching**: Leverages Sanity's real-time capabilities to fetch and update content dynamically.
+- **Querying with GROQ**: Supports Sanity's query language, GROQ, for fetching data efficiently.
+- **Offline Support**: Allows for caching of data, enabling offline access to previously fetched content.
+- **Customizable Client**: Provides options to customize the client configuration to suit specific project needs.
+
+Overall, the `sanity_client` package is a robust solution for developers looking to integrate Sanity.io into their Flutter applications, providing a rich set of features to manage and display content effectively.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Sanity Client Package
+
+## Installation
+To get started with the `sanity_client` package, you need to add it to your Flutter project. Open your `pubspec.yaml` file and add the following dependency:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sanity_client: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version of the package available on [pub.dev](https://pub.dev/packages/sanity_client).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open `android/app/build.gradle` and ensure that the `minSdkVersion` is set to at least 21.
+2. Add internet permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following to allow network requests:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the `sanity_client`, you need to initialize the client with your Sanity project ID and dataset. Here’s how to do it:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sanity_client/sanity_client.dart';
+
+class RealFlutter {
+  final SanityClient client;
+
+  RealFlutter()
+      : client = SanityClient(
+          projectId: 'your_project_id',
+          dataset: 'your_dataset',
+          useCdn: true, // Use CDN for faster response
+        );
+
+  // Method to fetch data
+  Future<List<dynamic>> fetchData(String query) async {
+    final response = await client.fetch(query);
+    return response;
+  }
+}
+```
+
+In this example, replace `'your_project_id'` and `'your_dataset'` with your actual Sanity project credentials.
+
+Now you can use the `fetchData` method to retrieve content from your Sanity dataset using GROQ queries.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the Sanity Client
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sanity_client/sanity_client.dart';
+
+class RealFlutter {
+  final SanityClient client;
+
+  RealFlutter()
+      : client = SanityClient(
+          projectId: 'your_project_id', // Replace with your project ID
+          dataset: 'your_dataset', // Replace with your dataset
+          useCdn: true, // Use CDN for faster response
+        );
+
+  // Method to fetch data using a GROQ query
+  Future<List<dynamic>> fetchData(String query) async {
+    final response = await client.fetch(query);
+    return response;
+  }
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sanity Client Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final RealFlutter realFlutter = RealFlutter(); // Initialize the RealFlutter class
+  List<dynamic> posts = []; // List to hold fetched posts
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPosts(); // Fetch posts when the widget is initialized
+  }
+
+  // Method to fetch posts from Sanity
+  Future<void> fetchPosts() async {
+    String query = '*[_type == "post"]'; // GROQ query to fetch posts
+    List<dynamic> fetchedPosts = await realFlutter.fetchData(query); // Fetch data
+    setState(() {
+      posts = fetchedPosts; // Update the state with fetched posts
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sanity Client Example'),
+      ),
+      body: posts.isEmpty // Check if posts are empty
+          ? Center(child: CircularProgressIndicator()) // Show loading indicator
+          : ListView.builder(
+              itemCount: posts.length, // Number of posts
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(posts[index]['title']), // Display post title
+                  subtitle: Text(posts[index]['description']), // Display post description
+                );
+              },
+            ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a HomeScreen as its home.
+// 3. HomeScreen initializes the RealFlutter class to create a Sanity client.
+// 4. In the initState method, fetchPosts is called to retrieve posts from Sanity.
+// 5. fetchPosts uses a GROQ query to fetch all posts of type "post".
+// 6. The fetched posts are stored in the posts list and the state is updated.
+// 7. The build method checks if posts are empty; if so, it shows a loading indicator.
+// 8. Once posts are fetched, a ListView displays the titles and descriptions of the posts.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `sanity_client` Flutter package, guiding developers through its features, setup, and practical usage with a complete example.
