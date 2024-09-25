@@ -1,13 +1,173 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the uni_links3 Flutter Package
 
-<-- END_MAIN -->
+The `uni_links3` package is a powerful tool for Flutter developers that enables deep linking and universal linking capabilities in their applications. Deep linking allows users to navigate directly to specific content within an app, enhancing user experience and engagement. This package is particularly useful for applications that require seamless integration with web links, social media, or other external sources.
 
-In summary, the code flows as follows:
+## When to Use `uni_links3`
+- **Deep Linking**: When you want to direct users to specific content within your app from external sources.
+- **Universal Links**: To handle links that can open your app on both iOS and Android devices.
+- **Dynamic Links**: For applications that need to manage links that can change based on user context or other parameters.
 
-1. The user clicks on a link that is associated with the app.
-2. The app is launched and the `UniLinks` package is initialized.
-3. The `getInitialLink` method is called to get the initial link.
-4. If an initial link is found, it is handled by the app.
-5. The app listens for link changes using the `linkStream` property.
-6. When a link change is detected, the new link is handled by the app.
+## Key Features
+- **Support for iOS and Android**: The package provides a unified API for handling deep links on both platforms.
+- **Stream-based API**: It allows you to listen for incoming links in real-time.
+- **Easy Integration**: Simple setup process with minimal configuration required.
+- **Error Handling**: Built-in mechanisms to handle invalid or unsupported links.
 
-This allows the app to handle deep links and provide a seamless user experience.
+Overall, `uni_links3` is an essential package for any Flutter developer looking to implement deep linking functionality in their applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using the uni_links3 Package
+
+## Installation
+To get started with `uni_links3`, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  uni_links3: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/uni_links3).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following intent filter inside the `<activity>` tag to handle deep links:
+
+```xml
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="your_scheme" android:host="your_host" />
+</intent-filter>
+```
+Replace `your_scheme` and `your_host` with your desired values.
+
+### iOS
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following configuration to support universal links:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>your_scheme</string>
+        </array>
+    </dict>
+</array>
+```
+Again, replace `your_scheme` with your desired scheme.
+
+## Basic Usage
+To use the `uni_links3` package, you can start by importing it into your Dart file:
+
+```dart
+import 'package:uni_links3/uni_links3.dart';
+```
+
+You can then listen for incoming links using a stream:
+
+```dart
+void initUniLinks() async {
+  try {
+    // Get the initial link
+    final initialLink = await getInitialLink();
+    print('Initial link: $initialLink');
+
+    // Listen for incoming links
+    linkStream.listen((String? link) {
+      print('Received link: $link');
+    });
+  } catch (e) {
+    print('Failed to get links: $e');
+  }
+}
+```
+
+Call `initUniLinks()` in your main widget to start listening for links.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using uni_links3
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:uni_links3/uni_links3.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  String _linkMessage = 'No link received yet';
+
+  @override
+  void initState() {
+    super.initState();
+    initUniLinks(); // Initialize the uni_links listener
+  }
+
+  void initUniLinks() async {
+    try {
+      // Get the initial link when the app starts
+      final initialLink = await getInitialLink();
+      if (initialLink != null) {
+        setState(() {
+          _linkMessage = 'Initial link: $initialLink';
+        });
+      }
+
+      // Listen for incoming links
+      linkStream.listen((String? link) {
+        setState(() {
+          _linkMessage = 'Received link: $link'; // Update the message when a link is received
+        });
+      });
+    } catch (e) {
+      setState(() {
+        _linkMessage = 'Failed to get links: $e'; // Handle errors
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('uni_links3 Example'),
+        ),
+        body: Center(
+          child: Text(_linkMessage), // Display the link message
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and the main function runs the RealFlutter widget.
+// 2. In the RealFlutter widget, the initUniLinks method is called during initState.
+// 3. The initUniLinks method attempts to get the initial link and updates the state if successful.
+// 4. It also sets up a listener for incoming links, updating the state whenever a new link is received.
+// 5. The current link message is displayed in the center of the screen, allowing users to see the link that was received.
+```
+<!-- END_MAIN -->
+```
+
+### Summary
+In this blog post, we explored the `uni_links3` package, which provides essential deep linking capabilities for Flutter applications. We covered the installation process, platform-specific configurations, and provided a complete example demonstrating how to listen for and handle incoming links. This package is particularly useful for enhancing user engagement by allowing direct navigation to specific content within your app.

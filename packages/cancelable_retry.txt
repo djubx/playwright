@@ -1,3 +1,173 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Cancelable Retry: A Flutter Package for Robust Network Calls
 
+The `cancelable_retry` package is a powerful tool for Flutter developers that simplifies the process of making network calls with retry capabilities. It allows you to define a function that can be retried multiple times in case of failure, with the option to cancel ongoing retries. This is particularly useful in scenarios where network reliability is a concern, such as mobile applications that may experience intermittent connectivity issues.
 
-<-- END_MAIN -->
+## When to Use `cancelable_retry`
+- **Network Requests**: When making API calls that may fail due to network issues.
+- **Data Fetching**: When fetching data from remote servers where retries may be necessary.
+- **User Actions**: When performing actions that require confirmation or may fail, such as submitting forms.
+
+## Key Features
+- **Cancelable Retries**: Ability to cancel ongoing retries if the user navigates away or if the operation is no longer needed.
+- **Customizable Retry Logic**: Define the number of retries, delay between retries, and conditions for retrying.
+- **Error Handling**: Provides a structured way to handle errors during network calls.
+
+Overall, `cancelable_retry` enhances the robustness of your Flutter applications by providing a straightforward way to manage network call retries.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `cancelable_retry`
+
+## Installation
+To use the `cancelable_retry` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cancelable_retry: ^2.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Details
+The `cancelable_retry` package is designed to work seamlessly on both Android and iOS platforms. There are no additional configurations required for either platform. However, ensure that your app has the necessary permissions for network access.
+
+## Basic Usage
+To use the `cancelable_retry` package, you need to import it into your Dart file:
+
+```dart
+import 'package:cancelable_retry/cancelable_retry.dart';
+```
+
+You can then define a function that performs a network call and use the `CancelableRetry` class to manage retries. Here’s a simple example:
+
+```dart
+Future<void> fetchData() async {
+  // Simulate a network call
+  throw Exception("Network error");
+}
+
+void main() async {
+  final result = await CancelableRetry<void>.retry(
+    (retryCount) async {
+      print('Attempt #$retryCount');
+      await fetchData();
+    },
+    retryIf: (e) => e is Exception, // Retry on specific exceptions
+    maxAttempts: 5, // Maximum number of attempts
+    delayFactor: Duration(seconds: 2), // Delay between attempts
+  );
+}
+```
+
+In this example, the `fetchData` function simulates a network call that throws an exception. The `CancelableRetry.retry` method will attempt to call `fetchData` up to 5 times, with a 2-second delay between attempts if an exception occurs.
+
+This setup provides a robust way to handle network calls with retry logic.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `cancelable_retry`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cancelable_retry/cancelable_retry.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Cancelable Retry Example',
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String _result = "Press the button to fetch data";
+  bool _isLoading = false;
+
+  Future<void> fetchData() async {
+    // Simulate a network call that may fail
+    await Future.delayed(Duration(seconds: 1));
+    throw Exception("Network error"); // Simulate a network error
+  }
+
+  void _retryFetchData() async {
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
+    try {
+      // Use CancelableRetry to fetch data with retries
+      await CancelableRetry<void>.retry(
+        (retryCount) async {
+          print('Attempt #$retryCount');
+          await fetchData(); // Call the fetchData function
+        },
+        retryIf: (e) => e is Exception, // Retry on exceptions
+        maxAttempts: 5, // Maximum number of attempts
+        delayFactor: Duration(seconds: 2), // Delay between attempts
+      );
+      setState(() {
+        _result = "Data fetched successfully!";
+      });
+    } catch (e) {
+      setState(() {
+        _result = "Failed to fetch data: $e"; // Handle failure
+      });
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Cancelable Retry Example"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(_result), // Display the result
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _retryFetchData, // Disable button while loading
+              child: _isLoading ? CircularProgressIndicator() : Text("Fetch Data"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a home page (MyHomePage).
+// 3. MyHomePage contains a button to fetch data and a text widget to display results.
+// 4. When the button is pressed, _retryFetchData is called.
+// 5. _retryFetchData sets the loading state and attempts to fetch data using CancelableRetry.
+// 6. If fetchData throws an exception, it retries up to 5 times with a 2-second delay.
+// 7. On success, it updates the result text; on failure, it displays an error message.
+// 8. The loading indicator is shown while the fetch operation is in progress.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the `cancelable_retry` package, guiding developers through its features, setup, and practical usage with a complete example.

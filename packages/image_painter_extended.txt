@@ -1,7 +1,201 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the image_painter_extended Flutter Package
 
+The `image_painter_extended` package is a powerful tool for Flutter developers looking to create interactive image editing applications. This package allows users to draw, annotate, and manipulate images directly within a Flutter app, making it ideal for applications that require user-generated content, such as photo editing, drawing apps, or educational tools.
 
-<-- END_MAIN -->
+## Key Features
+- **Drawing Capabilities**: Users can draw on images with various brush styles and colors.
+- **Image Manipulation**: Supports scaling, rotating, and moving images.
+- **Layer Support**: Allows for multiple layers, enabling complex compositions.
+- **Customizable UI**: Developers can customize the drawing interface to fit their app's design.
+- **Touch and Gesture Support**: Handles touch events for a smooth user experience.
 
-**Final Summary**
+## When to Use
+Consider using `image_painter_extended` when you need to:
+- Create a drawing or annotation tool.
+- Allow users to edit images within your app.
+- Build educational applications that require interactive content.
 
-In this tutorial, we demonstrated how to use the 'image_painter_extended' package to paint and edit images within a Flutter app. We showed how to implement the RealFlutter class, use the `paint` method to paint the image, and use the `undo` and `redo` methods to undo and redo painting actions. We also showed how to save the edited image using the `save` method. This package provides a powerful tool for image editing within Flutter apps, and can be used in a variety of applications such as photo editing apps, graphic design apps, and social media apps.
+This package is particularly useful in scenarios where user interaction with images is a core feature of the application.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using image_painter_extended
+
+## Installation
+To get started with `image_painter_extended`, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  image_painter_extended: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/image_painter_extended).
+
+## Platform-Specific Configuration
+
+### Android
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS
+For iOS, you may need to add permissions in your `Info.plist` if you plan to access the device's photo library:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to edit images.</string>
+```
+
+## Basic Usage
+To use the `image_painter_extended` package, you will typically create a widget that incorporates the `ImagePainter` class. Below is a simple example of how to set it up:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:image_painter_extended/image_painter_extended.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Image Painter Example')),
+        body: ImagePainter(
+          image: AssetImage('assets/sample_image.png'), // Load your image
+          onDraw: (List<Offset> points) {
+            // Handle drawing points
+          },
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(RealFlutter());
+}
+```
+
+In this example, we create a simple Flutter app that displays an image and allows users to draw on it. The `onDraw` callback can be used to capture the drawing points for further processing.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of image_painter_extended
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:image_painter_extended/image_painter_extended.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // This variable will hold the drawn points
+  List<Offset?> points = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Image Painter Extended Example'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.clear),
+              onPressed: () {
+                // Clear the drawing points when the clear button is pressed
+                setState(() {
+                  points.clear();
+                });
+              },
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            // The ImagePainter widget allows drawing on the image
+            ImagePainter(
+              image: AssetImage('assets/sample_image.png'), // Load your image
+              onDraw: (List<Offset> newPoints) {
+                // Update the points with the new drawing points
+                setState(() {
+                  points.addAll(newPoints);
+                });
+              },
+            ),
+            // Custom drawing overlay to visualize the drawn points
+            CustomPaint(
+              painter: MyPainter(points),
+              child: Container(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Custom painter class to draw the points on the canvas
+class MyPainter extends CustomPainter {
+  final List<Offset?> points;
+
+  MyPainter(this.points);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red // Set the color of the drawing
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 5.0; // Set the stroke width
+
+    for (var point in points) {
+      if (point != null) {
+        canvas.drawPoints(PointMode.points, [point], paint); // Draw the points
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true; // Repaint whenever the points change
+  }
+}
+
+void main() {
+  runApp(RealFlutter());
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter widget, which is a StatefulWidget.
+// 2. The app bar contains a title and a clear button to reset the drawing.
+// 3. The body consists of a Stack widget that overlays the ImagePainter and a CustomPaint widget.
+// 4. The ImagePainter widget allows users to draw on the loaded image.
+// 5. The onDraw callback captures the drawing points and updates the state.
+// 6. The CustomPaint widget uses MyPainter to visualize the drawn points on the canvas.
+// 7. The MyPainter class takes the list of points and draws them on the canvas with a specified color and stroke width.
+// 8. The clear button resets the drawing points, allowing users to start over.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive overview, setup instructions, and a complete example of how to use the `image_painter_extended` package in a Flutter application.

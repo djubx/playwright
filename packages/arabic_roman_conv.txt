@@ -1,3 +1,87 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Arabic Roman Conversion in Flutter: The arabic_roman_conv Package
+
+The `arabic_roman_conv` package is a specialized Flutter library designed to facilitate the conversion of Arabic numerals to Roman numerals and vice versa. This package is particularly useful in applications that require numeral representation in different formats, such as educational apps, games, or any application that deals with historical data or cultural contexts where Roman numerals are prevalent.
+
+## When to Use This Package
+- **Educational Applications**: Teaching users about numeral systems.
+- **Games**: Displaying scores or levels in Roman numerals.
+- **Cultural Apps**: Applications that focus on history or literature where Roman numerals are commonly used.
+
+## Features
+- **Bidirectional Conversion**: Convert Arabic numerals to Roman numerals and vice versa.
+- **Error Handling**: Handles invalid inputs gracefully.
+- **Lightweight**: Minimal dependencies, making it easy to integrate into any Flutter project.
+
+Overall, the `arabic_roman_conv` package provides a straightforward and efficient way to manage numeral conversions, enhancing the user experience in applications that require such functionality.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Getting Started with arabic_roman_conv
+
+## Installation
+To add the `arabic_roman_conv` package to your Flutter project, include it in your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  arabic_roman_conv: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+## Platform-Specific Details
+The `arabic_roman_conv` package is designed to work seamlessly on both Android and iOS platforms. There are no additional configurations required for either platform, making it easy to integrate into your Flutter application.
+
+## Usage
+To use the package, import it into your Dart file:
+
+```dart
+import 'package:arabic_roman_conv/arabic_roman_conv.dart';
+```
+
+You can then utilize the provided methods for conversion. Here’s a simple example of how to convert Arabic numerals to Roman numerals:
+
+```dart
+void main() {
+  int arabicNumber = 2023;
+  String romanNumber = RealFlutter.convertArabicToRoman(arabicNumber);
+  print('Arabic: $arabicNumber -> Roman: $romanNumber');
+}
+```
+
+This will output:
+```
+Arabic: 2023 -> Roman: MMXXIII
+```
+
+For converting Roman numerals back to Arabic:
+
+```dart
+void main() {
+  String romanNumber = 'MMXXIII';
+  int arabicNumber = RealFlutter.convertRomanToArabic(romanNumber);
+  print('Roman: $romanNumber -> Arabic: $arabicNumber');
+}
+```
+
+This will output:
+```
+Roman: MMXXIII -> Arabic: 2023
+```
+
+With these simple steps, you can easily implement numeral conversion in your Flutter applications.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of arabic_roman_conv
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:arabic_roman_conv/arabic_roman_conv.dart';
@@ -6,79 +90,91 @@ void main() {
   runApp(RealFlutter());
 }
 
-class RealFlutter extends StatefulWidget {
-  @override
-  _RealFlutterState createState() => _RealFlutterState();
-}
-
-class _RealFlutterState extends State<RealFlutter> {
-  final _arabicController = TextEditingController();
-  final _romanController = TextEditingController();
-
-  void _convertArabicToRoman() {
-    final arabic = int.parse(_arabicController.text);
-    final roman = arabicToRoman(arabic);
-    _romanController.text = roman;
-  }
-
-  void _convertRomanToArabic() {
-    final roman = _romanController.text;
-    final arabic = romanToArabic(roman);
-    _arabicController.text = arabic.toString();
-  }
-
+class RealFlutter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Arabic Roman Converter',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Arabic Roman Converter'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: _arabicController,
-                decoration: InputDecoration(
-                  labelText: 'Arabic',
-                  border: OutlineInputBorder(),
-                ),
+      home: ConverterScreen(),
+    );
+  }
+}
+
+class ConverterScreen extends StatefulWidget {
+  @override
+  _ConverterScreenState createState() => _ConverterScreenState();
+}
+
+class _ConverterScreenState extends State<ConverterScreen> {
+  String _input = '';
+  String _output = '';
+  bool _isArabicToRoman = true; // Toggle for conversion direction
+
+  // Method to handle conversion based on the toggle
+  void _convert() {
+    if (_isArabicToRoman) {
+      // Convert Arabic to Roman
+      int arabicNumber = int.tryParse(_input) ?? 0; // Parse input
+      _output = RealFlutter.convertArabicToRoman(arabicNumber); // Conversion
+    } else {
+      // Convert Roman to Arabic
+      _output = RealFlutter.convertRomanToArabic(_input).toString(); // Conversion
+    }
+    setState(() {}); // Update UI
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Arabic Roman Converter'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              onChanged: (value) {
+                _input = value; // Update input
+              },
+              decoration: InputDecoration(
+                labelText: 'Enter number or Roman numeral',
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _convertArabicToRoman,
-                child: Text('Convert to Roman'),
-              ),
-              SizedBox(height: 20),
-              TextField(
-                controller: _romanController,
-                decoration: InputDecoration(
-                  labelText: 'Roman',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _convertRomanToArabic,
-                child: Text('Convert to Arabic'),
-              ),
-            ],
-          ),
+              keyboardType: TextInputType.number, // Numeric keyboard for Arabic input
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _convert, // Trigger conversion
+              child: Text('Convert'),
+            ),
+            SizedBox(height: 20),
+            Text('Output: $_output'), // Display output
+            SwitchListTile(
+              title: Text('Convert Arabic to Roman'),
+              value: _isArabicToRoman,
+              onChanged: (value) {
+                setState(() {
+                  _isArabicToRoman = value; // Toggle conversion direction
+                });
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// The app starts by running the main function, which creates a new instance of the RealFlutter widget.
-// The RealFlutter widget is a stateful widget that contains two text fields and two buttons.
-// The first text field is for entering Arabic numbers, and the second text field is for entering Roman numerals.
-// The first button is for converting Arabic numbers to Roman numerals, and the second button is for converting Roman numerals to Arabic numbers.
-// When the user clicks the first button, the _convertArabicToRoman function is called, which converts the Arabic number to a Roman numeral using the arabicToRoman function.
-// When the user clicks the second button, the _convertRomanToArabic function is called, which converts the Roman numeral to an Arabic number using the romanToArabic function.
-// The results of the conversions are displayed in the text fields.
-
-<-- END_MAIN -->
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and a home screen (ConverterScreen).
+// 3. ConverterScreen maintains the state for input, output, and conversion direction.
+// 4. The user enters a number or Roman numeral in the TextField.
+// 5. Upon pressing the Convert button, the _convert method is called.
+// 6. Depending on the toggle state, it either converts Arabic to Roman or Roman to Arabic.
+// 7. The output is displayed on the screen, and the user can switch the conversion direction using the SwitchListTile.
 ```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `arabic_roman_conv` package, guiding developers through its features, installation, usage, and a complete example with detailed comments explaining the application flow.

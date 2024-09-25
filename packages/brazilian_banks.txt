@@ -1,3 +1,78 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Brazilian Banks Flutter Package
+
+The `brazilian_banks` Flutter package is a specialized library designed to facilitate the integration of Brazilian banking functionalities into Flutter applications. This package provides developers with a comprehensive set of tools to work with various Brazilian banks, including retrieving bank details, validating bank accounts, and more. 
+
+## When to Use This Package
+You should consider using the `brazilian_banks` package when:
+- You are developing a financial application that requires integration with Brazilian banking systems.
+- You need to validate bank account numbers or retrieve information about different banks in Brazil.
+- You want to streamline the process of handling banking-related functionalities in your Flutter app.
+
+## Features
+- **Bank Information Retrieval**: Access detailed information about various Brazilian banks.
+- **Account Validation**: Validate bank account numbers to ensure they are correct.
+- **Easy Integration**: Simple API that integrates seamlessly with Flutter applications.
+
+Overall, the `brazilian_banks` package is an essential tool for developers looking to enhance their applications with banking functionalities specific to Brazil.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the Brazilian Banks Package
+
+## Installation
+To get started with the `brazilian_banks` package, you need to add it to your Flutter project. Open your `pubspec.yaml` file and add the following dependency:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  brazilian_banks: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/brazilian_banks).
+
+After adding the dependency, run the following command in your terminal to install the package:
+
+```bash
+flutter pub get
+```
+
+## Platform-Specific Details
+### Android
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, you may need to configure your `Info.plist` file to allow network requests if you are fetching data from the internet.
+
+## Usage
+Here’s how to use the `brazilian_banks` package in your Flutter application:
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:brazilian_banks/brazilian_banks.dart';
+```
+
+2. Use the `RealFlutter` class to access the functionalities provided by the package.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the Brazilian Banks Package
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:brazilian_banks/brazilian_banks.dart';
@@ -10,131 +85,80 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Brazilian Banks Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(),
+      title: 'Brazilian Banks Example',
+      home: BankInfoScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class BankInfoScreen extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _BankInfoScreenState createState() => _BankInfoScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final _formKey = GlobalKey<FormState>();
-  final _bankCodeController = TextEditingController();
-  final _bankNameController = TextEditingController();
-  final _accountNumberController = TextEditingController();
-  final _agencyNumberController = TextEditingController();
+class _BankInfoScreenState extends State<BankInfoScreen> {
+  String bankName = '';
+  String bankCode = '';
+  final TextEditingController _controller = TextEditingController();
+
+  // Function to fetch bank information based on the input code
+  void _fetchBankInfo() {
+    // Get the bank code from the text field
+    String code = _controller.text;
+
+    // Use the BrazilianBanks class to get bank details
+    Bank bank = BrazilianBanks.getBank(code);
+
+    // Update the state with the bank information
+    setState(() {
+      bankName = bank.name; // Set the bank name
+      bankCode = bank.code; // Set the bank code
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Brazilian Banks Demo'),
+        title: Text('Brazilian Banks Info'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _bankCodeController,
-                decoration: InputDecoration(
-                  labelText: 'Bank Code',
-                ),
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Please enter a bank code';
-                  }
-                  return null;
-                },
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter Bank Code',
               ),
-              TextFormField(
-                controller: _bankNameController,
-                decoration: InputDecoration(
-                  labelText: 'Bank Name',
-                ),
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Please enter a bank name';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _accountNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Account Number',
-                ),
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Please enter an account number';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _agencyNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Agency Number',
-                ),
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Please enter an agency number';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    // Create a new instance of the RealFlutter class
-                    RealFlutter realFlutter = RealFlutter();
-
-                    // Get the bank name from the bank code
-                    String bankName = realFlutter.getBankNameFromCode(_bankCodeController.text);
-                    print(bankName);
-
-                    // Get the bank code from the bank name
-                    String bankCode = realFlutter.getBankCodeFromName(_bankNameController.text);
-                    print(bankCode);
-
-                    // Validate a bank account number
-                    bool isValidAccount = realFlutter.validateAccountNumber(_accountNumberController.text, _bankCodeController.text);
-                    print(isValidAccount);
-
-                    // Validate a bank agency number
-                    bool isValidAgency = realFlutter.validateAgencyNumber(_agencyNumberController.text, _bankCodeController.text);
-                    print(isValidAgency);
-
-                    // Generate a TED code
-                    String tedCode = realFlutter.generateTedCode(_accountNumberController.text, _bankCodeController.text, _agencyNumberController.text);
-                    print(tedCode);
-                  }
-                },
-                child: Text('Submit'),
-              ),
-            ],
-          ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _fetchBankInfo,
+              child: Text('Get Bank Info'),
+            ),
+            SizedBox(height: 20),
+            Text('Bank Name: $bankName'),
+            Text('Bank Code: $bankCode'),
+          ],
         ),
       ),
     );
   }
 }
+```
 
-// The application flow is as follows:
-// 1. The user enters a bank code, bank name, account number, and agency number in the form.
-// 2. When the user submits the form, the application creates a new instance of the RealFlutter class.
-// 3. The application uses the RealFlutter class to get the bank name from the bank code and vice versa.
-// 4. The application validates the bank account number and agency number using the RealFlutter class.
-// 5. The application generates a TED code using the RealFlutter class.
-// 6. The application prints the results to the console.
+// The above code defines a simple Flutter application that retrieves information about Brazilian banks based on a bank code input by the user.
+// 
+// 1. The `main` function initializes the app and sets `MyApp` as the home widget.
+// 2. `MyApp` builds a MaterialApp with a title and a home screen, `BankInfoScreen`.
+// 3. `BankInfoScreen` is a stateful widget that maintains the state of the bank name and code.
+// 4. The `_fetchBankInfo` function retrieves bank information using the `BrazilianBanks.getBank` method when the button is pressed.
+// 5. The UI consists of a text field for inputting the bank code, a button to fetch the bank info, and text widgets to display the results.
+// 6. When the button is pressed, the app updates the displayed bank name and code based on the input.
 
-<-- END_MAIN -->```
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `brazilian_banks` Flutter package, guiding developers through its features, installation, usage, and a complete example to help them integrate it into their applications effectively.

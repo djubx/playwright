@@ -1,152 +1,193 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# iugu Flutter Package: A Comprehensive Overview
+
+The **iugu** Flutter package is a powerful tool designed for integrating payment solutions into Flutter applications. It provides a seamless way to handle payments, subscriptions, and invoicing through the iugu API, which is particularly popular in Brazil. This package is ideal for developers looking to implement payment processing in their apps without having to build a complex backend.
+
+## When to Use iugu
+- **E-commerce Applications**: If you're building an online store and need to process payments securely.
+- **Subscription Services**: For apps that offer subscription-based services, iugu can manage recurring payments.
+- **Invoicing Solutions**: If your app requires generating and managing invoices, this package simplifies the process.
+
+## Key Features
+- **Payment Processing**: Easily handle one-time and recurring payments.
+- **Subscription Management**: Create and manage subscriptions for users.
+- **Invoice Generation**: Generate and send invoices directly from your app.
+- **Webhooks Support**: Receive real-time updates on payment statuses.
+- **User-Friendly API**: Simplifies the integration process with clear methods and documentation.
+
+The iugu package is a robust solution for developers looking to implement payment functionalities in their Flutter applications efficiently.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# iugu Flutter Package: Setup and Usage Tutorial
+
+## Installation
+To get started with the iugu package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  iugu: ^latest_version
+```
+
+Make sure to replace `latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/iugu).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `android/app/build.gradle` file.
+2. Ensure that you have the following permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+1. Open your `ios/Runner/Info.plist` file.
+2. Add the following key to allow network requests:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the iugu package, you need to initialize it with your iugu API key. Here’s a simple example of how to set it up:
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:iugu/iugu.dart';
 
 void main() {
-  runApp(RealFlutter());
+  // Initialize the iugu package with your API key
+  Iugu.setApiKey('YOUR_API_KEY');
+  runApp(MyApp());
 }
 
-class RealFlutter extends StatefulWidget {
-  @override
-  _RealFlutterState createState() => _RealFlutterState();
-}
-
-class _RealFlutterState extends State<RealFlutter> {
-  final _formKey = GlobalKey<FormState>();
-  final _creditCardController = TextEditingController();
-  final _monthController = TextEditingController();
-  final _yearController = TextEditingController();
-  final _cvvController = TextEditingController();
-  final _amountController = TextEditingController();
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Real Flutter',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      title: 'iugu Example',
+      home: PaymentScreen(),
+    );
+  }
+}
+```
+
+In this example, replace `'YOUR_API_KEY'` with your actual iugu API key. This setup allows you to start using the iugu functionalities in your app.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# iugu Flutter Package: Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:iugu/iugu.dart';
+
+void main() {
+  // Initialize the iugu package with your API key
+  Iugu.setApiKey('YOUR_API_KEY');
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'iugu Payment Example',
+      home: PaymentScreen(),
+    );
+  }
+}
+
+class PaymentScreen extends StatefulWidget {
+  @override
+  _PaymentScreenState createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  // Variables to hold payment information
+  String _paymentStatus = '';
+  final _amountController = TextEditingController();
+
+  // Function to handle payment
+  void _processPayment() async {
+    // Get the amount from the text field
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null) {
+      setState(() {
+        _paymentStatus = 'Invalid amount';
+      });
+      return;
+    }
+
+    // Create a payment request
+    final payment = Payment(
+      amount: amount,
+      currency: 'BRL',
+      description: 'Payment for services',
+    );
+
+    // Process the payment
+    try {
+      final response = await Iugu.createPayment(payment);
+      setState(() {
+        _paymentStatus = 'Payment successful: ${response.id}';
+      });
+    } catch (e) {
+      setState(() {
+        _paymentStatus = 'Payment failed: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('iugu Payment Example'),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Real Flutter'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _creditCardController,
-                  decoration: InputDecoration(
-                    labelText: 'Credit Card Number',
-                  ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter a credit card number';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _monthController,
-                  decoration: InputDecoration(
-                    labelText: 'Month',
-                  ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter a month';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _yearController,
-                  decoration: InputDecoration(
-                    labelText: 'Year',
-                  ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter a year';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _cvvController,
-                  decoration: InputDecoration(
-                    labelText: 'CVV',
-                  ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter a CVV';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _amountController,
-                  decoration: InputDecoration(
-                    labelText: 'Amount',
-                  ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter an amount';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState.validate()) {
-                      // Create a payment token
-                      Iugu.createPaymentToken(
-                        creditCard: CreditCard(
-                          number: _creditCardController.text,
-                          month: int.parse(_monthController.text),
-                          year: int.parse(_yearController.text),
-                          cvv: _cvvController.text,
-                        ),
-                        success: (paymentToken) {
-                          // Charge the customer
-                          Iugu.charge(
-                            paymentToken: paymentToken,
-                            amount: int.parse(_amountController.text),
-                            success: (charge) {
-                              print('Customer charged: $charge');
-                            },
-                            error: (error) {
-                              print('Error charging customer: $error');
-                            },
-                          );
-                        },
-                        error: (error) {
-                          print('Error creating payment token: $error');
-                        },
-                      );
-                    }
-                  },
-                  child: Text('Pay'),
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _amountController,
+              decoration: InputDecoration(labelText: 'Enter amount'),
+              keyboardType: TextInputType.number,
             ),
-          ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _processPayment,
+              child: Text('Pay'),
+            ),
+            SizedBox(height: 20),
+            Text(_paymentStatus),
+          ],
         ),
       ),
     );
   }
 }
 
-// The application flow is as follows:
-// 1. The user enters their credit card information and amount to pay.
-// 2. The user clicks the "Pay" button.
-// 3. The application creates a payment token using the credit card information.
-// 4. The application charges the customer using the payment token and amount.
-// 5. The application displays the result of the transaction to the user.
+// Application Flow Explanation:
+// 1. The app starts by initializing the iugu package with the API key.
+// 2. The main widget is `RealFlutter`, which sets up the MaterialApp.
+// 3. The `PaymentScreen` widget is displayed, allowing users to enter an amount.
+// 4. When the user clicks the "Pay" button, the `_processPayment` function is called.
+// 5. The function retrieves the amount from the text field and creates a payment request.
+// 6. It then calls the `Iugu.createPayment` method to process the payment.
+// 7. The payment status is updated based on the success or failure of the payment.
+```
+<!-- END_MAIN -->
+```
 
-// This code demonstrates how to use the iugu package to process payments in a Flutter application.
-// It includes error handling and validation to ensure that the user enters valid information.
-// The application flow is clear and easy to follow, making it easy to understand how the code works.
-
-<-- END_MAIN -->```
+This structured blog post provides a comprehensive overview of the iugu Flutter package, guiding developers through its features, setup, and practical usage with a complete example.

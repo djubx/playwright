@@ -1,0 +1,237 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the sqlite_wrapper Flutter Package
+
+The `sqlite_wrapper` package is a lightweight and easy-to-use wrapper around SQLite for Flutter applications. It simplifies database operations, making it easier for developers to perform CRUD (Create, Read, Update, Delete) operations without dealing with the complexities of raw SQL queries. This package is particularly useful for applications that require local data storage, such as note-taking apps, task managers, or any app that needs to persist user data.
+
+## Key Features
+- **Simple API**: Provides a straightforward interface for database operations.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+- **Asynchronous Operations**: Utilizes Dart's async/await features for non-blocking database access.
+- **Data Model Support**: Allows for easy mapping of Dart objects to database tables.
+
+## When to Use
+- When you need a local database for your Flutter application.
+- If you want to avoid the complexity of writing raw SQL queries.
+- When you need a lightweight solution for data persistence.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using sqlite_wrapper
+
+## Installation
+To use the `sqlite_wrapper` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sqlite_wrapper: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/sqlite_wrapper).
+
+## Platform-Specific Configuration
+
+### Android
+1. Ensure that your `android/app/build.gradle` file has the following configurations:
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21 // or higher
+       }
+   }
+   ```
+
+### iOS
+1. Open your `ios/Runner/Info.plist` file and add the following permissions if you plan to access the file system:
+   ```xml
+   <key>NSPhotoLibraryUsageDescription</key>
+   <string>We need access to your photo library.</string>
+   ```
+
+## Basic Usage
+To use the `sqlite_wrapper` package, you need to create an instance of the `RealFlutter` class, which will handle your database operations.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sqlite_wrapper/sqlite_wrapper.dart';
+
+class RealFlutter {
+  final SQLiteWrapper _db;
+
+  RealFlutter() : _db = SQLiteWrapper('my_database.db');
+
+  // Initialize the database
+  Future<void> init() async {
+    await _db.open();
+    await _db.createTable('users', {
+      'id': 'INTEGER PRIMARY KEY',
+      'name': 'TEXT',
+      'age': 'INTEGER',
+    });
+  }
+
+  // Insert a user
+  Future<void> insertUser(String name, int age) async {
+    await _db.insert('users', {'name': name, 'age': age});
+  }
+
+  // Fetch all users
+  Future<List<Map<String, dynamic>>> fetchUsers() async {
+    return await _db.query('users');
+  }
+
+  // Close the database
+  Future<void> close() async {
+    await _db.close();
+  }
+}
+```
+
+This code snippet demonstrates how to initialize the database, create a table, insert data, and fetch data.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using sqlite_wrapper
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sqlite_wrapper/sqlite_wrapper.dart';
+
+class RealFlutter {
+  final SQLiteWrapper _db;
+
+  RealFlutter() : _db = SQLiteWrapper('my_database.db');
+
+  // Initialize the database
+  Future<void> init() async {
+    await _db.open(); // Open the database connection
+    await _db.createTable('users', { // Create a table named 'users'
+      'id': 'INTEGER PRIMARY KEY', // Define 'id' as the primary key
+      'name': 'TEXT', // Define 'name' as a text field
+      'age': 'INTEGER', // Define 'age' as an integer field
+    });
+  }
+
+  // Insert a user
+  Future<void> insertUser(String name, int age) async {
+    await _db.insert('users', {'name': name, 'age': age}); // Insert a new user into the 'users' table
+  }
+
+  // Fetch all users
+  Future<List<Map<String, dynamic>>> fetchUsers() async {
+    return await _db.query('users'); // Query all users from the 'users' table
+  }
+
+  // Close the database
+  Future<void> close() async {
+    await _db.close(); // Close the database connection
+  }
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SQLite Wrapper Example',
+      home: UserScreen(),
+    );
+  }
+}
+
+class UserScreen extends StatefulWidget {
+  @override
+  _UserScreenState createState() => _UserScreenState();
+}
+
+class _UserScreenState extends State<UserScreen> {
+  final RealFlutter _realFlutter = RealFlutter();
+  List<Map<String, dynamic>> _users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDatabase(); // Initialize the database when the widget is created
+  }
+
+  // Initialize the database and fetch users
+  Future<void> _initializeDatabase() async {
+    await _realFlutter.init(); // Call the init method to set up the database
+    await _fetchUsers(); // Fetch existing users from the database
+  }
+
+  // Fetch users and update the state
+  Future<void> _fetchUsers() async {
+    _users = await _realFlutter.fetchUsers(); // Get users from the database
+    setState(() {}); // Update the UI
+  }
+
+  // Add a new user
+  void _addUser() async {
+    await _realFlutter.insertUser('John Doe', 30); // Insert a new user
+    await _fetchUsers(); // Refresh the user list
+  }
+
+  @override
+  void dispose() {
+    _realFlutter.close(); // Close the database when the widget is disposed
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('User List')),
+      body: Column(
+        children: [
+          ElevatedButton(
+            onPressed: _addUser, // Add a user when the button is pressed
+            child: Text('Add User'),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _users.length, // Number of users to display
+              itemBuilder: (context, index) {
+                final user = _users[index]; // Get the user at the current index
+                return ListTile(
+                  title: Text(user['name']), // Display the user's name
+                  subtitle: Text('Age: ${user['age']}'), // Display the user's age
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+```
+// The application starts with the main function, which runs the MyApp widget.
+// MyApp sets up the MaterialApp and directs to UserScreen.
+// In UserScreen, we initialize the RealFlutter instance to manage the database.
+// The initState method calls _initializeDatabase to set up the database and fetch existing users.
+// The _fetchUsers method retrieves users from the database and updates the state.
+// The _addUser method inserts a new user into the database and refreshes the user list.
+// The UI consists of a button to add a user and a ListView to display the users.
+// Each ListTile shows the user's name and age, providing a simple interface for interaction.
+// Finally, the dispose method ensures the database connection is closed when the widget is removed.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive overview of the `sqlite_wrapper` package, guiding developers through its features, setup, and practical usage in a Flutter application.

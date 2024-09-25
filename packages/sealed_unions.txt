@@ -1,11 +1,158 @@
+# Sealed Unions in Flutter: A Comprehensive Guide to the `sealed_unions` Package
 
+## <-- START_DESCRIPTION -->
 
-<-- END_MAIN -->
+### Description
 
-In summary, the code flows as follows:
+The `sealed_unions` package in Flutter provides a powerful way to implement sealed classes and unions, which are useful for managing state and handling complex data structures in a type-safe manner. This package is particularly beneficial when you want to represent a value that can be one of several types, allowing for better code organization and reducing the likelihood of runtime errors.
 
-*   The app starts with a loading state, represented by a `CircularProgressIndicator`.
-*   When the user presses the "Change Union" button, the state changes to a success state.
-*   The success state is represented by a `Text` widget displaying the text "Success".
-*   The app uses pattern matching to handle different cases (success, error, loading).
-*   The app uses the Sealed Unions package to define and work with union types in a type-safe manner.
+### When to Use
+
+You might consider using the `sealed_unions` package in scenarios such as:
+
+- **State Management**: When managing different states in your application (e.g., loading, success, error).
+- **API Responses**: When handling various types of responses from an API, such as success data, error messages, or loading states.
+- **Complex Data Structures**: When you need to represent a value that can be one of several types, such as a user that can be either an admin or a regular user.
+
+### Features
+
+- **Type Safety**: Ensures that only valid types can be used, reducing runtime errors.
+- **Pattern Matching**: Allows for easy handling of different types using pattern matching.
+- **Immutable Data Structures**: Promotes the use of immutable data, which is a best practice in Flutter development.
+- **Easy Integration**: Simple to integrate into existing Flutter projects.
+
+## <-- END_DESCRIPTION -->
+
+## <-- START_TUTORIAL -->
+
+### Tutorial
+
+#### Installation
+
+To get started with the `sealed_unions` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  sealed_unions: ^0.2.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run the following command to install it:
+
+```bash
+flutter pub get
+```
+
+#### Platform-Specific Details
+
+The `sealed_unions` package is platform-agnostic, meaning it works seamlessly on both Android and iOS without any additional configurations. However, ensure that your Flutter environment is set up correctly for both platforms.
+
+#### Basic Usage
+
+1. **Define Sealed Classes**: Create sealed classes to represent different states or types.
+2. **Use Unions**: Utilize the union types to manage state or data flow in your application.
+
+Here’s a simple example of how to define sealed classes:
+
+```dart
+import 'package:sealed_unions/sealed_unions.dart';
+
+// Define your union types
+class UserState extends Union2Impl<Loading, Loaded> {
+  UserState._(Union2<Loading, Loaded> union) : super(union);
+  
+  static UserState loading() => UserState._(Union2<Loading, Loaded>.first(Loading()));
+  static UserState loaded(String userData) => UserState._(Union2<Loading, Loaded>.second(Loaded(userData)));
+}
+
+class Loading {}
+class Loaded {
+  final String userData;
+  Loaded(this.userData);
+}
+```
+
+## <-- END_TUTORIAL -->
+
+## <-- START_MAIN -->
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:sealed_unions/sealed_unions.dart';
+
+// Define your union types
+class UserState extends Union2Impl<Loading, Loaded> {
+  UserState._(Union2<Loading, Loaded> union) : super(union);
+  
+  static UserState loading() => UserState._(Union2<Loading, Loaded>.first(Loading()));
+  static UserState loaded(String userData) => UserState._(Union2<Loading, Loaded>.second(Loaded(userData)));
+}
+
+class Loading {}
+class Loaded {
+  final String userData;
+  Loaded(this.userData);
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sealed Unions Example',
+      home: UserScreen(),
+    );
+  }
+}
+
+class UserScreen extends StatefulWidget {
+  @override
+  _UserScreenState createState() => _UserScreenState();
+}
+
+class _UserScreenState extends State<UserScreen> {
+  UserState _state = UserState.loading(); // Initial state is loading
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData(); // Fetch user data when the screen initializes
+  }
+
+  Future<void> _fetchUserData() async {
+    // Simulate a network call
+    await Future.delayed(Duration(seconds: 2));
+    setState(() {
+      _state = UserState.loaded("User data loaded successfully!"); // Update state to loaded
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Sealed Unions Example')),
+      body: _state.map(
+        (loading) => Center(child: CircularProgressIndicator()), // Show loading indicator
+        (loaded) => Center(child: Text(loaded.userData)), // Show loaded data
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The UserScreen widget is created, initializing the state to loading.
+// 3. In initState, _fetchUserData is called to simulate a network request.
+// 4. After a delay, the state is updated to loaded with user data.
+// 5. The build method uses the map function to display either a loading indicator or the loaded user data based on the current state.
+```
+
+## <-- END_MAIN -->
+
+### Summary of Application Flow
+
+The application begins with the `MyApp` widget, which initializes the `UserScreen`. The `UserScreen` starts with a loading state, displaying a `CircularProgressIndicator`. After simulating a network call with a delay, the state is updated to loaded, and the user data is displayed on the screen. The use of sealed unions allows for clear and type-safe management of the different states, making the code more maintainable and less error-prone.

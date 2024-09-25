@@ -1,1 +1,215 @@
-don't show loader
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the "checks" Flutter Package
+
+The "checks" Flutter package is a powerful tool designed to simplify the process of validating user input in Flutter applications. It provides a set of pre-defined checks that can be easily integrated into forms, ensuring that the data entered by users meets specific criteria before submission. This package is particularly useful in scenarios where data integrity is crucial, such as in registration forms, payment processing, and any application that requires user-generated content.
+
+## Key Features
+- **Pre-defined Checks**: The package comes with a variety of built-in checks, such as email validation, password strength, and numeric checks.
+- **Custom Checks**: Developers can create their own validation rules tailored to specific requirements.
+- **Easy Integration**: The package is designed to work seamlessly with Flutter's form widgets, making it easy to implement in existing projects.
+- **Error Handling**: Provides clear error messages that can be displayed to users, enhancing the user experience.
+
+## When to Use
+- When building forms that require user input validation.
+- In applications where data integrity is critical, such as e-commerce or financial apps.
+- When you want to reduce boilerplate code related to input validation.
+
+Overall, the "checks" package streamlines the validation process, allowing developers to focus on building features rather than handling input errors manually.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using the "checks" Package
+
+## Installation
+To get started with the "checks" package, you need to add it to your Flutter project. Open your `pubspec.yaml` file and add the following dependency:
+
+```yaml
+dependencies:
+  checks: ^1.0.0  # Replace with the latest version
+```
+
+After adding the dependency, run the following command in your terminal to install it:
+
+```bash
+flutter pub get
+```
+
+## Platform-Specific Configuration
+### Android
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, make sure to set the deployment target in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Basic Usage
+To use the "checks" package, you will typically create a form and apply the checks to the input fields. Here’s a simple example of how to implement it:
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:checks/checks.dart';
+```
+
+2. Create a form with input fields and apply the checks:
+
+```dart
+final emailCheck = EmailCheck();
+final passwordCheck = PasswordCheck(minLength: 8);
+```
+
+3. Validate the input when the form is submitted:
+
+```dart
+if (emailCheck.validate(email) && passwordCheck.validate(password)) {
+    // Proceed with form submission
+} else {
+    // Show error messages
+}
+```
+
+This setup allows you to easily validate user input and provide feedback based on the checks defined.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using the "checks" Package
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:checks/checks.dart'; // Importing the checks package
+
+void main() {
+  runApp(RealFlutter()); // Running the main application
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Checks Package Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Input Validation Example'),
+        ),
+        body: InputForm(), // Using the InputForm widget
+      ),
+    );
+  }
+}
+
+class InputForm extends StatefulWidget {
+  @override
+  _InputFormState createState() => _InputFormState();
+}
+
+class _InputFormState extends State<InputForm> {
+  final _formKey = GlobalKey<FormState>(); // Key to identify the form
+  String email = ''; // Variable to hold email input
+  String password = ''; // Variable to hold password input
+  String errorMessage = ''; // Variable to hold error messages
+
+  // Creating checks for email and password
+  final emailCheck = EmailCheck();
+  final passwordCheck = PasswordCheck(minLength: 8);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey, // Assigning the form key
+        child: Column(
+          children: [
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Email'),
+              onChanged: (value) {
+                email = value; // Updating email variable on change
+              },
+              validator: (value) {
+                // Validating email input
+                if (!emailCheck.validate(value)) {
+                  return 'Please enter a valid email';
+                }
+                return null; // No error
+              },
+            ),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
+              onChanged: (value) {
+                password = value; // Updating password variable on change
+              },
+              validator: (value) {
+                // Validating password input
+                if (!passwordCheck.validate(value)) {
+                  return 'Password must be at least 8 characters';
+                }
+                return null; // No error
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // When the button is pressed
+                if (_formKey.currentState!.validate()) {
+                  // If the form is valid
+                  setState(() {
+                    errorMessage = ''; // Clear any previous error messages
+                  });
+                  // Proceed with form submission
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Processing Data')),
+                  );
+                } else {
+                  // If the form is invalid
+                  setState(() {
+                    errorMessage = 'Please fix the errors above'; // Set error message
+                  });
+                }
+              },
+              child: Text('Submit'),
+            ),
+            if (errorMessage.isNotEmpty) // Display error message if exists
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+// The above code demonstrates a simple Flutter application that utilizes the "checks" package for input validation.
+// 
+// 1. The `main` function initializes the app and sets `RealFlutter` as the home widget.
+// 2. The `RealFlutter` widget builds a MaterialApp with an AppBar and the `InputForm` widget as the body.
+// 3. The `InputForm` widget is a stateful widget that contains a form with two text fields: one for email and one for password.
+// 4. Each text field has a validator that uses the checks from the "checks" package to validate the input.
+// 5. When the submit button is pressed, the form is validated. If valid, a SnackBar is shown; if not, an error message is displayed below the button.
+// 6. The application provides real-time feedback to users, ensuring that they enter valid data before submission.
+
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the "checks" Flutter package, guiding developers through its features, setup, and practical usage with a complete example.

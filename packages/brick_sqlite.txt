@@ -1,3 +1,215 @@
+# Brick SQLite Flutter Package
 
+<!-- START_DESCRIPTION -->
+## Description
 
-<-- END_MAIN -->
+The `brick_sqlite` package is a powerful tool for Flutter developers looking to integrate SQLite databases into their applications. It provides a simple and efficient way to manage local data storage, making it ideal for apps that require persistent data management without relying on external servers. 
+
+### When to Use
+
+You should consider using `brick_sqlite` when:
+- You need to store structured data locally on the device.
+- Your application requires offline capabilities.
+- You want to manage complex data relationships with ease.
+
+### Features
+
+- **Simple API**: The package offers a straightforward API for CRUD (Create, Read, Update, Delete) operations.
+- **Data Modeling**: Supports data modeling with Dart classes, making it easy to work with data in a type-safe manner.
+- **Migration Support**: Built-in support for database migrations, allowing you to evolve your database schema over time.
+- **Querying**: Provides powerful querying capabilities to fetch data efficiently.
+- **Cross-Platform**: Works seamlessly on both Android and iOS platforms.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+## Tutorial
+
+### Installation
+
+To get started with `brick_sqlite`, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  brick_sqlite: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/brick_sqlite).
+
+### Platform-Specific Configuration
+
+#### Android
+
+1. Ensure that your `android/app/build.gradle` file has the following configurations:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21 // Ensure this is set to at least 21
+    }
+}
+```
+
+2. Add the necessary permissions in `AndroidManifest.xml` if you plan to access external storage.
+
+#### iOS
+
+1. Open your `ios/Runner/Info.plist` file and add the following:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to save images.</string>
+```
+
+2. Ensure that your iOS deployment target is set to at least 10.0 in your `ios/Podfile`.
+
+### Basic Usage
+
+1. **Initialize the Database**: Create a database instance using the `RealFlutter` class.
+2. **Define Your Models**: Create Dart classes that represent your data models.
+3. **Perform CRUD Operations**: Use the provided methods to interact with your database.
+
+Here’s a simple example of how to set up and use the `brick_sqlite` package:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:brick_sqlite/brick_sqlite.dart';
+
+class RealFlutter {
+  // Initialize the database
+  final BrickSqlite brickSqlite;
+
+  RealFlutter(this.brickSqlite);
+
+  // Create a new record
+  Future<void> createRecord(MyModel model) async {
+    await brickSqlite.insert(model);
+  }
+
+  // Read records
+  Future<List<MyModel>> readRecords() async {
+    return await brickSqlite.query<MyModel>();
+  }
+
+  // Update a record
+  Future<void> updateRecord(MyModel model) async {
+    await brickSqlite.update(model);
+  }
+
+  // Delete a record
+  Future<void> deleteRecord(int id) async {
+    await brickSqlite.delete<MyModel>(id);
+  }
+}
+
+// Define your data model
+class MyModel {
+  final int id;
+  final String name;
+
+  MyModel({required this.id, required this.name});
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+## Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:brick_sqlite/brick_sqlite.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Brick SQLite Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late RealFlutter realFlutter;
+  List<MyModel> records = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the BrickSqlite instance
+    realFlutter = RealFlutter(BrickSqlite());
+    // Load existing records
+    loadRecords();
+  }
+
+  // Load records from the database
+  void loadRecords() async {
+    records = await realFlutter.readRecords();
+    setState(() {});
+  }
+
+  // Add a new record
+  void addRecord() async {
+    MyModel newRecord = MyModel(id: records.length + 1, name: 'Record ${records.length + 1}');
+    await realFlutter.createRecord(newRecord);
+    loadRecords(); // Refresh the list
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SQLite CRUD Example'),
+      ),
+      body: ListView.builder(
+        itemCount: records.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(records[index].name),
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () async {
+                await realFlutter.deleteRecord(records[index].id);
+                loadRecords(); // Refresh the list
+              },
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: addRecord,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// Explanation of the application flow:
+// 1. The app starts with the `main` function, which runs the `MyApp` widget.
+// 2. `MyApp` builds a `MaterialApp` with a `HomeScreen` as its home.
+// 3. In `HomeScreen`, we initialize the `RealFlutter` instance and load existing records from the database.
+// 4. The `loadRecords` method fetches records and updates the state to refresh the UI.
+// 5. The UI displays a list of records, each with a delete button.
+// 6. Tapping the floating action button adds a new record to the database and refreshes the list.
+// 7. Tapping the delete button removes the record from the database and refreshes the list.
+```
+
+<!-- END_MAIN -->
+
+## Summary
+
+In this blog post, we explored the `brick_sqlite` package, which provides a robust solution for managing SQLite databases in Flutter applications. We covered the installation process, platform-specific configurations, and provided a complete example demonstrating how to perform CRUD operations. The application flow was explained step-by-step through comments in the code, making it easy to understand how to implement this package in your own projects. With its simple API and powerful features, `brick_sqlite` is an excellent choice for developers looking to manage local data efficiently.

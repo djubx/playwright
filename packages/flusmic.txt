@@ -1,101 +1,203 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Flusmic: A Comprehensive Overview
+
+Flusmic is a powerful Flutter package designed to simplify the integration of content management systems (CMS) into Flutter applications. It provides a seamless way to fetch, display, and manage content from various CMS platforms, making it an excellent choice for developers looking to build dynamic applications that require real-time content updates.
+
+## When to Use Flusmic
+Flusmic is particularly useful in scenarios where you need to:
+- Integrate a CMS for managing content dynamically.
+- Build applications that require frequent content updates without redeploying the app.
+- Create a blog, news app, or any content-heavy application that benefits from a backend CMS.
+
+## Key Features
+- **Easy Integration**: Flusmic allows for straightforward integration with popular CMS platforms.
+- **Real-time Updates**: Automatically fetch and display the latest content without manual intervention.
+- **Customizable UI**: Offers flexibility in how content is displayed, allowing developers to create unique user interfaces.
+- **Offline Support**: Cache content for offline access, enhancing user experience.
+
+With these features, Flusmic stands out as a robust solution for Flutter developers looking to manage content efficiently.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Flusmic Setup and Usage Tutorial
+
+## Installation
+To get started with Flusmic, you need to add it to your Flutter project. Open your `pubspec.yaml` file and add the following dependency:
+
+```yaml
+dependencies:
+  flusmic: ^latest_version
+```
+
+Make sure to run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+
+### Android
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, you may need to configure your `Info.plist` to allow network requests if you are fetching data from a remote CMS. Add the following lines:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+Once you have installed and configured Flusmic, you can start using it in your Flutter application. Here’s a simple example of how to fetch and display content.
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flusmic/flusmic.dart';
 
-void main() {
-  Flusmic.initialize();
-  runApp(RealFlutter());
-}
-
-class RealFlutter extends StatefulWidget {
+class RealFlutter extends StatelessWidget {
   @override
-  _RealFlutterState createState() => _RealFlutterState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flusmic Example',
+      home: ContentScreen(),
+    );
+  }
 }
 
-class _RealFlutterState extends State<RealFlutter> {
-  final _keyController = TextEditingController();
-  final _valueController = TextEditingController();
-  String _storedValue = '';
+class ContentScreen extends StatefulWidget {
+  @override
+  _ContentScreenState createState() => _ContentScreenState();
+}
 
-  // Step 1: Store data using Flusmic
-  void _storeData() {
-    Flusmic.store(_keyController.text, _valueController.text);
-  }
+class _ContentScreenState extends State<ContentScreen> {
+  late Future<List<Content>> _contentList;
 
-  // Step 2: Retrieve data using Flusmic
-  void _retrieveData() {
-    String value = Flusmic.get(_keyController.text);
-    setState(() {
-      _storedValue = value;
-    });
-  }
-
-  // Step 3: Delete data using Flusmic
-  void _deleteData() {
-    Flusmic.delete(_keyController.text);
-    setState(() {
-      _storedValue = '';
-    });
+  @override
+  void initState() {
+    super.initState();
+    // Fetch content from the CMS
+    _contentList = Flusmic.fetchContent('your_cms_endpoint');
   }
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Flusmic Content')),
+      body: FutureBuilder<List<Content>>(
+        future: _contentList,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            final content = snapshot.data!;
+            return ListView.builder(
+              itemCount: content.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(content[index].title),
+                  subtitle: Text(content[index].description),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Flusmic in Action
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flusmic/flusmic.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Flusmic Example'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              TextField(
-                controller: _keyController,
-                decoration: InputDecoration(
-                  labelText: 'Key',
-                ),
-              ),
-              TextField(
-                controller: _valueController,
-                decoration: InputDecoration(
-                  labelText: 'Value',
-                ),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: _storeData,
-                    child: Text('Store'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _retrieveData,
-                    child: Text('Retrieve'),
-                  ),
-                  ElevatedButton(
-                    onPressed: _deleteData,
-                    child: Text('Delete'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              Text('Stored Value: $_storedValue'),
-            ],
-          ),
-        ),
+      title: 'Flusmic Example',
+      home: ContentScreen(),
+    );
+  }
+}
+
+class ContentScreen extends StatefulWidget {
+  @override
+  _ContentScreenState createState() => _ContentScreenState();
+}
+
+class _ContentScreenState extends State<ContentScreen> {
+  late Future<List<Content>> _contentList;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch content from the CMS
+    _contentList = Flusmic.fetchContent('your_cms_endpoint');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Flusmic Content')),
+      body: FutureBuilder<List<Content>>(
+        future: _contentList,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // While waiting for the data, show a loading spinner
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            // If there is an error, display it
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            // Once data is fetched, display it in a ListView
+            final content = snapshot.data!;
+            return ListView.builder(
+              itemCount: content.length,
+              itemBuilder: (context, index) {
+                // Each item in the ListView displays the title and description
+                return ListTile(
+                  title: Text(content[index].title),
+                  subtitle: Text(content[index].description),
+                );
+              },
+            );
+          }
+        },
       ),
     );
   }
 }
 
-// The application flow is as follows:
-// 1. The user enters a key and value in the text fields.
-// 2. The user clicks the "Store" button to store the data using Flusmic.
-// 3. The user clicks the "Retrieve" button to retrieve the stored data using Flusmic.
-// 4. The retrieved data is displayed on the screen.
-// 5. The user clicks the "Delete" button to delete the stored data using Flusmic.
-// 6. The stored data is deleted and the screen is updated to reflect the change.
-
-<-- END_MAIN -->
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which sets up the MaterialApp.
+// 2. The ContentScreen widget is created, which is responsible for displaying the content.
+// 3. In the initState method, we call Flusmic.fetchContent() to retrieve content from the specified CMS endpoint.
+// 4. A FutureBuilder is used to handle the asynchronous fetching of content.
+// 5. While the content is being fetched, a loading spinner is displayed.
+// 6. If an error occurs during fetching, it is displayed to the user.
+// 7. Once the content is successfully fetched, it is displayed in a ListView, with each item showing the title and description of the content.
 ```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the Flusmic package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow.

@@ -1,64 +1,161 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the pgw_sdk Flutter Package
+
+The `pgw_sdk` package is a powerful tool designed for integrating payment gateways into Flutter applications. It provides a seamless way to handle transactions, making it an essential package for developers looking to implement payment functionalities in their apps. 
+
+## When to Use `pgw_sdk`
+You should consider using `pgw_sdk` when:
+- You need to integrate a payment gateway into your Flutter application.
+- You want to provide users with a secure and efficient way to make payments.
+- You are developing an e-commerce app, subscription service, or any application that requires payment processing.
+
+## Key Features
+- **Multi-Platform Support**: Works on both Android and iOS, ensuring a wide reach for your application.
+- **Secure Transactions**: Implements industry-standard security protocols to protect user data.
+- **Customizable UI**: Allows developers to customize the payment interface to match their app's design.
+- **Comprehensive Documentation**: Provides detailed guides and examples to help developers get started quickly.
+
+Overall, `pgw_sdk` is an excellent choice for developers looking to implement payment solutions in their Flutter applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using the pgw_sdk Package
+
+## Installation
+To get started with `pgw_sdk`, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  pgw_sdk: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/pgw_sdk).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `android/app/build.gradle` file and ensure you have the following configurations:
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21 // or higher
+           ...
+       }
+   }
+   ```
+
+2. Add the necessary permissions in your `AndroidManifest.xml`:
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+### iOS
+1. Open your `ios/Runner/Info.plist` and add the following:
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+2. Ensure your deployment target is set to at least iOS 10.0 in your `ios/Podfile`:
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+## Basic Usage
+To use the `pgw_sdk`, you need to initialize it and create a payment request. Here’s a simple example of how to do this:
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:pgw_sdk/pgw_sdk.dart';
 
-void main() {
-  runApp(RealFlutter());
-}
-
-class RealFlutter extends StatefulWidget {
-  @override
-  _RealFlutterState createState() => _RealFlutterState();
-}
-
-class _RealFlutterState extends State<RealFlutter> {
-  PGWSDK _pgwSdk;
-  Transaction _transaction;
-
-  @override
-  void initState() {
-    super.initState();
-    _pgwSdk = PGWSDK(
-      gateway: 'paypal',
-      clientId: 'your_client_id',
-      clientSecret: 'your_client_secret',
-    );
-  }
-
+class RealFlutter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('RealFlutter'),
-        ),
+        appBar: AppBar(title: Text('Payment Gateway Example')),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Process Transaction',
-                style: TextStyle(fontSize: 24),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _transaction = _pgwSdk.createTransaction(
-                    amount: 10.99,
-                    currency: 'USD',
-                    paymentMethod: 'credit_card',
-                  );
-                  _pgwSdk.processTransaction(_transaction).then((result) {
-                    if (result.success) {
-                      print('Transaction processed successfully!');
-                    } else {
-                      print('Error processing transaction: ${result.error}');
-                    }
-                  });
+          child: ElevatedButton(
+            onPressed: () {
+              // Initialize the payment gateway
+              PGWSDK.initialize(
+                merchantId: 'your_merchant_id',
+                secretKey: 'your_secret_key',
+              );
+
+              // Create a payment request
+              PGWSDK.createPaymentRequest(
+                amount: 100.0, // Amount in your currency
+                currency: 'USD',
+                onSuccess: (response) {
+                  // Handle successful payment
+                  print('Payment Successful: $response');
                 },
-                child: Text('Process Transaction'),
-              ),
-            ],
+                onError: (error) {
+                  // Handle payment error
+                  print('Payment Error: $error');
+                },
+              );
+            },
+            child: Text('Make Payment'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+This code initializes the payment gateway and creates a payment request when the button is pressed.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using pgw_sdk
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:pgw_sdk/pgw_sdk.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Payment Gateway Example')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Initialize the payment gateway with merchant credentials
+              PGWSDK.initialize(
+                merchantId: 'your_merchant_id', // Replace with your merchant ID
+                secretKey: 'your_secret_key', // Replace with your secret key
+              );
+
+              // Create a payment request with the specified amount and currency
+              PGWSDK.createPaymentRequest(
+                amount: 100.0, // Amount to be charged
+                currency: 'USD', // Currency type
+                onSuccess: (response) {
+                  // This callback is triggered on successful payment
+                  print('Payment Successful: $response');
+                },
+                onError: (error) {
+                  // This callback is triggered on payment error
+                  print('Payment Error: $error');
+                },
+              );
+            },
+            child: Text('Make Payment'), // Button text
           ),
         ),
       ),
@@ -66,18 +163,16 @@ class _RealFlutterState extends State<RealFlutter> {
   }
 }
 
-// The application flow is as follows:
-// 1. The user clicks the "Process Transaction" button.
-// 2. The `_pgwSdk` instance creates a new `Transaction` object with the specified amount, currency, and payment method.
-// 3. The `_pgwSdk` instance processes the transaction using the `processTransaction` method.
-// 4. The `processTransaction` method sends a request to the payment gateway to process the transaction.
-// 5. The payment gateway processes the transaction and returns a response to the `_pgwSdk` instance.
-// 6. The `_pgwSdk` instance receives the response and checks if the transaction was successful.
-// 7. If the transaction was successful, the `_pgwSdk` instance prints a success message to the console.
-// 8. If the transaction failed, the `_pgwSdk` instance prints an error message to the console.
-
-// In summary, the code flows as follows:
-// User clicks button -> Create transaction object -> Process transaction -> Send request to payment gateway -> Receive response -> Check if transaction was successful -> Print success or error message.
-
-<-- END_MAIN -->
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter widget being built.
+// 2. A MaterialApp is created with a Scaffold containing an AppBar and a Center widget.
+// 3. Inside the Center widget, an ElevatedButton is displayed.
+// 4. When the button is pressed, the payment gateway is initialized with the merchant ID and secret key.
+// 5. A payment request is created with a specified amount and currency.
+// 6. If the payment is successful, the success callback is triggered, and the response is printed.
+// 7. If there is an error during the payment process, the error callback is triggered, and the error is printed.
 ```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `pgw_sdk` package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow.

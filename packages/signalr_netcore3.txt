@@ -1,8 +1,197 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the signalr_netcore3 Flutter Package
 
+The `signalr_netcore3` package is a Flutter client for ASP.NET Core SignalR, enabling real-time web functionality in your Flutter applications. This package allows developers to easily connect to SignalR hubs, facilitating real-time communication between clients and servers. 
 
-// The RealFlutter class demonstrates how to use the signalr_netcore3 package to establish a real-time connection with a SignalR server.
-// The `_startConnection` method starts the connection and listens for messages from the server.
-// The `_sendMessage` method sends a message to the server.
-// The `build` method returns a Scaffold with a ListView of messages and a TextField to send new messages.
+## When to Use This Package
+You should consider using `signalr_netcore3` when:
+- You need to implement real-time features in your app, such as chat applications, live notifications, or collaborative tools.
+- You are working with an ASP.NET Core backend that utilizes SignalR for real-time communication.
 
-<-- END_MAIN -->
+## Key Features
+- **Real-time Communication**: Establishes a persistent connection to the server for real-time data exchange.
+- **Automatic Reconnection**: Automatically attempts to reconnect if the connection is lost.
+- **Support for Multiple Hubs**: Connect to multiple SignalR hubs within the same application.
+- **Message Handling**: Easily send and receive messages with built-in methods for handling events.
+
+Overall, `signalr_netcore3` is a powerful tool for Flutter developers looking to integrate real-time capabilities into their applications.
+
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using signalr_netcore3
+
+## Installation
+To get started with the `signalr_netcore3` package, add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  signalr_netcore3: ^1.0.0 # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+
+### Android
+1. Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21.
+2. Add internet permissions in `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following to allow network requests:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the `signalr_netcore3` package, follow these steps:
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:signalr_netcore3/signalr_netcore3.dart';
+```
+
+2. Create a class to manage your SignalR connection:
+
+```dart
+class RealFlutter {
+  late HubConnection hubConnection;
+
+  RealFlutter() {
+    // Initialize the HubConnection
+    hubConnection = HubConnectionBuilder()
+        .withUrl('https://yourserver.com/hub') // Replace with your SignalR hub URL
+        .build();
+
+    // Start the connection
+    startConnection();
+  }
+
+  void startConnection() async {
+    try {
+      await hubConnection.start();
+      print('Connection started');
+      
+      // Listen for messages from the server
+      hubConnection.on('ReceiveMessage', (message) {
+        print('Message from server: $message');
+      });
+    } catch (e) {
+      print('Error starting connection: $e');
+    }
+  }
+
+  void sendMessage(String message) {
+    hubConnection.invoke('SendMessage', args: [message]);
+  }
+}
+```
+
+This setup allows you to connect to a SignalR hub, listen for messages, and send messages to the server.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using signalr_netcore3
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:signalr_netcore3/signalr_netcore3.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SignalR Demo',
+      home: SignalRHome(),
+    );
+  }
+}
+
+class SignalRHome extends StatefulWidget {
+  @override
+  _SignalRHomeState createState() => _SignalRHomeState();
+}
+
+class _SignalRHomeState extends State<SignalRHome> {
+  late RealFlutter realFlutter;
+  final TextEditingController _controller = TextEditingController();
+  List<String> messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    realFlutter = RealFlutter(); // Initialize the RealFlutter class
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('SignalR Chat')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(title: Text(messages[index]));
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(labelText: 'Send a message'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () {
+                    // Send message to the server
+                    realFlutter.sendMessage(_controller.text);
+                    _controller.clear(); // Clear the input field
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the MyApp widget.
+// 2. MyApp builds a MaterialApp with a title and home set to SignalRHome.
+// 3. In SignalRHome, we initialize the RealFlutter class in initState, which sets up the SignalR connection.
+// 4. The UI consists of a ListView to display messages and a TextField for user input.
+// 5. When the send button is pressed, the message is sent to the server using the sendMessage method from RealFlutter.
+// 6. The app listens for incoming messages and updates the ListView accordingly.
+```
+
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `signalr_netcore3` package, guiding developers through its features, setup, and practical usage in a Flutter application.

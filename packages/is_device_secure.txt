@@ -1,78 +1,149 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the is_device_secure Flutter Package
+
+The `is_device_secure` package is a Flutter plugin that allows developers to check whether the device is secure. This is particularly useful for applications that handle sensitive data, such as banking apps or applications that require user authentication. By ensuring that the device is secure, developers can enhance the security of their applications and protect user data.
+
+## When to Use This Package
+- **Sensitive Applications**: If your app deals with sensitive information, such as financial data or personal information, you should verify the device's security.
+- **Authentication**: Before allowing access to certain features, you can check if the device is secure.
+- **Compliance**: For applications that need to comply with security standards, this package can help ensure that the device meets necessary security requirements.
+
+## Key Features
+- **Device Security Check**: Easily check if the device is secure.
+- **Platform Support**: Works on both Android and iOS.
+- **Simple API**: Provides a straightforward API for checking device security.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using is_device_secure
+
+## Installation
+To use the `is_device_secure` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  is_device_secure: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+
+### Android
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, you may need to add permissions in your `Info.plist` file if you are accessing sensitive data. However, the `is_device_secure` package does not require any specific permissions.
+
+## Using the Package
+To use the package, you can import it into your Dart file:
+
+```dart
+import 'package:is_device_secure/is_device_secure.dart';
+```
+
+You can then check if the device is secure using the following code:
+
+```dart
+bool isSecure = await IsDeviceSecure.isDeviceSecure;
+```
+
+This will return a boolean indicating whether the device is secure or not.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using is_device_secure
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:is_device_secure/is_device_secure.dart';
 
 void main() {
-  runApp(const RealFlutter());
+  runApp(RealFlutter());
 }
 
-class RealFlutter extends StatefulWidget {
-  const RealFlutter({Key? key}) : super(key: key);
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Device Security Check',
+      home: SecureCheckScreen(),
+    );
+  }
+}
+
+class SecureCheckScreen extends StatefulWidget {
+  @override
+  _SecureCheckScreenState createState() => _SecureCheckScreenState();
+}
+
+class _SecureCheckScreenState extends State<SecureCheckScreen> {
+  bool? _isSecure;
 
   @override
-  State<RealFlutter> createState() => _RealFlutterState();
-}
+  void initState() {
+    super.initState();
+    _checkDeviceSecurity(); // Call the method to check device security on initialization
+  }
 
-class _RealFlutterState extends State<RealFlutter> {
-  bool _isLockScreenSecure = false;
-  bool _isDebugModeEnabled = false;
-  bool _isRootedOrJailbroken = false;
-
-  Future<void> _evaluateDeviceSecurity() async {
-    // Evaluate lock screen protection
-    final isLockScreenSecure = await isDeviceSecure();
+  Future<void> _checkDeviceSecurity() async {
+    // Check if the device is secure
+    bool isSecure = await IsDeviceSecure.isDeviceSecure;
     setState(() {
-      _isLockScreenSecure = isLockScreenSecure;
-    });
-
-    // Evaluate debug mode status
-    final isDebugModeEnabled = await isDebugModeEnabled();
-    setState(() {
-      _isDebugModeEnabled = isDebugModeEnabled;
-    });
-
-    // Evaluate root or jailbreak status
-    final isRootedOrJailbroken = await isRootedOrJailbroken();
-    setState(() {
-      _isRootedOrJailbroken = isRootedOrJailbroken;
+      _isSecure = isSecure; // Update the state with the security status
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Real Flutter'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Lock Screen Secure: $_isLockScreenSecure'),
-              Text('Debug Mode Enabled: $_isDebugModeEnabled'),
-              Text('Rooted or Jailbroken: $_isRootedOrJailbroken'),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _evaluateDeviceSecurity,
-                child: const Text('Evaluate Device Security'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Device Security Check'),
+      ),
+      body: Center(
+        child: _isSecure == null
+            ? CircularProgressIndicator() // Show loading indicator while checking
+            : Text(
+                _isSecure! ? 'Device is Secure' : 'Device is Not Secure',
+                style: TextStyle(fontSize: 24),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
 }
 
-// The application flow is as follows:
-// 1. The user launches the app and is presented with a button to evaluate device security.
-// 2. When the button is pressed, the app calls the _evaluateDeviceSecurity function.
-// 3. This function evaluates the device's lock screen protection, debug mode status, and root or jailbreak status using the isDeviceSecure, isDebugModeEnabled, and isRootedOrJailbroken functions from the is_device_secure package.
-// 4. The results are then displayed on the screen.
-// 5. The user can press the button again to re-evaluate the device's security.
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and a home screen (SecureCheckScreen).
+// 3. SecureCheckScreen is a stateful widget that checks the device's security status.
+// 4. In the initState method, _checkDeviceSecurity is called to perform the security check.
+// 5. _checkDeviceSecurity uses the is_device_secure package to check if the device is secure.
+// 6. The result is stored in the _isSecure variable, and the UI is updated accordingly.
+// 7. While the check is in progress, a CircularProgressIndicator is displayed.
+// 8. Once the check is complete, a message is displayed indicating whether the device is secure or not.
 
-// In summary, this code demonstrates how to use the is_device_secure package to evaluate a device's security posture and display the results in a Flutter app.
-
-<-- END_MAIN -->
 ```
+<!-- END_MAIN -->
+``` 
+
+### Summary
+In this blog post, we explored the `is_device_secure` Flutter package, which provides a simple way to check the security status of a device. We covered the installation process, platform-specific configurations, and provided a complete example demonstrating how to implement the package in a Flutter application. By following the steps outlined, developers can enhance the security of their applications and ensure that sensitive data is handled appropriately.

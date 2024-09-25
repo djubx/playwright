@@ -1,86 +1,158 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the rsa_pkcs Flutter Package
+
+The `rsa_pkcs` package is a Flutter library designed for RSA encryption and decryption using the PKCS#1 standard. This package is particularly useful for developers who need to implement secure data transmission in their applications, ensuring that sensitive information is encrypted before being sent over the network.
+
+## When to Use This Package
+- **Secure Communication**: When you need to securely transmit sensitive data between a client and a server.
+- **Data Protection**: To protect user credentials, personal information, or any sensitive data stored in your application.
+- **Cryptographic Operations**: When implementing features that require public/private key cryptography.
+
+## Key Features
+- **RSA Encryption/Decryption**: Provides methods to encrypt and decrypt data using RSA.
+- **PKCS#1 Compliance**: Adheres to the PKCS#1 standard for RSA encryption, ensuring compatibility with other systems.
+- **Key Generation**: Allows for the generation of RSA key pairs (public and private keys).
+- **Easy Integration**: Simple API that can be easily integrated into any Flutter application.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using the rsa_pkcs Package
+
+## Installation
+To use the `rsa_pkcs` package in your Flutter project, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  rsa_pkcs: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run `flutter pub get` to install the package.
+
+## Platform-Specific Configuration
+### Android
+For Android, ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, you may need to enable the appropriate permissions in your `Info.plist` if you are accessing secure storage or network resources.
+
+## Using the Package
+Here’s a simple example of how to use the `rsa_pkcs` package to encrypt and decrypt a message.
+
+1. **Import the Package**:
+   ```dart
+   import 'package:rsa_pkcs/rsa_pkcs.dart';
+   ```
+
+2. **Generate RSA Key Pair**:
+   ```dart
+   final keyPair = RSAKeyPair.generate();
+   ```
+
+3. **Encrypt a Message**:
+   ```dart
+   final encryptedMessage = RSA.encrypt('Hello, World!', keyPair.publicKey);
+   ```
+
+4. **Decrypt the Message**:
+   ```dart
+   final decryptedMessage = RSA.decrypt(encryptedMessage, keyPair.privateKey);
+   ```
+
+This basic flow demonstrates how to generate keys, encrypt a message, and then decrypt it back to its original form.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using rsa_pkcs in a Flutter Application
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:rsa_pkcs/rsa_pkcs.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(RealFlutter());
 }
 
-class MyApp extends StatelessWidget {
+class RealFlutter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'RSA PKCS Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      title: 'RSA PKCS Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('RSA PKCS Example'),
+        ),
+        body: Center(
+          child: RSAExample(),
+        ),
       ),
-      home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class RSAExample extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _RSAExampleState createState() => _RSAExampleState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  String _encryptedData = '';
-  String _decryptedData = '';
+class _RSAExampleState extends State<RSAExample> {
+  String _originalMessage = 'Hello, World!';
+  String _encryptedMessage = '';
+  String _decryptedMessage = '';
+  RSAKeyPair? _keyPair;
 
-  Future<void> _generateKeyPair() async {
-    RsaPkcs rsaPkcs = RsaPkcs();
-    KeyPair keyPair = await rsaPkcs.generateKeyPair();
-
-    // Encrypt data
-    String encryptedData = await rsaPkcs.encrypt('Hello, World!', keyPair.publicKey);
-    setState(() {
-      _encryptedData = encryptedData;
-    });
-
-    // Decrypt data
-    String decryptedData = await rsaPkcs.decrypt(encryptedData, keyPair.privateKey);
-    setState(() {
-      _decryptedData = decryptedData;
-    });
+  @override
+  void initState() {
+    super.initState();
+    // Generate RSA key pair when the widget is initialized
+    _keyPair = RSAKeyPair.generate();
+    // Encrypt the original message
+    _encryptedMessage = RSA.encrypt(_originalMessage, _keyPair!.publicKey);
+    // Decrypt the message back to its original form
+    _decryptedMessage = RSA.decrypt(_encryptedMessage, _keyPair!.privateKey);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('RSA PKCS Demo'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Encrypted Data:'),
-            Text(_encryptedData),
-            SizedBox(height: 20),
-            Text('Decrypted Data:'),
-            Text(_decryptedData),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _generateKeyPair,
-        tooltip: 'Generate Key Pair',
-        child: Icon(Icons.lock),
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Original Message: $_originalMessage'),
+        SizedBox(height: 20),
+        Text('Encrypted Message: $_encryptedMessage'),
+        SizedBox(height: 20),
+        Text('Decrypted Message: $_decryptedMessage'),
+      ],
     );
   }
 }
 
-// The application flow is as follows:
-// 1. The user clicks the floating action button to generate a key pair.
-// 2. The _generateKeyPair function is called, which generates a key pair using the RsaPkcs class.
-// 3. The function then encrypts the string 'Hello, World!' using the public key.
-// 4. The encrypted data is stored in the _encryptedData variable and displayed on the screen.
-// 5. The function then decrypts the encrypted data using the private key.
-// 6. The decrypted data is stored in the _decryptedData variable and displayed on the screen.
-
-// This example demonstrates how to use the 'rsa_pkcs' package to generate a key pair, encrypt data, and decrypt data.
-
-<-- END_MAIN -->
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and a home Scaffold.
+// 3. Inside the Scaffold, the RSAExample widget is displayed in the center.
+// 4. In the RSAExample state, an RSA key pair is generated in the initState method.
+// 5. The original message is encrypted using the public key, and the encrypted message is stored.
+// 6. The encrypted message is then decrypted using the private key, and the decrypted message is stored.
+// 7. The build method displays the original, encrypted, and decrypted messages on the screen.
 ```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the `rsa_pkcs` package, guiding developers through its features, setup, and practical usage in a Flutter application.

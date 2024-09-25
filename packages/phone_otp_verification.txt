@@ -1,2 +1,188 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the phone_otp_verification Flutter Package
 
-<-- END_MAIN -->
+The `phone_otp_verification` package is a powerful tool for implementing phone number verification in Flutter applications. It simplifies the process of sending OTP (One-Time Password) messages to users' mobile devices, allowing for secure authentication and user verification. This package is particularly useful in applications where user identity verification is crucial, such as banking apps, social media platforms, and e-commerce sites.
+
+## When to Use This Package
+- **User Registration**: To verify users during the sign-up process.
+- **Password Recovery**: To authenticate users when they request a password reset.
+- **Two-Factor Authentication**: To add an extra layer of security during login.
+
+## Key Features
+- **Easy Integration**: Simple API for integrating OTP verification into your app.
+- **Customizable UI**: Allows developers to customize the OTP input fields and buttons.
+- **Support for Multiple Platforms**: Works seamlessly on both Android and iOS.
+- **Automatic SMS Retrieval**: Can automatically retrieve the OTP from SMS (Android only).
+- **Error Handling**: Built-in error handling for common issues during verification.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using phone_otp_verification
+
+## Installation
+To get started with the `phone_otp_verification` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  phone_otp_verification: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/phone_otp_verification).
+
+## Platform-Specific Configuration
+
+### Android
+1. **Permissions**: Ensure you have the necessary permissions in your `AndroidManifest.xml` file:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.RECEIVE_SMS"/>
+<uses-permission android:name="android.permission.READ_SMS"/>
+```
+
+2. **Firebase Setup**: If you are using Firebase for sending OTPs, make sure to set up Firebase in your Android project and add the `google-services.json` file.
+
+### iOS
+1. **Permissions**: Add the following permissions in your `Info.plist`:
+
+```xml
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to send OTP.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera to scan QR codes.</string>
+```
+
+2. **Firebase Setup**: Similar to Android, ensure that Firebase is configured correctly in your iOS project with the `GoogleService-Info.plist` file.
+
+## Basic Usage
+Here’s how to use the `phone_otp_verification` package in your Flutter application:
+
+1. Import the package:
+
+```dart
+import 'package:phone_otp_verification/phone_otp_verification.dart';
+```
+
+2. Create an instance of the `RealFlutter` class and implement the necessary methods for sending and verifying OTP.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of phone_otp_verification
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:phone_otp_verification/phone_otp_verification.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Phone OTP Verification',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
+  String _verificationId = '';
+  bool _isOtpSent = false;
+
+  // Function to send OTP
+  void _sendOtp() async {
+    String phoneNumber = _phoneController.text.trim();
+    // Call the method to send OTP
+    _verificationId = await PhoneOtpVerification.sendOtp(phoneNumber);
+    setState(() {
+      _isOtpSent = true; // Update the UI to show OTP input
+    });
+  }
+
+  // Function to verify OTP
+  void _verifyOtp() async {
+    String otp = _otpController.text.trim();
+    bool isVerified = await PhoneOtpVerification.verifyOtp(_verificationId, otp);
+    if (isVerified) {
+      // OTP is verified successfully
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('OTP Verified!')));
+    } else {
+      // OTP verification failed
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid OTP!')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Phone OTP Verification'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(labelText: 'Phone Number'),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _sendOtp,
+              child: Text('Send OTP'),
+            ),
+            SizedBox(height: 20),
+            if (_isOtpSent) ...[
+              TextField(
+                controller: _otpController,
+                decoration: InputDecoration(labelText: 'Enter OTP'),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _verifyOtp,
+                child: Text('Verify OTP'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The RealFlutter widget is the main screen where users can input their phone number.
+// 3. When the user clicks 'Send OTP', the _sendOtp function is called, which sends the OTP to the provided phone number.
+// 4. After sending the OTP, the UI updates to show an input field for the OTP.
+// 5. The user enters the OTP and clicks 'Verify OTP', triggering the _verifyOtp function.
+// 6. The app checks if the entered OTP matches the sent OTP and displays a success or failure message accordingly.
+
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive understanding of the `phone_otp_verification` package, guiding developers through its features, setup, and practical implementation.

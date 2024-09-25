@@ -1,3 +1,137 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the EitherX Flutter Package
 
+The **EitherX** package is a powerful utility for handling asynchronous operations in Flutter applications. It provides a way to represent a value that can be one of two types: a success or a failure. This is particularly useful in scenarios where you want to manage the results of operations that can fail, such as network requests or data processing.
 
-<-- END_MAIN -->
+## When to Use EitherX
+- **Error Handling**: When you want to handle errors gracefully without throwing exceptions.
+- **Asynchronous Operations**: When dealing with futures that can either succeed or fail.
+- **Functional Programming**: If you prefer a functional approach to managing state and results.
+
+## Key Features
+- **Type Safety**: Ensures that the success and failure types are explicitly defined.
+- **Chaining**: Allows for easy chaining of operations.
+- **Mapping**: Provides methods to transform the success or failure values.
+- **Flat Mapping**: Supports operations that return another `EitherX` type.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using EitherX
+
+## Installation
+To add the EitherX package to your Flutter project, include it in your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  eitherx: ^1.0.0
+```
+
+Then, run `flutter pub get` to install the package.
+
+## Platform-Specific Details
+### Android
+No specific configurations are required for Android. Just ensure that your `minSdkVersion` is set to at least 21 in your `android/app/build.gradle` file.
+
+### iOS
+For iOS, ensure that your deployment target is set to at least 10.0 in your `ios/Podfile`.
+
+## Basic Usage
+To use EitherX, you can create instances of `Either` to represent success or failure. Here’s a simple example:
+
+```dart
+import 'package:eitherx/eitherx.dart';
+
+void main() {
+  // Creating a success Either
+  final success = Either<String, int>.right(42);
+  
+  // Creating a failure Either
+  final failure = Either<String, int>.left("Error occurred");
+
+  // Handling the Either
+  success.fold(
+    (error) => print("Failure: $error"),
+    (value) => print("Success: $value"),
+  );
+}
+```
+
+In this example, we create a success and a failure instance of `Either` and handle them using the `fold` method.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using EitherX
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:eitherx/eitherx.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'EitherX Example',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('EitherX Example'),
+        ),
+        body: Center(
+          child: FutureBuilder<Either<String, int>>(
+            future: fetchData(), // Fetch data asynchronously
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Show loading indicator
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}'); // Handle error
+              } else {
+                return snapshot.data!.fold(
+                  (error) => Text('Failure: $error'), // Handle failure
+                  (value) => Text('Success: $value'), // Handle success
+                );
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Simulate a network call that can either succeed or fail
+  Future<Either<String, int>> fetchData() async {
+    await Future.delayed(Duration(seconds: 2)); // Simulate network delay
+    // Randomly return success or failure
+    if (DateTime.now().second % 2 == 0) {
+      return Either<String, int>.right(42); // Simulate success
+    } else {
+      return Either<String, int>.left("Failed to fetch data"); // Simulate failure
+    }
+  }
+}
+```
+
+```dart
+// Explanation of the application flow:
+
+// 1. The app starts with the `main` function, which runs the `RealFlutter` widget.
+// 2. The `RealFlutter` widget builds a MaterialApp with a title and a Scaffold.
+// 3. Inside the Scaffold, a FutureBuilder is used to handle asynchronous data fetching.
+// 4. The `fetchData` function simulates a network call that randomly returns success or failure.
+// 5. While waiting for the data, a CircularProgressIndicator is displayed.
+// 6. Once the data is fetched, the result is handled using the `fold` method of EitherX.
+// 7. If the result is a failure, it displays the error message; if successful, it shows the success value.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive overview of the EitherX package, guiding developers through its features, setup, and practical usage in a Flutter application.

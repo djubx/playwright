@@ -1,1 +1,187 @@
-don't show loader
+```markdown
+<!-- START_DESCRIPTION -->
+# Algolia Flutter Package: A Comprehensive Overview
+
+The Algolia Flutter package provides a powerful solution for integrating Algolia's search capabilities into your Flutter applications. Algolia is a hosted search engine that allows developers to build fast and relevant search experiences. This package is particularly useful for applications that require real-time search functionality, such as e-commerce platforms, content management systems, and any app that needs to provide users with quick access to large datasets.
+
+## When to Use Algolia
+- **E-commerce Applications**: Enhance product search and filtering capabilities.
+- **Content-heavy Apps**: Improve user experience by allowing quick access to articles, blogs, or media.
+- **Real-time Search**: Applications that require instant search results as users type.
+
+## Key Features
+- **Real-time Search**: Instant search results as users type.
+- **Faceted Search**: Filter results based on various attributes.
+- **Typo Tolerance**: Handles user input errors gracefully.
+- **Custom Ranking**: Prioritize search results based on custom criteria.
+- **Analytics**: Track search performance and user behavior.
+
+The Algolia Flutter package is a robust choice for developers looking to implement advanced search functionalities in their applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up the Algolia Flutter Package
+
+In this section, we will walk through the setup process for the Algolia Flutter package and how to use it effectively in your Flutter application.
+
+## Installation
+
+To get started, add the `algolia` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  algolia: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+## Configuration
+
+### Android
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21 // Ensure this is set to at least 21
+       }
+   }
+   ```
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following permissions:
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Usage
+
+To use the Algolia package, you need to initialize it with your Application ID and API Key. Here’s how to do that:
+
+```dart
+import 'package:algolia/algolia.dart';
+
+class RealFlutter {
+  final Algolia algolia = Algolia.init(
+    applicationId: 'YourApplicationID', // Replace with your Application ID
+    apiKey: 'YourSearchOnlyAPIKey', // Replace with your Search-Only API Key
+  );
+
+  // Function to perform a search
+  Future<void> search(String query) async {
+    AlgoliaQuery algoliaQuery = algolia.instance.index('your_index_name').search(query);
+    AlgoliaQuerySnapshot snapshot = await algoliaQuery.getObjects();
+    
+    // Process the results
+    for (var hit in snapshot.hits) {
+      print(hit.data); // Print each search result
+    }
+  }
+}
+```
+
+This setup allows you to perform searches against your Algolia index. Make sure to replace `YourApplicationID`, `YourSearchOnlyAPIKey`, and `your_index_name` with your actual Algolia credentials and index name.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using Algolia in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:algolia/algolia.dart';
+
+class RealFlutter extends StatelessWidget {
+  // Initialize Algolia with your credentials
+  final Algolia algolia = Algolia.init(
+    applicationId: 'YourApplicationID', // Replace with your Application ID
+    apiKey: 'YourSearchOnlyAPIKey', // Replace with your Search-Only API Key
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Algolia Search Example',
+      home: SearchPage(algolia: algolia), // Pass Algolia instance to SearchPage
+    );
+  }
+}
+
+class SearchPage extends StatefulWidget {
+  final Algolia algolia;
+
+  SearchPage({required this.algolia});
+
+  @override
+  _SearchPageState createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  String query = ''; // Store the search query
+  List<AlgoliaObjectSnapshot> results = []; // Store search results
+
+  // Function to perform search
+  void performSearch() async {
+    AlgoliaQuery algoliaQuery = widget.algolia.instance.index('your_index_name').search(query);
+    AlgoliaQuerySnapshot snapshot = await algoliaQuery.getObjects();
+    
+    setState(() {
+      results = snapshot.hits; // Update results with the search hits
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Algolia Search'),
+      ),
+      body: Column(
+        children: [
+          TextField(
+            onChanged: (value) {
+              query = value; // Update query as user types
+              performSearch(); // Perform search on every change
+            },
+            decoration: InputDecoration(
+              hintText: 'Search...',
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: results.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(results[index].data['title']), // Display title from search result
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(RealFlutter()); // Run the application
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter class, which initializes Algolia with the provided credentials.
+// 2. The SearchPage widget is created, where users can input their search queries.
+// 3. As the user types in the TextField, the performSearch function is called, which queries Algolia for results.
+// 4. The results are displayed in a ListView, updating in real-time as the user types.
+```
+<!-- END_MAIN -->
+```
+
+### Summary
+In this blog post, we explored the Algolia Flutter package, detailing its features, setup process, and providing a complete example of how to implement it in a Flutter application. The application allows users to search in real-time, displaying results dynamically as they type. This setup is ideal for applications that require fast and efficient search capabilities, making Algolia a valuable tool for Flutter developers.

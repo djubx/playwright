@@ -1,11 +1,189 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `disposable_provider` Flutter Package
 
+The `disposable_provider` package is a lightweight state management solution for Flutter applications that allows developers to manage the lifecycle of their providers effectively. It is particularly useful in scenarios where you need to dispose of resources when they are no longer needed, such as when navigating away from a screen or when the widget is removed from the widget tree.
 
-// The final summary is as follows:
-// The code flow is as follows:
-// 1. The user runs the app.
-// 2. The app creates a disposable provider.
-// 3. The app uses the disposable provider to manage the lifecycle of a disposable object.
-// 4. The app displays the disposable object to the user.
-// 5. When the user is finished with the app, the app disposes of the disposable object.
+## When to Use `disposable_provider`
 
-<-- END_MAIN -->
+- **Resource Management**: When your application requires managing resources like streams, controllers, or any other objects that need to be disposed of to prevent memory leaks.
+- **Scoped State Management**: When you want to provide state to a specific part of your widget tree without affecting the entire application.
+- **Simplified Lifecycle Management**: When you want to simplify the management of the lifecycle of your providers, especially in complex applications.
+
+## Key Features
+
+- **Automatic Disposal**: Automatically disposes of providers when they are no longer needed.
+- **Scoped Access**: Allows for scoped access to state, making it easy to manage state in specific parts of your application.
+- **Lightweight**: Minimal overhead compared to other state management solutions, making it suitable for performance-sensitive applications.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using `disposable_provider`
+
+## Installation
+
+To use the `disposable_provider` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  disposable_provider: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run `flutter pub get` to install the package.
+
+## Basic Usage
+
+### Step 1: Create a Provider Class
+
+First, create a provider class that extends `DisposableProvider`. This class will manage the state and any resources that need to be disposed of.
+
+```dart
+import 'package:disposable_provider/disposable_provider.dart';
+
+class MyProvider extends DisposableProvider {
+  // Example resource that needs to be disposed of
+  final StreamController<String> _controller = StreamController<String>();
+
+  MyProvider() {
+    // Initialize the stream or any other resources
+    _controller.add("Initial Data");
+  }
+
+  Stream<String> get dataStream => _controller.stream;
+
+  @override
+  void dispose() {
+    // Dispose of the stream controller
+    _controller.close();
+    super.dispose();
+  }
+}
+```
+
+### Step 2: Using the Provider in Your Widget
+
+Wrap your widget tree with `DisposableProvider` to provide the state to the subtree.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:disposable_provider/disposable_provider.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DisposableProvider<MyProvider>(
+      create: (_) => MyProvider(),
+      child: MaterialApp(
+        home: HomeScreen(),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final provider = DisposableProvider.of<MyProvider>(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Disposable Provider Example')),
+      body: StreamBuilder<String>(
+        stream: provider.dataStream,
+        builder: (context, snapshot) {
+          return Center(
+            child: Text(snapshot.hasData ? snapshot.data! : 'Loading...'),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+### Platform-Specific Details
+
+- **Android**: No additional configuration is required for Android. Just ensure that your `minSdkVersion` is compatible with Flutter.
+- **iOS**: Ensure that your iOS deployment target is set to at least 9.0 in your `ios/Podfile`.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of `disposable_provider`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:disposable_provider/disposable_provider.dart';
+
+// Main entry point of the application
+void main() {
+  runApp(RealFlutter());
+}
+
+// The main widget that sets up the DisposableProvider
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DisposableProvider<MyProvider>(
+      create: (_) => MyProvider(), // Create an instance of MyProvider
+      child: MaterialApp(
+        home: HomeScreen(), // Set HomeScreen as the home widget
+      ),
+    );
+  }
+}
+
+// Provider class that manages state and resources
+class MyProvider extends DisposableProvider {
+  final StreamController<String> _controller = StreamController<String>();
+
+  MyProvider() {
+    _controller.add("Initial Data"); // Add initial data to the stream
+  }
+
+  Stream<String> get dataStream => _controller.stream; // Expose the stream
+
+  @override
+  void dispose() {
+    _controller.close(); // Dispose of the stream controller
+    super.dispose(); // Call the superclass dispose method
+  }
+}
+
+// Home screen widget that consumes the provider
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final provider = DisposableProvider.of<MyProvider>(context); // Access the provider
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Disposable Provider Example')),
+      body: StreamBuilder<String>(
+        stream: provider.dataStream, // Listen to the data stream
+        builder: (context, snapshot) {
+          return Center(
+            child: Text(snapshot.hasData ? snapshot.data! : 'Loading...'), // Display data
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The application starts with the main() function, which runs the RealFlutter widget.
+// 2. RealFlutter sets up a DisposableProvider for MyProvider, creating an instance of it.
+// 3. The HomeScreen widget is displayed, which accesses the MyProvider instance.
+// 4. HomeScreen uses a StreamBuilder to listen to the dataStream from MyProvider.
+// 5. When data is available, it is displayed in the center of the screen.
+// 6. When the HomeScreen is removed from the widget tree, MyProvider's dispose method is called,
+//    automatically closing the StreamController to prevent memory leaks.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the `disposable_provider` package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow.

@@ -1,3 +1,187 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the signalr_socket Flutter Package
 
+The `signalr_socket` package is a powerful tool for Flutter developers looking to implement real-time communication in their applications. Built on top of the SignalR protocol, this package allows for seamless integration of WebSocket-based communication, enabling features such as live updates, notifications, and collaborative functionalities.
 
-<-- END_MAIN -->
+## When to Use This Package
+You should consider using the `signalr_socket` package in scenarios where:
+- You need real-time data updates, such as chat applications, live sports scores, or collaborative tools.
+- Your application requires efficient communication between the client and server without the overhead of traditional HTTP requests.
+- You want to leverage the SignalR protocol for its built-in features like automatic reconnection and message buffering.
+
+## Key Features
+- **Real-time Communication**: Establishes a persistent connection to the server for instant data exchange.
+- **Automatic Reconnection**: Automatically attempts to reconnect if the connection is lost.
+- **Message Handling**: Supports sending and receiving messages with ease.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS platforms.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using signalr_socket
+
+## Installation
+To get started with the `signalr_socket` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  signalr_socket: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/signalr_socket).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `android/app/build.gradle` file.
+2. Ensure that you have the following permissions in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+1. Open your `ios/Runner/Info.plist` file.
+2. Add the following key to allow arbitrary loads (if needed for development):
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the `signalr_socket` package, you need to create an instance of the `RealFlutter` class and establish a connection to your SignalR server.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:signalr_socket/signalr_socket.dart';
+
+class RealFlutter {
+  late HubConnection hubConnection;
+
+  // Initialize the connection
+  void initConnection() {
+    hubConnection = HubConnectionBuilder()
+        .withUrl("https://your-signalr-server-url")
+        .build();
+
+    // Start the connection
+    hubConnection.start().then((_) {
+      print("Connection started");
+    }).catchError((error) {
+      print("Error starting connection: $error");
+    });
+
+    // Listen for messages
+    hubConnection.on("ReceiveMessage", (message) {
+      print("Message received: $message");
+    });
+  }
+
+  // Send a message
+  void sendMessage(String message) {
+    hubConnection.invoke("SendMessage", args: [message]);
+  }
+}
+```
+
+In this example, we create a `RealFlutter` class that initializes a connection to a SignalR server, starts the connection, and listens for incoming messages.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of signalr_socket in Flutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:signalr_socket/signalr_socket.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SignalR Socket Example',
+      home: SignalRHome(),
+    );
+  }
+}
+
+class SignalRHome extends StatefulWidget {
+  @override
+  _SignalRHomeState createState() => _SignalRHomeState();
+}
+
+class _SignalRHomeState extends State<SignalRHome> {
+  late RealFlutter realFlutter;
+  final TextEditingController _controller = TextEditingController();
+  String _receivedMessage = "";
+
+  @override
+  void initState() {
+    super.initState();
+    realFlutter = RealFlutter();
+    realFlutter.initConnection(); // Initialize the SignalR connection
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('SignalR Socket Example'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: Text('Received Message: $_receivedMessage'), // Display received message
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(labelText: 'Enter message'),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              realFlutter.sendMessage(_controller.text); // Send message on button press
+              _controller.clear(); // Clear the input field
+            },
+            child: Text('Send Message'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+```dart
+// The above code creates a simple Flutter application that connects to a SignalR server.
+// 
+// 1. The `main` function initializes the app and sets `MyApp` as the home widget.
+// 2. The `SignalRHome` widget is a stateful widget that manages the SignalR connection.
+// 3. In `initState`, we create an instance of `RealFlutter` and call `initConnection` to establish the connection.
+// 4. The UI consists of a text field for input and a button to send messages.
+// 5. When the button is pressed, the message from the text field is sent to the SignalR server.
+// 6. The received message is displayed in the center of the screen, updating in real-time as messages are received.
+// 
+// This example demonstrates the core functionality of the `signalr_socket` package, showcasing how to set up a connection, send messages, and handle incoming messages in a Flutter application.
+
+<!-- END_MAIN -->
+```
