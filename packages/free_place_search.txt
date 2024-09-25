@@ -1,0 +1,213 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `free_place_search` Flutter Package
+
+The `free_place_search` package is a powerful tool for Flutter developers looking to integrate location-based search functionality into their applications. This package allows users to search for places using a simple and intuitive interface, making it ideal for applications that require location services, such as travel apps, food delivery services, or any app that needs to find nearby points of interest.
+
+## When to Use This Package
+- **Travel Applications**: To help users find hotels, restaurants, and attractions.
+- **Food Delivery Services**: To allow users to search for nearby restaurants.
+- **Event Planning Apps**: To locate venues and event spaces.
+
+## Key Features
+- **Autocomplete Search**: Provides suggestions as users type, enhancing the user experience.
+- **Place Details**: Fetch detailed information about a selected place, including address, phone number, and more.
+- **Customizable UI**: Allows developers to customize the appearance of the search interface to match their app's design.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS devices.
+
+Overall, `free_place_search` is an excellent choice for developers looking to implement location-based search features in their Flutter applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `free_place_search`
+
+## Installation
+To get started with the `free_place_search` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  free_place_search: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/free_place_search).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+### iOS
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following keys to request location permissions:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to find nearby places.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to find nearby places.</string>
+```
+
+## Basic Usage
+To use the `free_place_search` package, you can create a simple search interface. Here’s how to implement it in your Flutter app:
+
+1. Import the package:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:free_place_search/free_place_search.dart';
+```
+
+2. Create a widget that utilizes the `FreePlaceSearch` class:
+
+```dart
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Place Search Example')),
+        body: PlaceSearchWidget(),
+      ),
+    );
+  }
+}
+
+class PlaceSearchWidget extends StatefulWidget {
+  @override
+  _PlaceSearchWidgetState createState() => _PlaceSearchWidgetState();
+}
+
+class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
+  // Initialize the FreePlaceSearch instance
+  final FreePlaceSearch _placeSearch = FreePlaceSearch();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          onChanged: (query) {
+            // Trigger the search when the user types
+            _placeSearch.search(query);
+          },
+          decoration: InputDecoration(
+            hintText: 'Search for places...',
+          ),
+        ),
+        // Display search results here
+      ],
+    );
+  }
+}
+```
+
+This code sets up a basic Flutter application with a search bar. As the user types in the search field, the `search` method of the `FreePlaceSearch` instance is called to fetch results.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of `free_place_search`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:free_place_search/free_place_search.dart';
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Place Search Example')),
+        body: PlaceSearchWidget(),
+      ),
+    );
+  }
+}
+
+class PlaceSearchWidget extends StatefulWidget {
+  @override
+  _PlaceSearchWidgetState createState() => _PlaceSearchWidgetState();
+}
+
+class _PlaceSearchWidgetState extends State<PlaceSearchWidget> {
+  // Initialize the FreePlaceSearch instance
+  final FreePlaceSearch _placeSearch = FreePlaceSearch();
+  List<Place> _places = []; // List to hold search results
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          onChanged: (query) {
+            // Trigger the search when the user types
+            _placeSearch.search(query).then((results) {
+              setState(() {
+                _places = results; // Update the state with search results
+              });
+            });
+          },
+          decoration: InputDecoration(
+            hintText: 'Search for places...',
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _places.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(_places[index].name), // Display place name
+                subtitle: Text(_places[index].address), // Display place address
+                onTap: () {
+                  // Handle place selection
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaceDetailScreen(place: _places[index]),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class PlaceDetailScreen extends StatelessWidget {
+  final Place place;
+
+  PlaceDetailScreen({required this.place});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(place.name)),
+      body: Center(
+        child: Text('Details for ${place.name}'),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the RealFlutter widget, which sets up the MaterialApp and the main scaffold.
+// 2. The PlaceSearchWidget is displayed, containing a TextField for user input and a ListView for displaying search results.
+// 3. When the user types in the TextField, the search method of the FreePlaceSearch instance is called, fetching results asynchronously.
+// 4. The results are stored in the _places list, and the UI is updated to display these results in a ListView.
+// 5. When a user taps on a place from the list, the app navigates to a PlaceDetailScreen, showing more information about the selected place.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `free_place_search` package, including its features, setup instructions, and a complete example with detailed comments explaining the application flow.

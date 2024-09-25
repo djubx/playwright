@@ -1,0 +1,178 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the wiflutter Package
+
+The `wiflutter` package is a powerful Flutter plugin that provides developers with the ability to manage Wi-Fi connections on both Android and iOS devices. This package is particularly useful for applications that require network management capabilities, such as those that need to connect to specific Wi-Fi networks, check connection status, or retrieve information about available networks.
+
+## When to Use wiflutter
+
+You might consider using the `wiflutter` package in scenarios such as:
+- Building applications that require Wi-Fi connectivity management.
+- Creating apps that need to display available Wi-Fi networks to users.
+- Developing tools for network diagnostics or monitoring.
+
+## Key Features
+- **Connect to Wi-Fi**: Easily connect to a specified Wi-Fi network using SSID and password.
+- **Disconnect from Wi-Fi**: Disconnect from the current Wi-Fi network.
+- **Get Current Connection Info**: Retrieve information about the currently connected Wi-Fi network.
+- **Scan for Available Networks**: List all available Wi-Fi networks in the vicinity.
+- **Platform Support**: Works on both Android and iOS with platform-specific implementations.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using wiflutter
+
+## Installation
+
+To add the `wiflutter` package to your Flutter project, include it in your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  wiflutter: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/wiflutter).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open your `AndroidManifest.xml` file located at `android/app/src/main/AndroidManifest.xml`.
+2. Add the following permissions inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+3. Ensure that your app targets Android 10 (API level 29) or higher, as location permissions are required to scan for Wi-Fi networks.
+
+### iOS
+1. Open your `Info.plist` file located at `ios/Runner/Info.plist`.
+2. Add the following keys to request permission for location services:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to access Wi-Fi networks.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to access Wi-Fi networks.</string>
+```
+
+## Using wiflutter
+
+After setting up the package, you can start using it in your Flutter application. Here’s a simple example of how to connect to a Wi-Fi network and retrieve the current connection information.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using wiflutter
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:wiflutter/wiflutter.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'WiFlutter Example',
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  String _currentSSID = "Unknown";
+  List<WifiNetwork> _availableNetworks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentSSID();
+    _scanForNetworks();
+  }
+
+  // Method to get the current connected Wi-Fi SSID
+  Future<void> _getCurrentSSID() async {
+    String ssid = await Wiflutter.getCurrentSSID();
+    setState(() {
+      _currentSSID = ssid;
+    });
+  }
+
+  // Method to scan for available Wi-Fi networks
+  Future<void> _scanForNetworks() async {
+    List<WifiNetwork> networks = await Wiflutter.getAvailableNetworks();
+    setState(() {
+      _availableNetworks = networks;
+    });
+  }
+
+  // Method to connect to a Wi-Fi network
+  Future<void> _connectToNetwork(String ssid, String password) async {
+    bool success = await Wiflutter.connect(ssid, password);
+    if (success) {
+      _getCurrentSSID(); // Refresh the current SSID after connecting
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('WiFlutter Example'),
+      ),
+      body: Column(
+        children: [
+          Text('Current SSID: $_currentSSID'),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _availableNetworks.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(_availableNetworks[index].ssid),
+                  onTap: () {
+                    // Connect to the selected network (replace with actual password)
+                    _connectToNetwork(_availableNetworks[index].ssid, 'your_password_here');
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+```dart
+// The above code defines a simple Flutter application that demonstrates the use of the wiflutter package.
+// 
+// 1. The `main` function initializes the app and sets `RealFlutter` as the home widget.
+// 2. In the `RealFlutter` stateful widget, we define a variable to hold the current SSID and a list to store available networks.
+// 3. The `initState` method calls two methods: `_getCurrentSSID` to fetch the currently connected Wi-Fi SSID and `_scanForNetworks` to retrieve a list of available networks.
+// 4. The `_getCurrentSSID` method uses the `Wiflutter.getCurrentSSID()` method to get the SSID and updates the state.
+// 5. The `_scanForNetworks` method calls `Wiflutter.getAvailableNetworks()` to populate the list of available networks.
+// 6. The `_connectToNetwork` method allows the user to connect to a selected Wi-Fi network by calling `Wiflutter.connect(ssid, password)`, where the password should be provided.
+// 7. The `build` method constructs the UI, displaying the current SSID and a list of available networks. Tapping on a network attempts to connect to it.
+// 
+// This application flow allows users to view their current Wi-Fi connection and connect to other available networks seamlessly.
+```
+<!-- END_MAIN -->

@@ -1,0 +1,153 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# belatuk_http_server: A Flutter Package for Building HTTP Servers
+
+The `belatuk_http_server` package is a powerful tool for Flutter developers looking to create HTTP servers directly within their applications. This package is particularly useful for scenarios where you need to handle HTTP requests and responses without relying on an external server. It can be used for local development, testing APIs, or even creating lightweight backend services for mobile applications.
+
+## When to Use This Package
+- **Local Development**: Quickly set up a server for testing APIs without needing a separate backend.
+- **Prototyping**: Create a mock server to simulate API responses while developing the frontend.
+- **Lightweight Backend**: Serve simple data or files directly from your Flutter application.
+
+## Key Features
+- **Easy Setup**: Simple API for starting and stopping the server.
+- **Request Handling**: Support for handling various HTTP methods (GET, POST, etc.).
+- **Customizable Responses**: Ability to define custom responses based on request parameters.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS.
+
+Overall, `belatuk_http_server` is an excellent choice for Flutter developers who need a quick and efficient way to handle HTTP requests within their applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using belatuk_http_server
+
+In this tutorial, we will walk through the process of setting up the `belatuk_http_server` package in a Flutter project and demonstrate how to use it effectively.
+
+## Step 1: Adding the Package to Your Project
+To get started, you need to add the `belatuk_http_server` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  belatuk_http_server: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+After adding the dependency, run `flutter pub get` to install the package.
+
+## Step 2: Platform-Specific Configuration
+### Android
+For Android, ensure that your `AndroidManifest.xml` file has the necessary permissions to access the internet. Add the following line inside the `<manifest>` tag:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+For iOS, you may need to add the following to your `Info.plist` to allow arbitrary loads (if you're testing with HTTP):
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Using the Package
+Now that we have set up the package, let's see how to use it in our Flutter application. We will create a simple HTTP server that responds to GET requests.
+
+1. Import the package in your Dart file:
+
+```dart
+import 'package:belatuk_http_server/belatuk_http_server.dart';
+```
+
+2. Create an instance of the server and define your request handlers.
+
+3. Start the server and listen for incoming requests.
+
+This will be demonstrated in the complete example below.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:belatuk_http_server/belatuk_http_server.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  late HttpServer server; // Declare the server variable
+
+  @override
+  void initState() {
+    super.initState();
+    startServer(); // Start the server when the app initializes
+  }
+
+  // Function to start the HTTP server
+  void startServer() async {
+    server = await HttpServer.bind('127.0.0.1', 8080); // Bind to localhost on port 8080
+    print('Server running on http://127.0.0.1:8080');
+
+    // Listen for incoming requests
+    server.listen((HttpRequest request) {
+      // Handle GET requests
+      if (request.method == 'GET') {
+        request.response
+          ..statusCode = HttpStatus.ok // Set response status to 200 OK
+          ..write('Hello from belatuk_http_server!') // Write response body
+          ..close(); // Close the response
+      } else {
+        // Handle other HTTP methods
+        request.response
+          ..statusCode = HttpStatus.methodNotAllowed // Set response status to 405
+          ..write('Method not allowed') // Write response body
+          ..close(); // Close the response
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    server.close(); // Close the server when the widget is disposed
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('belatuk_http_server Example'),
+        ),
+        body: Center(
+          child: Text('Server is running...'), // Display a message
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts and the main function runs the RealFlutter widget.
+// 2. In the initState method, the startServer function is called to initialize the HTTP server.
+// 3. The server binds to localhost (127.0.0.1) on port 8080 and starts listening for incoming requests.
+// 4. When a GET request is received, the server responds with a simple message.
+// 5. If any other HTTP method is used, the server responds with a "Method not allowed" message.
+// 6. The server continues to run until the app is closed, at which point the server is disposed of properly.
+```
+<!-- END_MAIN -->
+```
+
+### Summary
+In this blog post, we explored the `belatuk_http_server` package, detailing its features, setup process, and usage through a complete example. The provided code demonstrates how to create a simple HTTP server that responds to GET requests, making it a valuable tool for Flutter developers looking to implement server-side functionality directly within their applications.

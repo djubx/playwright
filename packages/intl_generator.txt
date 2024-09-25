@@ -1,0 +1,232 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the intl_generator Flutter Package
+
+The `intl_generator` package is a powerful tool designed to facilitate internationalization (i18n) in Flutter applications. It automates the generation of localization files, making it easier for developers to manage multiple languages and locales within their apps. This package is particularly useful when you want to support a diverse user base by providing content in various languages.
+
+## When to Use `intl_generator`
+
+- **Multi-Language Support**: If your application targets users from different linguistic backgrounds, `intl_generator` helps streamline the process of adding and managing translations.
+- **Dynamic Content**: When your app displays dynamic content that needs to be localized based on user preferences or device settings.
+- **Ease of Maintenance**: It simplifies the maintenance of localization files, especially in larger projects where manual management can become cumbersome.
+
+## Key Features
+
+- **Automatic Code Generation**: Generates Dart localization files from ARB files, reducing manual effort.
+- **Integration with Flutter's Intl Package**: Works seamlessly with the `intl` package, which provides the necessary tools for formatting dates, numbers, and messages.
+- **Support for Pluralization and Gender**: Handles complex localization scenarios, including plural forms and gender-specific translations.
+- **Customizable**: Allows developers to define their own localization logic and formats.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using the intl_generator Package
+
+## Installation
+
+To get started with `intl_generator`, you need to add it to your Flutter project. Open your `pubspec.yaml` file and include the following dependencies:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.17.0
+
+dev_dependencies:
+  intl_generator: ^0.5.0
+```
+
+After adding the dependencies, run the following command to install them:
+
+```bash
+flutter pub get
+```
+
+## Configuration
+
+### Step 1: Create ARB Files
+
+Create a folder named `lib/l10n` in your Flutter project. Inside this folder, create ARB files for each language you want to support. For example:
+
+- `intl_en.arb` for English
+- `intl_es.arb` for Spanish
+
+Here’s an example of what `intl_en.arb` might look like:
+
+```json
+{
+  "@@locale": "en",
+  "hello": "Hello",
+  "welcome": "Welcome to our application!"
+}
+```
+
+And for `intl_es.arb`:
+
+```json
+{
+  "@@locale": "es",
+  "hello": "Hola",
+  "welcome": "¡Bienvenido a nuestra aplicación!"
+}
+```
+
+### Step 2: Configure Build Runner
+
+To generate the localization files, you need to set up the build runner. Add the following to your `build.yaml` file:
+
+```yaml
+targets:
+  $default:
+    builders:
+      intl_generator:
+        options:
+          output_dir: lib/l10n
+```
+
+### Step 3: Run the Code Generator
+
+Run the following command to generate the localization files:
+
+```bash
+flutter pub run build_runner build
+```
+
+This command will create a Dart file in the `lib/l10n` directory that contains the generated localization classes.
+
+### Step 4: Update Your App
+
+In your `main.dart`, ensure you import the generated localization file and set up the localization delegates:
+
+```dart
+import 'package:flutter/material.dart';
+import 'l10n/intl/messages_all.dart';
+import 'l10n/intl/messages_en.dart';
+import 'l10n/intl/messages_es.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      localizationsDelegates: [
+        // Add the generated localization delegate
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', ''), // English
+        const Locale('es', ''), // Spanish
+      ],
+      home: RealFlutter(),
+    );
+  }
+}
+```
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using intl_generator
+
+```dart
+import 'package:flutter/material.dart';
+import 'l10n/intl/messages_all.dart';
+import 'l10n/intl/messages_en.dart';
+import 'l10n/intl/messages_es.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', ''), // English
+        const Locale('es', ''), // Spanish
+      ],
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Variable to hold the current locale
+  Locale _currentLocale = Locale('en', '');
+
+  // Method to change the locale
+  void _changeLanguage(String languageCode) {
+    setState(() {
+      _currentLocale = Locale(languageCode, '');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Use the localization messages based on the current locale
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Localization Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              // Fetch the localized message
+              AppLocalizations.of(context).hello,
+              style: TextStyle(fontSize: 24),
+            ),
+            SizedBox(height: 20),
+            Text(
+              AppLocalizations.of(context).welcome,
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20),
+            // Buttons to change language
+            ElevatedButton(
+              onPressed: () => _changeLanguage('en'),
+              child: Text('English'),
+            ),
+            ElevatedButton(
+              onPressed: () => _changeLanguage('es'),
+              child: Text('Español'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up localization delegates and supported locales.
+// 2. The RealFlutter widget is the main screen of the app, displaying localized messages.
+// 3. The _currentLocale variable holds the current language setting, which can be changed by pressing the buttons.
+// 4. When a button is pressed, the _changeLanguage method updates the locale, triggering a rebuild of the UI.
+// 5. The localized messages are fetched using AppLocalizations.of(context), which provides the correct translations based on the current locale.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive understanding of the `intl_generator` package, guiding developers through its features, setup, and practical usage in a Flutter application.

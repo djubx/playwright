@@ -1,0 +1,195 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `medea_flutter_webrtc` Package
+
+The `medea_flutter_webrtc` package is a powerful Flutter plugin that enables real-time communication capabilities in your applications using WebRTC technology. This package is particularly useful for developers looking to implement video and audio calling features, peer-to-peer data sharing, and other real-time communication functionalities in their Flutter apps.
+
+## When to Use This Package
+You should consider using `medea_flutter_webrtc` when:
+- You need to build applications that require real-time video or audio communication.
+- You want to implement peer-to-peer connections for data sharing.
+- You are developing applications that require low-latency communication, such as telehealth, online education, or gaming.
+
+## Key Features
+- **Real-time Audio and Video Communication**: Supports high-quality audio and video streaming.
+- **Peer-to-Peer Connections**: Establish direct connections between users without needing a central server.
+- **Data Channels**: Allows for the transfer of arbitrary data between peers.
+- **Cross-Platform Support**: Works seamlessly on both Android and iOS devices.
+- **Customizable**: Offers various configurations to tailor the communication experience to your needs.
+
+With these features, `medea_flutter_webrtc` provides a robust solution for integrating real-time communication into your Flutter applications.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Setting Up and Using `medea_flutter_webrtc`
+
+In this section, we will walk through the setup process for the `medea_flutter_webrtc` package and provide platform-specific details for both Android and iOS.
+
+## Installation
+
+To add the `medea_flutter_webrtc` package to your Flutter project, include it in your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  medea_flutter_webrtc: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/medea_flutter_webrtc).
+
+## Platform-Specific Configuration
+
+### Android Configuration
+1. Open your `android/app/build.gradle` file and ensure that you have the following configurations:
+   ```groovy
+   android {
+       ...
+       compileSdkVersion 31 // or latest
+       ...
+   }
+   ```
+
+2. In the same file, add the following permissions:
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21 // or higher
+           ...
+       }
+   }
+   ```
+
+3. Ensure that you have the necessary permissions in your `AndroidManifest.xml`:
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.CAMERA"/>
+   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+   ```
+
+### iOS Configuration
+1. Open your `ios/Runner/Info.plist` file and add the following keys to request permissions:
+   ```xml
+   <key>NSCameraUsageDescription</key>
+   <string>We need access to your camera for video calls.</string>
+   <key>NSMicrophoneUsageDescription</key>
+   <string>We need access to your microphone for audio calls.</string>
+   ```
+
+2. Ensure that your iOS deployment target is set to at least 11.0 in your `ios/Podfile`:
+   ```ruby
+   platform :ios, '11.0'
+   ```
+
+## Basic Usage
+
+After setting up the package, you can start using it in your Flutter application. Here’s a simple example of how to initialize a WebRTC connection.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:medea_flutter_webrtc/medea_flutter_webrtc.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Initialize the WebRTC client
+  late final MedeaWebRTCClient _client;
+
+  @override
+  void initState() {
+    super.initState();
+    _client = MedeaWebRTCClient();
+    // Additional setup can be done here
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('WebRTC Example')),
+      body: Center(child: Text('WebRTC is set up!')),
+    );
+  }
+}
+```
+
+This code initializes a WebRTC client and sets up a basic Flutter application structure. You can expand upon this by adding more functionalities such as handling video streams and managing connections.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of `medea_flutter_webrtc`
+
+Here’s a fully functional example of a Flutter application using the `medea_flutter_webrtc` package. This example demonstrates how to set up a simple video call interface.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:medea_flutter_webrtc/medea_flutter_webrtc.dart';
+
+class RealFlutter extends StatefulWidget {
+  @override
+  _RealFlutterState createState() => _RealFlutterState();
+}
+
+class _RealFlutterState extends State<RealFlutter> {
+  // Declare the WebRTC client and local stream
+  late final MedeaWebRTCClient _client;
+  MediaStream? _localStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _client = MedeaWebRTCClient();
+    _initializeWebRTC();
+  }
+
+  // Initialize WebRTC and get local media stream
+  Future<void> _initializeWebRTC() async {
+    // Request permissions for camera and microphone
+    await _client.requestPermissions();
+    
+    // Get the local media stream
+    _localStream = await _client.getUserMedia({
+      'audio': true,
+      'video': true,
+    });
+
+    // Add local stream to the client
+    _client.addStream(_localStream!);
+  }
+
+  @override
+  void dispose() {
+    // Clean up resources
+    _localStream?.dispose();
+    _client.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('WebRTC Video Call')),
+      body: Center(
+        child: _localStream != null
+            ? RTCVideoView(_localStream!.getVideoTracks().first)
+            : CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The RealFlutter widget is created, initializing the WebRTC client.
+// 2. In the initState method, we call _initializeWebRTC to set up the local media stream.
+// 3. The _initializeWebRTC method requests permissions for the camera and microphone.
+// 4. It then retrieves the local media stream and adds it to the WebRTC client.
+// 5. In the build method, we check if the local stream is available. If it is, we display the video feed; otherwise, we show a loading indicator.
+// 6. Finally, we clean up resources in the dispose method to prevent memory leaks.
+```
+<!-- END_MAIN -->
+```
+
+### Summary
+In this blog post, we explored the `medea_flutter_webrtc` package, detailing its features, setup process, and providing a complete example of a Flutter application that utilizes its capabilities. The application initializes a WebRTC client, requests necessary permissions, and displays the local video stream. This package is ideal for developers looking to implement real-time communication features in their Flutter applications.

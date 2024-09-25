@@ -1,0 +1,201 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Drift Hrana: A Flutter Package for Efficient Data Management
+
+The **drift_hrana** package is a powerful tool designed for Flutter developers who need to manage local databases efficiently. It leverages the Drift (formerly known as moor) library, which provides a reactive persistence layer for Flutter applications. This package is particularly useful for applications that require complex data handling, such as those involving user-generated content, offline capabilities, or intricate data relationships.
+
+## When to Use Drift Hrana
+- **Offline Applications**: If your app needs to function without an internet connection, Drift Hrana allows you to store and retrieve data locally.
+- **Complex Queries**: When your application requires advanced querying capabilities, this package provides a robust SQL interface.
+- **Reactive Programming**: If you want your UI to automatically update in response to data changes, Drift Hrana's reactive streams make this easy.
+
+## Key Features
+- **Type-safe SQL**: Write SQL queries in a type-safe manner, reducing runtime errors.
+- **Reactive Data**: Automatically update your UI when the underlying data changes.
+- **Migration Support**: Easily manage database schema changes over time.
+- **Cross-platform**: Works seamlessly on both Android and iOS.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using Drift Hrana
+
+## Installation
+To get started with Drift Hrana, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  drift_hrana: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/drift_hrana).
+
+## Platform-Specific Configuration
+
+### Android
+1. Ensure that your `android/app/build.gradle` file has the following configurations:
+   ```groovy
+   android {
+       ...
+       compileOptions {
+           sourceCompatibility JavaVersion.VERSION_1_8
+           targetCompatibility JavaVersion.VERSION_1_8
+       }
+   }
+   ```
+
+### iOS
+1. Open your `ios/Podfile` and ensure that the platform is set to at least 10.0:
+   ```ruby
+   platform :ios, '10.0'
+   ```
+
+## Basic Usage
+To use Drift Hrana, you need to create a database class that extends `GeneratedDatabase`. Here’s a simple example:
+
+```dart
+import 'package:drift/drift.dart';
+import 'package:drift_hrana/drift_hrana.dart';
+
+part 'app_database.g.dart';
+
+@DataClassName('User')
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().withLength(min: 1, max: 50)();
+}
+
+@DriftDatabase(tables: [Users])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite'));
+
+  @override
+  int get schemaVersion => 1;
+}
+```
+
+This code sets up a simple database with a `Users` table. You can now perform CRUD operations using this database class.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Drift Hrana in a Flutter Application
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:drift/drift.dart';
+import 'package:drift_hrana/drift_hrana.dart';
+
+// Part file for code generation
+part 'app_database.g.dart';
+
+// Define the Users table
+@DataClassName('User')
+class Users extends Table {
+  IntColumn get id => integer().autoIncrement()(); // Auto-incrementing ID
+  TextColumn get name => text().withLength(min: 1, max: 50)(); // User name
+}
+
+// Database class
+@DriftDatabase(tables: [Users])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(FlutterQueryExecutor.inDatabaseFolder(path: 'db.sqlite'));
+
+  @override
+  int get schemaVersion => 1; // Database schema version
+}
+
+// Main application class
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Drift Hrana Example',
+      home: UserListScreen(),
+    );
+  }
+}
+
+// Screen to display user list
+class UserListScreen extends StatefulWidget {
+  @override
+  _UserListScreenState createState() => _UserListScreenState();
+}
+
+class _UserListScreenState extends State<UserListScreen> {
+  final AppDatabase database = AppDatabase(); // Initialize the database
+  late Future<List<User>> users; // Future to hold user list
+
+  @override
+  void initState() {
+    super.initState();
+    users = database.select(database.users).get(); // Fetch users from the database
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('User List')),
+      body: FutureBuilder<List<User>>(
+        future: users,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator()); // Loading indicator
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}')); // Error handling
+          } else {
+            final userList = snapshot.data ?? []; // Get user list
+            return ListView.builder(
+              itemCount: userList.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(userList[index].name), // Display user name
+                );
+              },
+            );
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Add a new user when the button is pressed
+          await database.into(database.users).insert(UsersCompanion.insert(name: 'New User'));
+          setState(() {
+            users = database.select(database.users).get(); // Refresh user list
+          });
+        },
+        child: Icon(Icons.add), // Add icon
+      ),
+    );
+  }
+}
+```
+
+```
+// The above code sets up a simple Flutter application using the Drift Hrana package.
+// 
+// 1. **Database Setup**: The `AppDatabase` class is created, which includes a `Users` table.
+// 2. **Main Application**: The `MyApp` class initializes the app and sets the home screen to `UserListScreen`.
+// 3. **User List Screen**: 
+//    - In `UserListScreen`, the database is initialized, and a future to fetch users is created.
+//    - The `FutureBuilder` widget is used to handle the asynchronous fetching of users.
+//    - If the data is still loading, a loading indicator is shown. If there's an error, it displays the error message.
+//    - Once the data is fetched, it displays the list of users in a `ListView`.
+// 4. **Adding Users**: A floating action button allows users to add a new user to the database. When pressed, it inserts a new user and refreshes the user list.
+// 
+// This example demonstrates how to set up and use the Drift Hrana package effectively in a Flutter application.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the Drift Hrana package, guiding developers through its features, setup, and practical usage in a Flutter application.

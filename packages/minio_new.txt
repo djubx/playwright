@@ -1,0 +1,192 @@
+# Minio_new Flutter Package: A Comprehensive Guide
+
+## <-- START_DESCRIPTION -->
+
+### Description
+
+The `minio_new` Flutter package is a powerful client for interacting with MinIO, an open-source object storage server that is compatible with Amazon S3. This package allows Flutter developers to easily integrate MinIO into their applications, enabling them to perform operations such as uploading, downloading, and managing files in a cloud storage environment.
+
+### When to Use
+
+You should consider using the `minio_new` package when:
+- You need a reliable object storage solution for your Flutter application.
+- You want to leverage MinIO's S3 compatibility for seamless integration with existing S3-based services.
+- You require features like file versioning, bucket management, and secure access to your storage.
+
+### Features
+
+- **S3 Compatibility**: Works seamlessly with MinIO's S3 API, allowing for easy migration from S3.
+- **File Operations**: Supports uploading, downloading, and deleting files.
+- **Bucket Management**: Create, list, and delete buckets.
+- **Access Control**: Manage permissions and access policies for your storage.
+- **Real-time Notifications**: Listen for events related to file uploads and changes.
+
+## <-- END_DESCRIPTION -->
+
+## <-- START_TUTORIAL -->
+
+### Tutorial
+
+#### Installation
+
+To add the `minio_new` package to your Flutter project, include it in your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  minio_new: ^1.0.0  # Check for the latest version on pub.dev
+```
+
+Run `flutter pub get` to install the package.
+
+#### Platform-Specific Configuration
+
+**For Android:**
+1. Ensure that your `minSdkVersion` is set to at least 21 in `android/app/build.gradle`:
+
+   ```groovy
+   android {
+       ...
+       defaultConfig {
+           ...
+           minSdkVersion 21
+           ...
+       }
+   }
+   ```
+
+2. Add internet permissions in `AndroidManifest.xml`:
+
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+**For iOS:**
+1. Open `ios/Runner/Info.plist` and add the following to allow network access:
+
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+#### Basic Usage
+
+To use the `minio_new` package, you need to initialize the MinIO client with your server's endpoint, access key, and secret key. Here’s a simple example of how to do this:
+
+```dart
+import 'package:minio_new/minio_new.dart';
+
+void main() {
+  final minioClient = Minio(
+    endPoint: 'YOUR_MINIO_SERVER_ENDPOINT',
+    accessKey: 'YOUR_ACCESS_KEY',
+    secretKey: 'YOUR_SECRET_KEY',
+    useSSL: false, // Set to true if using HTTPS
+  );
+
+  // Example: List buckets
+  minioClient.listBuckets().then((buckets) {
+    buckets.forEach((bucket) {
+      print('Bucket: ${bucket.name}');
+    });
+  });
+}
+```
+
+## <-- END_TUTORIAL -->
+
+## <-- START_MAIN -->
+
+### Complete Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:minio_new/minio_new.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'MinIO Example',
+      home: MinioHome(),
+    );
+  }
+}
+
+class MinioHome extends StatefulWidget {
+  @override
+  _MinioHomeState createState() => _MinioHomeState();
+}
+
+class _MinioHomeState extends State<MinioHome> {
+  late Minio minioClient;
+  List<Bucket> buckets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the MinIO client
+    minioClient = Minio(
+      endPoint: 'YOUR_MINIO_SERVER_ENDPOINT',
+      accessKey: 'YOUR_ACCESS_KEY',
+      secretKey: 'YOUR_SECRET_KEY',
+      useSSL: false, // Set to true if using HTTPS
+    );
+
+    // Fetch the list of buckets
+    _fetchBuckets();
+  }
+
+  // Function to fetch buckets from MinIO
+  void _fetchBuckets() async {
+    try {
+      // List all buckets
+      final bucketList = await minioClient.listBuckets();
+      setState(() {
+        buckets = bucketList; // Update the state with the fetched buckets
+      });
+    } catch (e) {
+      print('Error fetching buckets: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('MinIO Buckets'),
+      ),
+      body: ListView.builder(
+        itemCount: buckets.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(buckets[index].name), // Display bucket name
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the `main` function, which runs the `MyApp` widget.
+// 2. `MyApp` builds a MaterialApp with a title and a home widget `MinioHome`.
+// 3. In `MinioHome`, the MinIO client is initialized with the server details.
+// 4. The `_fetchBuckets` method is called in `initState` to retrieve the list of buckets from the MinIO server.
+// 5. The fetched buckets are stored in the `buckets` list and displayed in a ListView.
+// 6. Each bucket's name is shown in a ListTile, allowing users to see the available buckets.
+```
+
+## <-- END_MAIN -->
+
+### Summary
+
+In this blog post, we explored the `minio_new` Flutter package, which provides a robust solution for integrating MinIO object storage into Flutter applications. We covered the installation process, platform-specific configurations, and provided a complete example demonstrating how to list buckets from a MinIO server. The application flow was explained step-by-step through comments in the code, making it easy to understand how to utilize the package effectively. This package is ideal for developers looking to implement cloud storage solutions in their Flutter apps.
