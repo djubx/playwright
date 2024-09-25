@@ -1,0 +1,178 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the riverpod_cache Flutter Package
+
+The `riverpod_cache` package is a powerful tool designed to enhance state management in Flutter applications using the Riverpod library. It provides a caching mechanism that allows developers to store and retrieve data efficiently, improving performance and user experience. This package is particularly useful in scenarios where data needs to be fetched from remote sources, such as APIs, and can be reused across different parts of the application.
+
+## When to Use riverpod_cache
+
+- **Data Fetching**: When your application frequently fetches data from APIs, caching can significantly reduce load times and improve responsiveness.
+- **State Management**: If you are using Riverpod for state management, integrating `riverpod_cache` can streamline your data handling processes.
+- **Offline Support**: Caching allows your application to function smoothly even when the device is offline, as previously fetched data can be accessed without a network connection.
+
+## Key Features
+
+- **Automatic Caching**: Automatically caches data fetched from providers, reducing the need for manual caching logic.
+- **Expiration Policies**: Allows you to set expiration times for cached data, ensuring that stale data is not used.
+- **Integration with Riverpod**: Seamlessly integrates with Riverpod, leveraging its powerful state management capabilities.
+- **Easy to Use**: Simple API that makes it easy to implement caching in your Flutter applications.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up riverpod_cache
+
+To get started with the `riverpod_cache` package, follow these steps:
+
+## Step 1: Add Dependency
+
+Add the `riverpod_cache` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  riverpod: ^2.0.0
+  riverpod_cache: ^1.0.0
+```
+
+Run `flutter pub get` to install the package.
+
+## Step 2: Basic Configuration
+
+### Android Configuration
+
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS Configuration
+
+For iOS, ensure that your deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Using riverpod_cache
+
+To use `riverpod_cache`, you need to create a provider that utilizes the caching mechanism. Here’s a simple example:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_cache/riverpod_cache.dart';
+
+// Define a provider for fetching data
+final dataProvider = FutureProvider.autoDispose<String>((ref) async {
+  // Simulate a network call
+  await Future.delayed(Duration(seconds: 2));
+  return 'Fetched Data';
+});
+
+// Define a cached provider
+final cachedDataProvider = CachedProvider<String>((ref) {
+  return ref.watch(dataProvider);
+});
+
+void main() {
+  runApp(ProviderScope(child: MyApp()));
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Riverpod Cache Example')),
+        body: Consumer(
+          builder: (context, watch, child) {
+            final asyncValue = watch(cachedDataProvider);
+            return asyncValue.when(
+              data: (data) => Center(child: Text(data)),
+              loading: () => Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+In this example, we create a `FutureProvider` to simulate fetching data and a `CachedProvider` to cache that data. The UI updates automatically based on the state of the data.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of riverpod_cache
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_cache/riverpod_cache.dart';
+
+// Define a provider for fetching data
+final dataProvider = FutureProvider.autoDispose<String>((ref) async {
+  // Simulate a network call with a delay
+  await Future.delayed(Duration(seconds: 2));
+  return 'Fetched Data'; // Return the fetched data
+});
+
+// Define a cached provider that uses the data provider
+final cachedDataProvider = CachedProvider<String>((ref) {
+  return ref.watch(dataProvider); // Watch the data provider for changes
+});
+
+void main() {
+  runApp(ProviderScope(child: MyApp())); // Run the app within a ProviderScope
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Riverpod Cache Example')), // App bar title
+        body: Consumer(
+          builder: (context, watch, child) {
+            final asyncValue = watch(cachedDataProvider); // Watch the cached data provider
+            return asyncValue.when(
+              data: (data) => Center(child: Text(data)), // Display fetched data
+              loading: () => Center(child: CircularProgressIndicator()), // Show loading indicator
+              error: (error, stack) => Center(child: Text('Error: $error')), // Display error message
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which initializes the ProviderScope.
+// 2. MyApp is built, which contains a Scaffold with an AppBar and a body.
+// 3. The body uses a Consumer widget to listen to the cachedDataProvider.
+// 4. The cachedDataProvider fetches data from the dataProvider and caches it.
+// 5. When the data is being fetched, a loading indicator is displayed.
+// 6. Once the data is fetched, it is displayed in the center of the screen.
+// 7. If an error occurs during data fetching, an error message is shown.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive understanding of the `riverpod_cache` package, guiding developers through its features, setup, and practical usage in a Flutter application.

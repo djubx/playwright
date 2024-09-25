@@ -1,0 +1,208 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the riverpod_infinite_scroll_pagination Package
+
+The `riverpod_infinite_scroll_pagination` package is a powerful tool for Flutter developers looking to implement infinite scrolling in their applications while leveraging the Riverpod state management solution. This package simplifies the process of paginating data, making it easy to load more items as the user scrolls down a list.
+
+## When to Use This Package
+You should consider using `riverpod_infinite_scroll_pagination` when:
+- You need to display a large dataset that should be loaded incrementally.
+- You want to manage the state of your pagination using Riverpod.
+- You are looking for a solution that integrates seamlessly with Flutter's widget tree.
+
+## Key Features
+- **Seamless Integration with Riverpod**: Utilizes Riverpod for state management, making it easy to manage the loading state and data.
+- **Infinite Scrolling**: Automatically loads more data as the user scrolls down the list.
+- **Customizable Pagination Logic**: Allows developers to define how data is fetched and how pagination is handled.
+- **Error Handling**: Built-in support for handling errors during data fetching.
+
+This package is ideal for applications that require dynamic data loading, such as social media feeds, product listings, or any scenario where users need to scroll through a large amount of data.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up riverpod_infinite_scroll_pagination
+
+In this tutorial, we will walk through the setup process for the `riverpod_infinite_scroll_pagination` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependency
+To get started, add the `riverpod_infinite_scroll_pagination` package to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  riverpod: ^2.0.0
+  riverpod_infinite_scroll_pagination: ^1.0.0
+```
+
+Run `flutter pub get` to install the new dependencies.
+
+## Step 2: Platform-Specific Configuration
+### Android
+Ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+    }
+}
+```
+
+### iOS
+For iOS, ensure that your deployment target is set to at least 10.0 in your `ios/Podfile`:
+
+```ruby
+platform :ios, '10.0'
+```
+
+## Step 3: Create a Riverpod Provider
+Create a provider for managing the pagination state. This will handle fetching data and managing the loading state.
+
+```dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_infinite_scroll_pagination/riverpod_infinite_scroll_pagination.dart';
+
+final itemProvider = StateNotifierProvider<ItemNotifier, PagingState<Item>>((ref) {
+  return ItemNotifier();
+});
+```
+
+## Step 4: Implement the UI
+Now, implement the UI using a `PagedListView` to display the items.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_infinite_scroll_pagination/riverpod_infinite_scroll_pagination.dart';
+
+class RealFlutter extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(itemProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Infinite Scroll Pagination')),
+      body: PagedListView<int, Item>(
+        pagingController: state.pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Item>(
+          itemBuilder: (context, item, index) => ListTile(title: Text(item.title)),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Step 5: Fetch Data
+Implement the logic to fetch data in your `ItemNotifier` class. This will handle the pagination logic.
+
+```dart
+class ItemNotifier extends StateNotifier<PagingState<Item>> {
+  ItemNotifier() : super(PagingState());
+
+  Future<void> fetchItems(int pageKey) async {
+    // Fetch data from your API or data source
+    // Update the state with new items
+  }
+}
+```
+
+With these steps, you have successfully set up the `riverpod_infinite_scroll_pagination` package in your Flutter application.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of riverpod_infinite_scroll_pagination
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_infinite_scroll_pagination/riverpod_infinite_scroll_pagination.dart';
+
+// Define the Item model
+class Item {
+  final String title;
+
+  Item(this.title);
+}
+
+// Create a provider for managing pagination state
+final itemProvider = StateNotifierProvider<ItemNotifier, PagingState<Item>>((ref) {
+  return ItemNotifier();
+});
+
+// Notifier class to handle fetching and managing items
+class ItemNotifier extends StateNotifier<PagingState<Item>> {
+  ItemNotifier() : super(PagingState());
+
+  // Method to fetch items based on the page key
+  Future<void> fetchItems(int pageKey) async {
+    // Simulate a network call
+    await Future.delayed(Duration(seconds: 2));
+
+    // Generate a list of items for demonstration
+    final newItems = List.generate(10, (index) => Item('Item ${pageKey * 10 + index + 1}'));
+
+    // Update the state with new items
+    state = state.copyWith(
+      items: [...state.items, ...newItems],
+      nextPageKey: pageKey + 1,
+    );
+  }
+}
+
+// Main application widget
+class RealFlutter extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(itemProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Infinite Scroll Pagination')),
+      body: PagedListView<int, Item>(
+        pagingController: state.pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Item>(
+          itemBuilder: (context, item, index) => ListTile(title: Text(item.title)),
+        ),
+      ),
+    );
+  }
+}
+
+// Main function to run the app
+void main() {
+  runApp(
+    ProviderScope(
+      child: MaterialApp(
+        home: RealFlutter(),
+      ),
+    ),
+  );
+}
+```
+
+```
+// Explanation of the application flow:
+
+// 1. The `Item` class defines the structure of the data we want to display.
+// 2. The `itemProvider` is a Riverpod provider that manages the state of our pagination.
+// 3. The `ItemNotifier` class extends `StateNotifier` and is responsible for fetching items.
+// 4. The `fetchItems` method simulates a network call and generates a list of items.
+// 5. The `RealFlutter` class is a `ConsumerWidget` that listens to the `itemProvider`.
+// 6. Inside the `build` method, we use `PagedListView` to display the items.
+// 7. The `PagedChildBuilderDelegate` is used to build each item in the list.
+// 8. The `main` function initializes the app and sets up the provider scope.
+
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive overview, setup instructions, and a complete example of using the `riverpod_infinite_scroll_pagination` package in a Flutter application.

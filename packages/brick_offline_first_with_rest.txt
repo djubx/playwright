@@ -1,0 +1,213 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `brick_offline_first_with_rest` Flutter Package
+
+The `brick_offline_first_with_rest` package is designed to facilitate the development of Flutter applications that require offline capabilities while interacting with RESTful APIs. This package is particularly useful for applications that need to function seamlessly without a constant internet connection, allowing users to access previously fetched data even when offline.
+
+## When to Use This Package
+- **Offline-First Applications**: Ideal for apps that prioritize offline access to data, such as note-taking apps, task managers, or any application where users expect to interact with data without an internet connection.
+- **Data Synchronization**: Useful for applications that need to sync data with a remote server when connectivity is restored.
+- **User Experience**: Enhances user experience by providing immediate access to data, reducing loading times and improving responsiveness.
+
+## Key Features
+- **Offline Data Storage**: Automatically caches data locally, allowing access even when offline.
+- **Data Synchronization**: Syncs local data with the server when the device is back online.
+- **RESTful API Integration**: Simplifies the process of making REST API calls and handling responses.
+- **Error Handling**: Built-in mechanisms to handle errors gracefully, ensuring a smooth user experience.
+
+This package is a powerful tool for Flutter developers looking to create robust applications that can handle offline scenarios effectively.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `brick_offline_first_with_rest`
+
+## Installation
+To get started with the `brick_offline_first_with_rest` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  brick_offline_first_with_rest: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the latest version available on [pub.dev](https://pub.dev/packages/brick_offline_first_with_rest).
+
+## Platform-Specific Configuration
+
+### Android
+1. Open `android/app/build.gradle` and ensure you have the following configurations:
+   ```groovy
+   android {
+       ...
+       compileOptions {
+           sourceCompatibility JavaVersion.VERSION_1_8
+           targetCompatibility JavaVersion.VERSION_1_8
+       }
+   }
+   ```
+
+2. Ensure you have the necessary permissions in `AndroidManifest.xml`:
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+   ```
+
+### iOS
+1. Open `ios/Runner/Info.plist` and add the following permissions:
+   ```xml
+   <key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+   ```
+
+## Basic Usage
+To use the package, you need to initialize it in your main application file. Here’s a simple example of how to set it up:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:brick_offline_first_with_rest/brick_offline_first_with_rest.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Offline First Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Initialize your data repository here
+  late final DataRepository _repository;
+
+  @override
+  void initState() {
+    super.initState();
+    _repository = DataRepository();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Offline First Example')),
+      body: FutureBuilder(
+        future: _repository.fetchData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, index) {
+                return ListTile(title: Text(snapshot.data[index].title));
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+```
+
+In this example, we set up a basic Flutter application that fetches data using the `brick_offline_first_with_rest` package. The `DataRepository` class is where you would implement your data fetching and caching logic.
+
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of `brick_offline_first_with_rest`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:brick_offline_first_with_rest/brick_offline_first_with_rest.dart';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Offline First Example',
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Initialize your data repository here
+  late final DataRepository _repository;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create an instance of the DataRepository
+    _repository = DataRepository();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Offline First Example')),
+      body: FutureBuilder(
+        // Fetch data from the repository
+        future: _repository.fetchData(),
+        builder: (context, snapshot) {
+          // Show loading indicator while waiting for data
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } 
+          // Handle errors if any occur during data fetching
+          else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } 
+          // Display the fetched data in a ListView
+          else {
+            return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, index) {
+                // Display each item in the list
+                return ListTile(title: Text(snapshot.data[index].title));
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter sets up a MaterialApp with a title and a home screen.
+// 3. HomeScreen is a stateful widget that initializes a DataRepository instance in its initState method.
+// 4. The build method of HomeScreen uses a FutureBuilder to fetch data from the repository.
+// 5. While waiting for data, a CircularProgressIndicator is displayed.
+// 6. If an error occurs during data fetching, an error message is shown.
+// 7. Once data is successfully fetched, it is displayed in a ListView, with each item represented by a ListTile.
+```
+<!-- END_MAIN -->
+```
+
+This structured blog post provides a comprehensive overview of the `brick_offline_first_with_rest` package, guiding developers through its features, setup, and practical usage in a Flutter application.

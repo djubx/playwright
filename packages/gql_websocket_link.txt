@@ -1,0 +1,269 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the gql_websocket_link Flutter Package
+
+The `gql_websocket_link` package is a powerful tool for Flutter developers looking to implement GraphQL subscriptions over WebSocket connections. This package allows real-time data updates in your Flutter applications, making it ideal for applications that require live data feeds, such as chat applications, live sports updates, or collaborative tools.
+
+## When to Use This Package
+- **Real-time Applications**: If your app needs to display real-time data updates, such as notifications or chat messages.
+- **Collaborative Tools**: For applications where multiple users interact and need to see updates instantly.
+- **Live Data Feeds**: For apps that require constant updates from a server, like stock prices or sports scores.
+
+## Key Features
+- **WebSocket Support**: Establishes a WebSocket connection for GraphQL subscriptions.
+- **Integration with GraphQL**: Works seamlessly with the `graphql_flutter` package, allowing for easy integration of queries and mutations.
+- **Automatic Reconnection**: Handles reconnections automatically in case of network issues.
+- **Customizable**: Offers options to customize the WebSocket connection, including headers and connection parameters.
+
+<!-- END_DESCRIPTION -->
+```
+
+```markdown
+<!-- START_TUTORIAL -->
+# Setting Up and Using gql_websocket_link
+
+In this tutorial, we will walk through the setup process for the `gql_websocket_link` package and demonstrate how to use it in a Flutter application.
+
+## Step 1: Add Dependencies
+To get started, you need to add the `gql_websocket_link` and `graphql_flutter` packages to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  graphql_flutter: ^5.0.0
+  gql_websocket_link: ^0.2.0
+```
+
+## Step 2: Platform-Specific Configuration
+### Android
+For Android, ensure that you have the Internet permission in your `AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+### iOS
+For iOS, you may need to add the following to your `Info.plist` to allow arbitrary loads (if you're not using HTTPS):
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Step 3: Initialize the WebSocket Link
+In your Flutter application, you will need to initialize the WebSocket link and integrate it with the GraphQL client. Here’s how you can do it:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:gql_websocket_link/gql_websocket_link.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final WebSocketLink websocketLink = WebSocketLink(
+      'wss://your-graphql-endpoint',
+      config: SocketClientConfig(
+        autoReconnect: true,
+        initPayload: () async => {
+          'headers': {
+            'Authorization': 'Bearer YOUR_TOKEN',
+          }
+        },
+      ),
+    );
+
+    final GraphQLClient client = GraphQLClient(
+      link: websocketLink,
+      cache: GraphQLCache(store: InMemoryStore()),
+    );
+
+    return GraphQLProvider(
+      client: client,
+      child: YourWidget(),
+    );
+  }
+}
+```
+
+In this setup:
+- We create a `WebSocketLink` pointing to our GraphQL endpoint.
+- We configure the link to automatically reconnect and include any necessary headers.
+
+## Step 4: Using the Client
+You can now use the `client` to execute queries and subscriptions in your widgets.
+
+```dart
+class YourWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Query(
+      options: QueryOptions(
+        document: gql(r'''
+          subscription GetMessages {
+            messages {
+              id
+              content
+            }
+          }
+        '''),
+      ),
+      builder: (QueryResult result, { VoidCallback? refetch, FetchMore? fetchMore }) {
+        if (result.isLoading) {
+          return CircularProgressIndicator();
+        }
+
+        if (result.hasException) {
+          return Text(result.exception.toString());
+        }
+
+        final messages = result.data['messages'];
+
+        return ListView.builder(
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(messages[index]['content']),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+In this widget:
+- We use a `Query` widget to subscribe to the `GetMessages` subscription.
+- The UI updates automatically as new messages are received.
+
+<!-- END_TUTORIAL -->
+```
+
+```markdown
+<!-- START_MAIN -->
+# Complete Example of Using gql_websocket_link
+
+Here is a complete example of a Flutter application using the `gql_websocket_link` package. This example demonstrates how to set up a WebSocket connection and listen for real-time updates.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:gql_websocket_link/gql_websocket_link.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: RealFlutter(),
+    );
+  }
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Step 1: Create a WebSocket link to connect to the GraphQL server
+    final WebSocketLink websocketLink = WebSocketLink(
+      'wss://your-graphql-endpoint', // Replace with your WebSocket URL
+      config: SocketClientConfig(
+        autoReconnect: true, // Automatically reconnect on disconnection
+        initPayload: () async => {
+          'headers': {
+            'Authorization': 'Bearer YOUR_TOKEN', // Add your auth token here
+          }
+        },
+      ),
+    );
+
+    // Step 2: Create a GraphQL client using the WebSocket link
+    final GraphQLClient client = GraphQLClient(
+      link: websocketLink,
+      cache: GraphQLCache(store: InMemoryStore()), // Use in-memory cache
+    );
+
+    // Step 3: Provide the GraphQL client to the widget tree
+    return GraphQLProvider(
+      client: client,
+      child: YourWidget(), // Your main widget that uses GraphQL
+    );
+  }
+}
+
+class YourWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Step 4: Use the Query widget to subscribe to GraphQL data
+    return Query(
+      options: QueryOptions(
+        document: gql(r'''
+          subscription GetMessages {
+            messages {
+              id
+              content
+            }
+          }
+        '''),
+      ),
+      builder: (QueryResult result, { VoidCallback? refetch, FetchMore? fetchMore }) {
+        // Step 5: Handle loading state
+        if (result.isLoading) {
+          return CircularProgressIndicator(); // Show loading indicator
+        }
+
+        // Step 6: Handle errors
+        if (result.hasException) {
+          return Text(result.exception.toString()); // Display error message
+        }
+
+        // Step 7: Extract messages from the result
+        final messages = result.data['messages'];
+
+        // Step 8: Build a ListView to display messages
+        return ListView.builder(
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(messages[index]['content']), // Display message content
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which initializes the GraphQL client.
+// 2. The RealFlutter widget sets up the WebSocket link and provides the GraphQL client.
+// 3. The YourWidget widget uses the Query widget to subscribe to the GetMessages subscription.
+// 4. The app displays a loading indicator while waiting for data.
+// 5. Once data is received, it displays the messages in a ListView.
+// 6. The UI updates automatically as new messages are received via the WebSocket connection.
+
+```
+<!-- END_MAIN -->
+``` 
+
+This structured approach provides a comprehensive understanding of the `gql_websocket_link` package, guiding developers through its features, setup, and practical usage in a Flutter application.

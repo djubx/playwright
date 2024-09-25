@@ -1,0 +1,190 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the auth_state_manager Flutter Package
+
+The `auth_state_manager` package is a powerful tool designed to simplify the management of authentication states in Flutter applications. It provides a structured way to handle user authentication, making it easier for developers to manage user sessions, track login states, and respond to authentication changes.
+
+## When to Use This Package
+You should consider using `auth_state_manager` when:
+- You need to manage user authentication states across your application.
+- You want to implement features like login, logout, and session persistence without reinventing the wheel.
+- You are building applications that require secure user authentication, such as social media apps, e-commerce platforms, or any app that handles sensitive user data.
+
+## Key Features
+- **State Management**: Easily manage authentication states using a reactive approach.
+- **Session Persistence**: Automatically persist user sessions across app restarts.
+- **Customizable**: Offers flexibility to integrate with various authentication backends.
+- **Stream Support**: Provides streams to listen for authentication state changes, allowing for real-time updates in the UI.
+
+By leveraging these features, developers can create robust authentication flows that enhance user experience and security.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using auth_state_manager
+
+## Installation
+To get started with the `auth_state_manager` package, add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  auth_state_manager: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/auth_state_manager).
+
+## Platform-Specific Configuration
+
+### Android
+For Android, ensure that your `minSdkVersion` in `android/app/build.gradle` is set to at least 21:
+
+```groovy
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 21
+        ...
+    }
+}
+```
+
+### iOS
+For iOS, you may need to configure your `Info.plist` to allow for secure connections if you are using a custom authentication backend. Add the following:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+## Basic Usage
+To use the `auth_state_manager`, you will typically follow these steps:
+
+1. **Initialize the Auth Manager**: Create an instance of the `AuthManager` class.
+2. **Listen for Auth Changes**: Use streams to listen for authentication state changes.
+3. **Perform Auth Actions**: Call methods to log in, log out, and check the current authentication state.
+
+Here’s a simple example of how to set up the `auth_state_manager` in your Flutter app:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:auth_state_manager/auth_state_manager.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Auth State Manager Demo',
+      home: AuthManagerProvider(
+        child: HomeScreen(),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final authManager = AuthManagerProvider.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Auth State Manager')),
+      body: Center(
+        child: StreamBuilder<AuthState>(
+          stream: authManager.authStateStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            if (snapshot.hasData && snapshot.data!.isAuthenticated) {
+              return Text('Welcome back, ${snapshot.data!.user.name}!');
+            }
+            return ElevatedButton(
+              onPressed: () async {
+                await authManager.login('username', 'password');
+              },
+              child: Text('Login'),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+```dart
+import 'package:flutter/material.dart';
+import 'package:auth_state_manager/auth_state_manager.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Auth State Manager Demo',
+      home: AuthManagerProvider( // Provides the AuthManager to the widget tree
+        child: HomeScreen(),
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final authManager = AuthManagerProvider.of(context); // Accessing the AuthManager
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Auth State Manager')),
+      body: Center(
+        child: StreamBuilder<AuthState>( // Listening to authentication state changes
+          stream: authManager.authStateStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator(); // Show loading indicator while waiting
+            }
+            if (snapshot.hasData && snapshot.data!.isAuthenticated) {
+              return Text('Welcome back, ${snapshot.data!.user.name}!'); // Display welcome message
+            }
+            return ElevatedButton(
+              onPressed: () async {
+                await authManager.login('username', 'password'); // Trigger login action
+              },
+              child: Text('Login'), // Button to initiate login
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the MyApp widget, which sets up the MaterialApp.
+// 2. The AuthManagerProvider is used to provide the AuthManager instance to the widget tree.
+// 3. The HomeScreen widget is built, which accesses the AuthManager.
+// 4. A StreamBuilder listens for changes in the authentication state.
+// 5. If the state is waiting, a loading indicator is shown.
+// 6. If the user is authenticated, a welcome message is displayed.
+// 7. If the user is not authenticated, a login button is shown.
+// 8. When the login button is pressed, the login method is called on the AuthManager.
+```
+<!-- END_MAIN -->
+```
+
+### Summary
+In this blog post, we explored the `auth_state_manager` Flutter package, which simplifies authentication state management in Flutter applications. We covered the installation process, platform-specific configurations, and provided a detailed example of how to implement the package in a Flutter app. The example demonstrated how to listen for authentication state changes and perform login actions, making it a valuable resource for developers looking to enhance their app's authentication flow.

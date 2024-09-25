@@ -1,0 +1,201 @@
+```markdown
+<!-- START_DESCRIPTION -->
+# Overview of the `native_image_cropper_web` Flutter Package
+
+The `native_image_cropper_web` package is a powerful tool for Flutter developers looking to implement image cropping functionality in their web applications. This package leverages native web capabilities to provide a seamless and efficient image cropping experience. It is particularly useful in scenarios where users need to upload images, such as profile pictures, product images, or any other visual content that requires precise cropping.
+
+## When to Use This Package
+- **User Profile Management**: Allow users to upload and crop their profile pictures.
+- **E-commerce Applications**: Enable sellers to upload and crop product images for better presentation.
+- **Social Media Apps**: Facilitate image uploads with cropping features for posts or stories.
+
+## Key Features
+- **Responsive Design**: Adapts to different screen sizes and resolutions.
+- **Customizable Crop Area**: Users can define the crop area according to their needs.
+- **Aspect Ratio Control**: Maintain specific aspect ratios while cropping images.
+- **Easy Integration**: Simple API that integrates smoothly with existing Flutter applications.
+
+Overall, `native_image_cropper_web` is an essential package for any Flutter web application that requires image manipulation capabilities.
+<!-- END_DESCRIPTION -->
+
+<!-- START_TUTORIAL -->
+# Tutorial: Setting Up and Using `native_image_cropper_web`
+
+## Installation
+To get started with the `native_image_cropper_web` package, you need to add it to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  native_image_cropper_web: ^latest_version
+```
+
+Make sure to replace `^latest_version` with the most recent version available on [pub.dev](https://pub.dev/packages/native_image_cropper_web).
+
+## Platform-Specific Configuration
+### Web Configuration
+Since this package is specifically designed for web applications, ensure that your Flutter project is set up for web development. You can create a new Flutter web project using:
+
+```bash
+flutter create my_web_app
+cd my_web_app
+flutter run -d chrome
+```
+
+### Permissions
+No special permissions are required for web applications, but ensure that your browser settings allow file uploads.
+
+## Using the Package
+To use the `native_image_cropper_web` package, follow these steps:
+
+1. **Import the Package**:
+   At the top of your Dart file, import the package:
+   ```dart
+   import 'package:native_image_cropper_web/native_image_cropper_web.dart';
+   ```
+
+2. **Implement the Image Cropping Functionality**:
+   You can create a function to handle image selection and cropping. Here’s a basic example:
+
+   ```dart
+   Future<void> cropImage() async {
+     // Open the image picker
+     final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+     if (pickedFile != null) {
+       // Crop the image
+       final croppedFile = await NativeImageCropperWeb.cropImage(
+         image: File(pickedFile.path),
+         aspectRatioPresets: [
+           CropAspectRatioPreset.square,
+           CropAspectRatioPreset.original,
+         ],
+         androidUiSettings: AndroidUiSettings(
+           toolbarTitle: 'Cropper',
+           toolbarColor: Colors.deepOrange,
+           toolbarWidgetColor: Colors.white,
+           initAspectRatio: CropAspectRatioPreset.original,
+           lockAspectRatio: false,
+         ),
+         iosUiSettings: IOSUiSettings(
+           minimumAspectRatio: 1.0,
+         ),
+       );
+
+       // Use the cropped image
+       if (croppedFile != null) {
+         // Do something with the cropped image
+       }
+     }
+   }
+   ```
+
+This function allows users to select an image from their gallery, crop it, and then use the cropped image as needed.
+
+## Conclusion
+The `native_image_cropper_web` package is a straightforward and effective solution for adding image cropping functionality to your Flutter web applications. With its easy integration and customizable features, it enhances user experience significantly.
+<!-- END_TUTORIAL -->
+
+<!-- START_MAIN -->
+# Complete Example of Using `native_image_cropper_web`
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:native_image_cropper_web/native_image_cropper_web.dart';
+import 'dart:io';
+
+void main() {
+  runApp(RealFlutter());
+}
+
+class RealFlutter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Image Cropper Example',
+      home: ImageCropperPage(),
+    );
+  }
+}
+
+class ImageCropperPage extends StatefulWidget {
+  @override
+  _ImageCropperPageState createState() => _ImageCropperPageState();
+}
+
+class _ImageCropperPageState extends State<ImageCropperPage> {
+  File? _croppedImage;
+
+  // Function to handle image cropping
+  Future<void> cropImage() async {
+    // Open the image picker
+    final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      // Crop the image
+      final croppedFile = await NativeImageCropperWeb.cropImage(
+        image: File(pickedFile.path),
+        aspectRatioPresets: [
+          CropAspectRatioPreset.square,
+          CropAspectRatioPreset.original,
+        ],
+        androidUiSettings: AndroidUiSettings(
+          toolbarTitle: 'Cropper',
+          toolbarColor: Colors.deepOrange,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+        ),
+        iosUiSettings: IOSUiSettings(
+          minimumAspectRatio: 1.0,
+        ),
+      );
+
+      // Update the state with the cropped image
+      if (croppedFile != null) {
+        setState(() {
+          _croppedImage = croppedFile;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Image Cropper Example'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Display the cropped image if available
+            _croppedImage != null
+                ? Image.file(_croppedImage!)
+                : Text('No image selected.'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: cropImage,
+              child: Text('Select and Crop Image'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Application Flow Explanation:
+// 1. The app starts with the main function, which runs the RealFlutter widget.
+// 2. RealFlutter builds a MaterialApp with a title and home page set to ImageCropperPage.
+// 3. ImageCropperPage is a stateful widget that manages the state of the cropped image.
+// 4. The cropImage function is triggered when the user presses the button to select and crop an image.
+// 5. The image picker opens, allowing the user to select an image from their gallery.
+// 6. Once an image is selected, it is passed to the NativeImageCropperWeb for cropping.
+// 7. After cropping, the state is updated with the cropped image, which is then displayed on the screen.
+```
+<!-- END_MAIN -->
+``` 
+
+This structured blog post provides a comprehensive overview of the `native_image_cropper_web` package, guiding developers through its features, setup, and practical usage with a complete example.
