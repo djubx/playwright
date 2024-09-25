@@ -1,4 +1,5 @@
-// just run this file to clean the packages data, usually called after prompts-manager.js has generated the prompts and main has generated the packages data
+// just run this file to clean the packages data,
+// usually called after prompts-manager.js has generated the prompts and main has generated the packages data
 
 const fs = require('fs').promises;
 const path = require('path');
@@ -72,6 +73,9 @@ function convertToJSON(packageData, packageName) {
     mainData = extractBetweenSeparators(packageData, separators[4], separators[5]);
     if (mainData === "") {
         mainData = extractBetweenSeparators(packageData, alternateSeparators[4], alternateSeparators[5]);
+        if (mainData === "") {
+            mainData = extractBetweenSeparators(packageData, "<-- START_MAIN -->", "<-- END_MAIN -->");
+        }
     }
 
     let jsonData = {
@@ -141,6 +145,15 @@ async function sanitizeData() {
         }
     }
 }
+
+let emptyPackages = [];
+async function logEmptyPackages(jsonData) {
+    if (jsonData.description === "" || jsonData.tutorial === "" || jsonData.main === "```dart\n```") {
+        // log to a json file (I am keeping array of items in it)
+        // await fs.appendFile(path.join(__dirname, 'emptyPackages.json'), JSON.stringify(jsonData.packageName, null, 2), 'utf-8');
+        emptyPackages.push(jsonData.packageName);
+    }
+}
 async function main() {
     await sanitizeData();
     const prompts = JSON.parse(await fs.readFile(path.join(__dirname, 'prompts.json'), 'utf-8'));
@@ -151,8 +164,10 @@ async function main() {
     for (let i = 0; i < jsonConvertedDataList.length; i++) {
         let jsonData = convertToJSON(jsonConvertedDataList[i], packageNames[i]);
         jsonData = verifyDataAndUpdateIfRequired(jsonData, packageNames[i]);
+        await logEmptyPackages(jsonData);
         extractedDataPackages.push(jsonData);
     }
+    await fs.appendFile(path.join(__dirname, 'emptyPackages.json'), JSON.stringify(emptyPackages, null, 2), 'utf-8');
 
     // write to file
     await fs.writeFile(path.join(__dirname, 'extractedDataPackages.json'), JSON.stringify(extractedDataPackages, null, 2), 'utf-8');
